@@ -1,0 +1,23 @@
+{
+    "GroupId": "sg-06b8a056674bab1ba",
+    "IpPermissions": [
+        {
+            "FromPort": 22,
+            "IpProtocol": "tcp",
+            "IpRanges": [
+                {
+                    "CidrIp": "0.0.0.0/0",
+                    "Description": "allow all ipv4 ssh access"
+                }
+            ],
+            "Ipv6Ranges": [
+                {
+                    "CidrIpv6": "::/0",
+                    "Description": "allow all ipv6 ssh access"
+                }
+            ],
+            "ToPort": 22
+        }
+    ],
+    "DryRun": false
+}

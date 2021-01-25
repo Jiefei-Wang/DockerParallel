@@ -1,0 +1,17 @@
+{
+    "Description": "Security group used by R worker nodes",
+    "GroupName": "R-worker-security-group",
+    "VpcId": "",
+    "TagSpecifications": [
+        {
+            "ResourceType": "security-group",
+            "Tags": [
+                {
+                    "Key": "docker-parallel-tag",
+                    "Value": "docker-parallel-tag"
+                }
+            ]
+        }
+    ],
+    "DryRun": false
+}

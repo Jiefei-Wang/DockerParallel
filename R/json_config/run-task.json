@@ -1,0 +1,18 @@
+{
+    "cluster": "R-worker-cluster",
+    "count": 1,
+    "enableECSManagedTags": true,
+    "launchType": "FARGATE",
+    "networkConfiguration": {
+        "awsvpcConfiguration": {
+            "subnets": [
+                ""
+            ],
+            "securityGroups": [
+                ""
+            ],
+            "assignPublicIp": "ENABLED"
+        }
+    },
+    "taskDefinition": "r-worker-task:3"
+}

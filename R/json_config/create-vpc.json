@@ -1,0 +1,15 @@
+{
+    "CidrBlock": "10.0.0.0/16",
+    "DryRun": false,
+    "TagSpecifications": [
+        {
+            "ResourceType": "vpc",
+            "Tags": [
+                {
+                    "Key": "docker-parallel-tag",
+                    "Value": "docker-parallel-tag"
+                }
+            ]
+        }
+    ]
+}

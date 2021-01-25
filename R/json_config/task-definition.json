@@ -1,0 +1,21 @@
+{
+    "family": "r-worker-task",
+    "containerDefinitions": [
+        {
+            "name": "worker",
+            "image": "szwjf08/dockerparallel-worker-image",
+            "essential": true,
+            "environment": [
+                {
+                    "name": "pubKey",
+                    "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDuuRi+JXmOAZcoQ6dZTLMqbipB+KF1QdIhPeZQpBD8YAOv/XmIN7p30FHFIomdPio2zTSQZEvYVTUk656w2xwYOiw/SN8jOTFsojE+AzRp4Prs7iGhdkYcwgZ5MArBVLhnHu4ivpROnX5O3ZirL+BTF5EvVphTIlFUra8HetPUFb/HKmUzpYdHhTDx9+enNirWZ/geppowpNqgn28aIN+RRZ1yRXZqwUbo5uXZjsQzklGK6DQMQ5Hhs2P7PZLsQaXEqZDrEydGeM67LX+pC2qjdMKiyJ5MmerzFBPMBQ1/RZDyBY+3BLHcaH6nUARSBf/DjIBDAuz/q7XY4yC05iAn wangj@DESKTOP-1N76959"
+                }
+            ]
+        }
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "requiresCompatibilities": ["FARGATE"],
+    "networkMode": "awsvpc"
+}
+

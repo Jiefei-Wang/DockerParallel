@@ -1,0 +1,6 @@
+{
+    "clusterName": "R-worker-cluster",
+    "capacityProviders": [
+        "FARGATE"
+    ]
+}
