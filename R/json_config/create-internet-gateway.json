@@ -1,0 +1,14 @@
+{
+    "TagSpecifications": [
+        {
+            "ResourceType": "internet-gateway",
+            "Tags": [
+                {
+                    "Key": "docker-parallel-tag",
+                    "Value": "docker-parallel-tag"
+                }
+            ]
+        }
+    ],
+    "DryRun": false
+}
