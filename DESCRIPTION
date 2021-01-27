@@ -9,7 +9,8 @@ Authors@R:
 Description: What the package does (one paragraph).
 Imports:
   parallel,
-  rjson
+  rjson,
+  parallelly
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

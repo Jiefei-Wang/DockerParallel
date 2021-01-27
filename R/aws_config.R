@@ -2,7 +2,7 @@ package_configure<-new.env()
 package_configure$aws_credentials <- NULL
 package_configure$aws_configure <- NULL
 
-key_file <- "../accessKeys.csv"
+
 aws_credentials<-function(key_file=NULL,
                           access_key_id=NULL, secret_access_key=NULL){
   profile_name <- shQuote("DockerParallel")
@@ -81,11 +81,13 @@ aws_configure<-function(region = NULL, cpu = "256", memory = "512"){
   aws_configure$task_name_valid <- FALSE
   aws_configure$security_group_name_valid <- FALSE
 
+  aws_configure$network_initialized <- FALSE
+
   package_configure$aws_configure <-
     structure(aws_configure, class = "aws_configure")
   package_configure$aws_configure
 }
-
+#' @export
 print.aws_configure<-function(x,...){
   config_list <- as.list.environment(x)
   var_list<- c("region","cluster_name",

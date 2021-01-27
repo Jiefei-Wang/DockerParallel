@@ -3,31 +3,36 @@ verbose_print<-function(verbose, ...){
     message(...)
 }
 aws_configure_network<-function(verbose= TRUE){
-  verbose_print(verbose, "Setting up VPC")
-  vpc_id <- aws_find_vpc_id()
-  verbose_print(verbose, "VPC:", vpc_id)
-  ## gateway
-  verbose_print(verbose, "Setting up gateway")
-  gateway_id <- aws_find_internet_gateway()
-  verbose_print(verbose, "Gateway:", gateway_id)
-  verbose_print(verbose, "Attaching gateway to the VPC")
-  attach_internet_gateway(vpc_id,gateway_id)
-  ## route table
-  verbose_print(verbose, "Setting up route table")
-  route_table_id <- aws_find_route_table()
-  verbose_print(verbose, "Route table:", route_table_id)
-  verbose_print(verbose, "Adding the gateway as the default route")
-  add_default_route(route_table_id,gateway_id)
-  ## security group
-  verbose_print(verbose, "Setting up security group")
-  security_group_id <- aws_find_security_group_id()
-  verbose_print(verbose, "Security group:",security_group_id)
-  verbose_print(verbose, "Adding the default security rule")
-  aws_add_security_group_rule(security_group_id)
-  ## subnet
-  verbose_print(verbose, "Setting up subnet")
-  subnet_id <- aws_find_subnet_id()
-  verbose_print(verbose, "Subnet:", subnet_id)
+  if(!get_aws_configure("network_initialized")){
+    verbose_print(verbose, "Setting up VPC")
+    vpc_id <- aws_find_vpc_id()
+    verbose_print(verbose, "VPC:", vpc_id)
+    ## gateway
+    verbose_print(verbose, "Setting up gateway")
+    gateway_id <- aws_find_internet_gateway()
+    verbose_print(verbose, "Gateway:", gateway_id)
+    verbose_print(verbose, "Attaching gateway to the VPC")
+    attach_internet_gateway(vpc_id,gateway_id)
+    ## route table
+    verbose_print(verbose, "Setting up route table")
+    route_table_id <- aws_find_route_table()
+    verbose_print(verbose, "Route table:", route_table_id)
+    verbose_print(verbose, "Adding the gateway as the default route")
+    add_default_route(route_table_id,gateway_id)
+    ## security group
+    verbose_print(verbose, "Setting up security group")
+    security_group_id <- aws_find_security_group_id()
+    verbose_print(verbose, "Security group:",security_group_id)
+    verbose_print(verbose, "Adding the default security rule")
+    aws_add_security_group_rule(security_group_id)
+    ## subnet
+    verbose_print(verbose, "Setting up subnet")
+    subnet_id <- aws_find_subnet_id()
+    verbose_print(verbose, "Subnet:", subnet_id)
+    set_aws_configure("network_initialized", TRUE)
+  }else{
+    verbose_print(verbose, "Network has been initialized")
+  }
 }
 #################################
 # vpc
@@ -187,19 +192,19 @@ aws_find_internet_gateway <- function(){
 attach_internet_gateway<-function(vpc_id, gateway_id){
   gateway_list <- aws_list_internet_gateways(
     args=c("--filters",paste0("Name=internet-gateway-id,Values=",gateway_id))
-    )
+  )
   if(length(gateway_list)!=0&&sum(gateway_list$vpc_id==vpc_id)!=0){
     return()
   }
   aws_run_cmd(c("ec2","attach-internet-gateway",
-                          "--internet-gateway-id", gateway_id,
-                          "--vpc-id", vpc_id),config=NULL)
+                "--internet-gateway-id", gateway_id,
+                "--vpc-id", vpc_id),config=NULL)
 }
 
 detach_internet_gateway<-function(vpc_id, gateway_id){
   aws_run_cmd(c("ec2","detach-internet-gateway",
-                            "--internet-gateway-id", gateway_id,
-                            "--vpc-id", vpc_id),config=NULL)
+                "--internet-gateway-id", gateway_id,
+                "--vpc-id", vpc_id),config=NULL)
 }
 #################################
 # route table
@@ -252,7 +257,7 @@ aws_list_route<-function(table_id = NULL){
 }
 
 add_default_route<-function(table_id, gateway_id){
-  route_list <- aws_list_route(route_table_id)
+  route_list <- aws_list_route(table_id)
   if(!"0.0.0.0/0"%in%route_list$cidr){
     aws_run_cmd(c("ec2","create-route",
                   "--route-table-id",table_id,
@@ -331,8 +336,8 @@ aws_add_security_group_rule <- function(group_id=NULL){
   config$GroupId <- group_id
   existing_rule <- aws_list_security_rule()
   if(sum(existing_rule$from_port==22&
-     existing_rule$to_port==22&
-     existing_rule$type=="tcp")!=0){
+         existing_rule$to_port==22&
+         existing_rule$type=="tcp")!=0){
     return()
   }
   aws_run_cmd(c("ec2","authorize-security-group-ingress"),config=config)

@@ -15,6 +15,14 @@ aws_run_cmd <- function(args, config=NULL){
   output<- system2("aws", args = full_args,stdout=TRUE,env=c(AWS_PAGER=""))
   output
 }
+get_tag_value <-function(tag_list, tag_name, tag_value, target){
+  for(i in tag_list){
+    if(i[[tag_name]]==target){
+      return(i[[tag_value]])
+    }
+  }
+  return(NULL)
+}
 
 match_tag<-function(tag_list,target){
   for(i in tag_list){
@@ -24,6 +32,7 @@ match_tag<-function(tag_list,target){
   }
   return(FALSE)
 }
+
 #################################
 # Cluster
 #################################
@@ -53,7 +62,7 @@ aws_find_cluster_name <- function(){
   if(!is_aws_configure_valid("cluster_name")){
     cluster_list <- aws_list_clusters()
     if(length(cluster_list)!=0){
-      idx <- which(endsWith(cluster_list,.aws_configure()$cluster_name))
+      idx <- which(endsWith(cluster_list,get_aws_configure("cluster_name")))
       if(length(idx)!=0){
         set_aws_configure("cluster_name", cluster_list[idx[1]])
       }else{
@@ -74,8 +83,6 @@ aws_create_task_definition <- function(task_name = NULL){
   }
   config <- fromJSON(file="R/json_config/task-definition.json",simplify=FALSE)
   config$family <- task_name
-  config$cpu = get_aws_configure("cpu")
-  config$memory = get_aws_configure("memory")
   output <- aws_run_cmd(c("ecs","register-task-definition"),config=config)
   result <- fromJSON(paste0(output,collapse = "\n"))
   set_aws_configure("task_definition_name",result$taskDefinition$taskDefinitionArn)
@@ -112,30 +119,126 @@ aws_find_task_definition <- function(){
 }
 
 #################################
-# run task
+#  task management
 #################################
-aws_run_task <- function(count = 1, task_definition=NULL){
+aws_run_task <- function(count = 1, task_definition=NULL, verbose= TRUE){
+  check_ssh_key()
+  aws_configure_network(verbose)
+  task_count <- count
+  task_ids <- c()
+  while(task_count!=0){
+    task_ids<-c(task_ids,
+                aws_run_task_internal(count=min(10,task_count),
+                                      task_definition = task_definition,
+                                      verbose=verbose))
+    task_count <- task_count-min(10,task_count)
+  }
+  task_ids
+}
+
+aws_run_task_internal<-function(count = 1, task_definition=NULL, verbose= TRUE){
   if(is.null(task_definition)){
     task_definition <- aws_find_task_definition()
   }
-  aws_configure_network()
+  cluster_name <- aws_find_cluster_name()
   subnet_id <- aws_find_subnet_id()
   security_group_id <- aws_find_security_group_id()
 
   config <- fromJSON(file="R/json_config/run-task.json",simplify=FALSE)
+  config$overrides$containerOverrides[[1]]$environment[[1]]$value<-
+    get_ssh_public_key_value()
+  config$overrides$containerOverrides[[1]]$cpu <-
+    as.numeric(get_aws_configure("cpu"))
+  config$overrides$containerOverrides[[1]]$memory <-
+    as.numeric(get_aws_configure("memory"))
   config$taskDefinition <- task_definition
-  config$count <- 1
+  config$count <- count
   config$networkConfiguration$awsvpcConfiguration$securityGroups[[1]]<-security_group_id
   config$networkConfiguration$awsvpcConfiguration$subnets[[1]]<-subnet_id
   #existing_rule <- aws_list_security_rule()
   output <- aws_run_cmd(c("ecs","run-task"),config=config)
   result <- fromJSON(paste0(output,collapse = "\n"))
-  aws_configure$security_group_name <- result$GroupId
-  result
+  task_ids <- vapply(result$task,function(x)x$taskArn, character(1))
+  task_ids
 }
 
 
 
+aws_list_tasks<-function(){
+  cluster_name <- aws_find_cluster_name()
+  command <- c("ecs","list-tasks","--cluster",
+               cluster_name)
 
+  output <- aws_run_cmd(command,config=NULL)
+  task_ids <- fromJSON(paste0(output,collapse = "\n"))$taskArns
+  task_ids
+}
 
+aws_get_task_details <- function(task_ids, get_ip = FALSE){
+  cluster_name <- aws_find_cluster_name()
+  command <- c("ecs", "describe-tasks",
+               "--cluster", cluster_name,
+               "--tasks", paste0(task_ids,collapse = " "))
+  output <- aws_run_cmd(command,config=NULL)
+  result <- fromJSON(paste0(output,collapse = "\n"))$tasks
+  task_ids <- vapply(result,function(x)x$taskArn, character(1))
+  status <- vapply(result,function(x)x$lastStatus, character(1))
+  if(get_ip){
+    IPs <- vapply(result,process_instance_IP,character(1))
+    data.frame(task_id = task_ids, status = status, IP = IPs)
+  }else{
+    data.frame(task_id = task_ids, status = status)
+  }
+}
 
+process_instance_IP <- function(x){
+  eni<-NULL
+  for(i in x$attachments){
+    if(i$type=="ElasticNetworkInterface"&&i$status=="ATTACHED"){
+      eni<- get_tag_value(i$details,"name","value","networkInterfaceId")
+    }
+  }
+  if(!is.null(eni)){
+    command <- c("ec2","describe-network-interfaces","--network-interface-ids",eni)
+    output <- aws_run_cmd(command,config=NULL)
+    result <- fromJSON(paste0(output,collapse = "\n"))
+    result$NetworkInterfaces[[1]]$Association$PublicIp
+  }else{
+    ""
+  }
+}
+
+aws_stop_tasks<-function(task_ids){
+  cluster_name <- aws_find_cluster_name()
+  for(id in task_ids){
+    command <- c("ecs", "stop-task", "--cluster",cluster_name, "--task",id)
+    aws_run_cmd(command,config=NULL)
+  }
+}
+
+wait_tasks_to_run<-function(task_ids, progress_bar = FALSE){
+  if(progress_bar){
+    pb <- txtProgressBar(min=0,max = length(task_ids), style=3)
+  }
+  success <- FALSE
+  while(TRUE){
+    task_details <- aws_get_task_details(task_ids)
+    if(nrow(task_details)!=length(task_ids)){
+      break
+    }
+    if(sum(task_details$status=="STOPPED")>0){
+      break
+    }
+    if(sum(task_details$status=="RUNNING")==length(task_ids)){
+      success <- TRUE
+      break
+    }
+    if(progress_bar){
+      setTxtProgressBar(pb, sum(task_details$status=="RUNNING"))
+    }
+  }
+  if(progress_bar){
+    close(pb)
+  }
+  success
+}

@@ -14,5 +14,20 @@
             "assignPublicIp": "ENABLED"
         }
     },
+    "overrides": {
+        "containerOverrides": [
+            {
+                "name": "worker",
+                "environment": [
+                    {
+                        "name": "pubKey",
+                        "value": ""
+                    }
+                ],
+                "cpu": 0,
+                "memory": 0
+            }
+        ]
+    },
     "taskDefinition": "r-worker-task:3"
 }
