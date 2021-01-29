@@ -7,7 +7,7 @@ makeNodePSOCKEX <- function(...){
 }
 
 makeAWSCloudCluster <- function(workers=1, verbose = FALSE){
-  task_ids <- aws_run_task(count = workers, verbose = verbose)
+  task_ids <- aws_run_task(n_workers  = workers, verbose = verbose)
   verbose_print(verbose,"Waiting for the initialization of the workers")
   success <- wait_tasks_to_run(task_ids, progress_bar = verbose)
   if(success){

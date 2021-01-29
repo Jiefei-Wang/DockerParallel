@@ -121,25 +121,50 @@ aws_find_task_definition <- function(){
 #################################
 #  task management
 #################################
-aws_run_task <- function(count = 1, task_definition=NULL, verbose= TRUE){
+aws_run_task <- function(n_workers = 1, task_definition=NULL, verbose= TRUE){
   check_ssh_key()
   aws_configure_network(verbose)
-  task_count <- count
+  started_number <- 0
   task_ids <- c()
-  while(task_count!=0){
+  while(started_number!=n_workers){
+    start_time <- Sys.time()
+    required_number <- min(10,n_workers-started_number)
+    verbose_print(verbose, "starting containers:",started_number,"/",n_workers)
     task_ids<-c(task_ids,
-                aws_run_task_internal(count=min(10,task_count),
+                aws_run_task_internal(task_count=required_number,
+                                      n_workers=1,
                                       task_definition = task_definition,
                                       verbose=verbose))
-    task_count <- task_count-min(10,task_count)
+    end_time <- Sys.time()
+    started_number <- started_number+required_number
+    if(started_number!=n_workers){
+      Sys.sleep(11-(end_time-start_time))
+    }
   }
-  task_ids
+  task_id = task_ids
 }
 
-aws_run_task_internal<-function(count = 1, task_definition=NULL, verbose= TRUE){
+
+valid_vcpu_number <- c(256,512,1024,2048,4096)
+calculate_resources<-function(cpu_per_worker, memory_per_worker, n_worker){
+  required_cpu<- cpu_per_worker*n_worker
+  cpu <- min(valid_vcpu_number[valid_vcpu_number>=required_cpu])
+  required_memory <- memory_per_worker*n_worker
+  if(required_memory!=512)
+    required_memory<-ceiling(required_memory/1024)*1024
+  list(cpu = cpu, memory = required_memory)
+}
+
+
+aws_run_task_internal<-function(task_count = 1, n_workers = 1,
+                                task_definition=NULL, verbose= TRUE){
   if(is.null(task_definition)){
     task_definition <- aws_find_task_definition()
   }
+  resources <- calculate_resources(cpu=as.numeric(get_aws_configure("cpu")),
+                                   memory=as.numeric(get_aws_configure("memory")),
+                                   n_worker = n_workers)
+
   cluster_name <- aws_find_cluster_name()
   subnet_id <- aws_find_subnet_id()
   security_group_id <- aws_find_security_group_id()
@@ -147,12 +172,10 @@ aws_run_task_internal<-function(count = 1, task_definition=NULL, verbose= TRUE){
   config <- fromJSON(file="R/json_config/run-task.json",simplify=FALSE)
   config$overrides$containerOverrides[[1]]$environment[[1]]$value<-
     get_ssh_public_key_value()
-  config$overrides$containerOverrides[[1]]$cpu <-
-    as.numeric(get_aws_configure("cpu"))
-  config$overrides$containerOverrides[[1]]$memory <-
-    as.numeric(get_aws_configure("memory"))
+  config$overrides$containerOverrides[[1]]$cpu <- resources$cpu
+  config$overrides$containerOverrides[[1]]$memory <- resources$memory
   config$taskDefinition <- task_definition
-  config$count <- count
+  config$count <- task_count
   config$networkConfiguration$awsvpcConfiguration$securityGroups[[1]]<-security_group_id
   config$networkConfiguration$awsvpcConfiguration$subnets[[1]]<-subnet_id
   #existing_rule <- aws_list_security_rule()
@@ -175,6 +198,18 @@ aws_list_tasks<-function(){
 }
 
 aws_get_task_details <- function(task_ids, get_ip = FALSE){
+  result <- c()
+  described_task_number <- 0
+  while(described_task_number!=length(task_ids)){
+    current_task_number <- min(100,length(task_ids)-described_task_number)
+    current_task_id <- task_ids[(described_task_number+1):(described_task_number+current_task_number)]
+    result<-rbind(result, aws_get_task_details_internal(current_task_id,get_ip=get_ip))
+    described_task_number <- described_task_number + current_task_number
+  }
+  result
+}
+
+aws_get_task_details_internal<-function(task_ids, get_ip = FALSE){
   cluster_name <- aws_find_cluster_name()
   command <- c("ecs", "describe-tasks",
                "--cluster", cluster_name,
@@ -190,6 +225,7 @@ aws_get_task_details <- function(task_ids, get_ip = FALSE){
     data.frame(task_id = task_ids, status = status)
   }
 }
+
 
 process_instance_IP <- function(x){
   eni<-NULL
