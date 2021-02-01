@@ -1,7 +1,4 @@
-verbose_print<-function(verbose, ...){
-  if(verbose)
-    message(...)
-}
+
 aws_configure_network<-function(verbose= TRUE){
   if(!get_aws_configure("network_initialized")){
     verbose_print(verbose, "Setting up VPC")
@@ -37,54 +34,7 @@ aws_configure_network<-function(verbose= TRUE){
 #################################
 # vpc
 #################################
-aws_create_vpc <- function(){
-  config <- fromJSON(file="R/json_config/create-vpc.json",simplify=FALSE)
-  output <- aws_run_cmd(c("ec2","create-vpc"),config=config)
-  result <- fromJSON(paste0(output,collapse = "\n"))
-  set_aws_configure("vpc_id",result$Vpc$VpcId)
-  result
-}
 
-aws_delete_vpc <- function(vpc_id){
-  gateway_list<- aws_list_internet_gateways(args = c("--filters",paste0("Name=attachment.vpc-id,Values=",vpc_id)))
-  for(i in gateway_list$gateway_id){
-    detach_internet_gateway(vpc_id,i)
-  }
-  security_group_list <- aws_list_security_groups(args = c("--filters",paste0("Name=vpc-id,Values=",vpc_id)))
-  for(i in security_group_list$id[security_group_list$name!="default"]){
-    aws_delete_security_group(i)
-  }
-  subnet_list <- aws_list_subnets(args = c("--filters",paste0("Name=vpc-id,Values=",vpc_id)))
-  for(i in subnet_list$subnet_id){
-    aws_delete_subnet(i)
-  }
-  aws_run_cmd(c("ec2","delete-vpc","--vpc-id", vpc_id),config=NULL)
-}
-
-aws_list_vpcs<-function(worker_only=FALSE){
-  if(worker_only){
-    command <- c("ec2","describe-vpcs","--filters",
-                 "Name=tag:docker-parallel-tag,Values=docker-parallel-tag")
-  }else{
-    command <- c("ec2","describe-vpcs")
-  }
-  output <- aws_run_cmd(command,config=NULL)
-  json_result <- fromJSON(paste0(output,collapse = "\n"))[[1]]
-  ids <- vapply(json_result,function(x)x$VpcId,character(1))
-  is_worker_vpc <- vapply(json_result,function(x)match_tag(x$Tags,"docker-parallel-tag"),logical(1))
-  data.frame(id=ids, is_worker_vpc = is_worker_vpc)
-}
-aws_find_vpc_id <- function(){
-  if(!is_aws_configure_valid("vpc_id")){
-    vpc_list <- aws_list_vpcs(worker_only = TRUE)
-    if(nrow(vpc_list)!=0){
-      set_aws_configure("vpc_id",vpc_list$id[1])
-    }else{
-      aws_create_vpc()
-    }
-  }
-  get_aws_configure("vpc_id")
-}
 
 #################################
 # subnet

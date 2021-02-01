@@ -1,4 +1,3 @@
-
 get_R_worker_cmd <- function(R_exec, port, R_options=""){
   default_options <-"--default-packages=datasets,utils,grDevices,graphics,stats,methods -e \\\"workRSOCK <- tryCatch(parallel:::.slaveRSOCK, error=function(e) parallel:::.workRSOCK); workRSOCK()\\\" MASTER=localhost OUT=/dev/null TIMEOUT=2592000 XDR=FALSE"
   cmd <-paste(R_exec, default_options, paste0("PORT=",port) , paste(R_options))

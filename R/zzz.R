@@ -1,5 +1,8 @@
 #' @importFrom rjson fromJSON toJSON
 #' @importFrom parallelly makeNodePSOCK makeClusterPSOCK
+#' @importFrom aws.signature locate_credentials signature_v4_auth
+#' @import httr
+#' @import xml2
 NULL
 
 package_setting<-new.env()
@@ -64,6 +67,6 @@ get_ssh_public_key_value <- function(){
 
 .onLoad <- function(libname, pkgname){
   set_ssh_key()
-  aws_configure()
+  aws_set_credentials()
 
 }

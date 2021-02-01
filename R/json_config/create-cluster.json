@@ -2,5 +2,11 @@
     "clusterName": "R-worker-cluster",
     "capacityProviders": [
         "FARGATE"
+    ],
+    "tags": [
+        {
+            "key": "DockerParallel",
+            "value": "DockerParallel"
+        }
     ]
 }

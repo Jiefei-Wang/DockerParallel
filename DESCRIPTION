@@ -8,9 +8,11 @@ Authors@R:
            email = "szwjf08@gmail.com")
 Description: What the package does (one paragraph).
 Imports:
-  parallel,
   rjson,
-  parallelly
+  parallelly,
+  aws.signature,
+  httr,
+  xml2
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
