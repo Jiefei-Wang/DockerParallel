@@ -1,4 +1,4 @@
-# config <- aws_configure()
+# config <- aws_configuration()
 aws_create_cluster<-function(cluster_name){
   request <- aws_get_json("create-cluster.json")
   request$clusterName <- cluster_name

@@ -1,7 +1,7 @@
 #' @importFrom rjson fromJSON toJSON
 #' @importFrom parallelly makeNodePSOCK makeClusterPSOCK
 #' @importFrom aws.signature locate_credentials signature_v4_auth
-#' @import httr
+#' @importFrom httr POST GET http_error add_headers content
 #' @import xml2
 NULL
 

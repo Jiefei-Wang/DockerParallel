@@ -1,48 +1,75 @@
 aws_create_vpc <- function(){
-  request <- aws_get_json("create-vpc.json")
-  response <- aws_post("CreateVpc", request = request, service = "ec2")
-  response
+  action <- "CreateVpc"
+  query <- list()
+  query$CidrBlock <- "10.0.0.0/16"
+  query[["TagSpecification.1.ResourceType"]] <-"vpc"
+  query[["TagSpecification.1.Tag.1.Key"]] <-"docker-parallel-tag"
+  query[["TagSpecification.1.Tag.1.Value"]] <-"docker-parallel-tag"
+  response <- ec2_GET(action, query = query)
+  response$vpc$vpcId[[1]]
 }
 
 aws_delete_vpc <- function(vpc_id){
-  gateway_list<- aws_list_internet_gateways(args = c("--filters",paste0("Name=attachment.vpc-id,Values=",vpc_id)))
+  gateway_list<- aws_list_internet_gateways(vpc_filter = vpc_id)
   for(i in gateway_list$gateway_id){
-    detach_internet_gateway(vpc_id,i)
+    detach_internet_gateway(vpc_id, i)
   }
-  security_group_list <- aws_list_security_groups(args = c("--filters",paste0("Name=vpc-id,Values=",vpc_id)))
-  for(i in security_group_list$id[security_group_list$name!="default"]){
+  security_group_list <- aws_list_security_groups(vpc_filter = vpc_id)
+  for(i in security_group_list$group_id[security_group_list$name!="default"]){
     aws_delete_security_group(i)
   }
-  subnet_list <- aws_list_subnets(args = c("--filters",paste0("Name=vpc-id,Values=",vpc_id)))
+  subnet_list <- aws_list_subnets(vpc_filter = vpc_id)
   for(i in subnet_list$subnet_id){
     aws_delete_subnet(i)
   }
-  aws_run_cmd(c("ec2","delete-vpc","--vpc-id", vpc_id),config=NULL)
+  action <- "DeleteVpc"
+  query <- list(VpcId=vpc_id)
+  response <- ec2_GET(action = action, query = query)
+  response
 }
 
-aws_list_vpcs<-function(tag_filter = NULL){
+aws_list_vpcs<-function(tag_filter = NULL, id_filter = NULL){
+  action <- "DescribeVpcs"
   query <- list()
-
-  if(worker_only){
-    command <- c("ec2","describe-vpcs","--filters",
-                 "Name=tag:docker-parallel-tag,Values=docker-parallel-tag")
-  }else{
-    command <- c("ec2","describe-vpcs")
+  filter_i <- 0
+  if(!is.null(id_filter)){
+    filter_i = filter_i + 1
+    query[[paste0("Filter.",filter_i,".Name")]] <- "vpc-id"
+    query[[paste0("Filter.",filter_i,".Value.1")]] <- id_filter
   }
-  output <- aws_run_cmd(command,config=NULL)
-  json_result <- fromJSON(paste0(output,collapse = "\n"))[[1]]
-  ids <- vapply(json_result,function(x)x$VpcId,character(1))
-  is_worker_vpc <- vapply(json_result,function(x)match_tag(x$Tags,"docker-parallel-tag"),logical(1))
-  data.frame(id=ids, is_worker_vpc = is_worker_vpc)
-}
-aws_find_vpc_id <- function(){
-  if(!is_aws_configure_valid("vpc_id")){
-    vpc_list <- aws_list_vpcs(worker_only = TRUE)
-    if(nrow(vpc_list)!=0){
-      set_aws_configure("vpc_id",vpc_list$id[1])
-    }else{
-      aws_create_vpc()
+  if(!is.null(tag_filter)){
+    for(j in seq_along(tag_filter)){
+      filter_i = filter_i + 1
+      query[[paste0("Filter.",filter_i,".Name")]] <- names(tag_filter)[j]
+      query[[paste0("Filter.",filter_i,".Value.1")]] <- unname(tag_filter[j])
     }
   }
-  get_aws_configure("vpc_id")
+  response <- ec2_GET(action = action, query = query)
+  vpc_ids <- vapply(response$vpcSet,function(x)x$vpcId[[1]],character(1))
+  while(!is.null(response$nextToken)){
+    query$NextToken <- response$nextToken
+    response <- ec2_GET(action = action, query = query)
+    vpc_ids <- c(vpc_ids, vapply(response$vpcSet,function(x)x$vpcId[[1]],character(1)))
+  }
+  unname(vpc_ids)
+}
+
+aws_config_vpc_id <- function(config){
+  if(!is_valid(config,"vpc_id")){
+    if(config$vpc_id=="auto"){
+      vpc_list <- aws_list_vpcs(tag_filter = c(`tag:docker-parallel-tag`="docker-parallel-tag"))
+      if(length(vpc_list)!=0){
+        config$vpc_id <- vpc_list[1]
+      }else{
+        config$vpc_id <- aws_create_vpc()
+      }
+    }else{
+      vpc_list <- aws_list_vpcs(id_filter = config$vpc_id)
+      if(length(vpc_list)==0){
+        stop("The specific vpc id <",config$vpc_id,"> does not exist!")
+      }
+    }
+    set_valid(config, "vpc_id")
+  }
+  config$vpc_id
 }

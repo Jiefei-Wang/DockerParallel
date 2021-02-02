@@ -22,7 +22,7 @@ ecs_REST_request <-function(method, target, headers, body){
       headers
     )
   )
-  response <- POST(
+  response <- POST_EX(
     url,
     add_headers(
       `Content-Type` = "application/x-amz-json-1.1",
@@ -33,12 +33,15 @@ ecs_REST_request <-function(method, target, headers, body){
     ),
     body = sig$Body
   )
+  if(httr::http_error(response)){
+    stop(content(response, type = "text"))
+  }
   #stop_for_status(response)
   content(response, type = "application/json")
 }
 
 
-ecs_post<-function(target, headers=c(), request = NULL){
+ecs_POST<-function(target, request = NULL, headers=c()){
   if(is.null(request)||length(request)==0){
     body = "{}"
   }else{
@@ -53,13 +56,13 @@ ecs_post<-function(target, headers=c(), request = NULL){
 ## Code from: https://github.com/cloudyr/aws.ec2/blob/master/R/ec2HTTP.R
 ec2_GET <-
   function(
-    target,
+    action,
     query = list(),
     headers = list()
   ) {
     version = "2016-11-15"
     region <- get_aws_region()
-    query$Action = target
+    query$Action = action
     query$Version <- version
     url <- paste0("https://ec2.", region, ".amazonaws.com")
     datetime <- format(Sys.time(), "%Y%m%dT%H%M%SZ", tz = "UTC")
@@ -76,22 +79,25 @@ ec2_GET <-
       ),
       request_body = "",
       key = get_access_key_id(),
-      secret = get_secret_access_key(),
-      verbose = verbose)
+      secret = get_secret_access_key())
     headers[["x-amz-date"]] <- datetime
     headers[["Authorization"]] <- Sig$SignatureHeader
     H <- do.call(httr::add_headers, headers)
 
     # execute request
     if (length(query)) {
-      r <- httr::GET(url, H, query = query)
+      r <- GET_EX(url, H, query = query)
     } else {
-      r <- httr::GET(url, H)
+      r <- GET_EX(url, H)
     }
     if (httr::http_error(r)) {
       tmp <- gsub("\n\\s*", "", httr::content(r, "text", encoding = "UTF-8"))
       x <- try(xml2::as_list(xml2::read_xml(tmp)), silent = TRUE)
-      msg <- paste0(x, collapse = "\n")
+      if(!is.null(x$Response$Errors$Error)){
+        msg <- paste0(x$Response$Errors$Error$Code,"\nMessage: ",x$Response$Errors$Error$Message)
+      }else{
+        msg <- paste0(x, collapse = "\n")
+      }
       stop(msg, call. = FALSE)
     } else {
       tmp <- gsub("\n\\s*", "", httr::content(r, "text", encoding = "UTF-8"))

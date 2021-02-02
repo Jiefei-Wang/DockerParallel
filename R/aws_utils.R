@@ -39,8 +39,22 @@ get_valid_fargate_cpu_memory<-function(cpu,memory){
       return(list(cpu = i, memory = valid_fargate_settings[[as.character(i)]][idx[1]]))
     }
   }
-  stop("There is no fargate resource that can accommodate the required CPU(",
-       cpu
-       ,") and memory(",memory,")")
+  NULL
 }
 
+get_n_worker_per_container <- function(cpu_per_worker, memory_per_worker){
+  max_worker <- min(floor(4096/as.numeric(cpu_per_worker)),floor(1024*30/as.numeric(memory_per_worker)))
+  if(max_worker==0){
+    stop("Cannot find a fargate hardware to accommodate the CPU and memory requirement for the worker")
+  }
+  max_worker
+}
+
+get_tag_value <-function(tag_list, tag_name, tag_value, target){
+  for(i in tag_list){
+    if(i[[tag_name]]==target){
+      return(i[[tag_value]])
+    }
+  }
+  return(NULL)
+}

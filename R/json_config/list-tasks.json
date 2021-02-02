@@ -1,0 +1,10 @@
+{
+    "cluster": "string",
+    "containerInstance": "string",
+    "desiredStatus": "string",
+    "family": "string",
+    "launchType": "string",
+    "nextToken": "string",
+    "serviceName": "string",
+    "startedBy": "string"
+ }

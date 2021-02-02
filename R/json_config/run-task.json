@@ -23,11 +23,11 @@
                         "name": "pubKey",
                         "value": ""
                     }
-                ],
-                "cpu": 0,
-                "memory": 0
+                ]
             }
-        ]
+        ],
+        "cpu": 0,
+        "memory": 0
     },
     "taskDefinition": "r-worker-task:3"
 }
