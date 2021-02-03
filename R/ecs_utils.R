@@ -1,4 +1,4 @@
-aws_get_json <-function(file_name){
+ecs_get_json <-function(file_name){
   fromJSON(file=paste0("R/json_config/",file_name),simplify=FALSE)
 }
 

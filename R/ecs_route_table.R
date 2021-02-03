@@ -1,4 +1,4 @@
-aws_list_route_tables<-function(tag_filter = NULL,
+ecs_list_route_tables<-function(tag_filter = NULL,
                                 id_filter = NULL,
                                 vpc_filter = NULL,
                                 gateway_filter = NULL){
@@ -45,10 +45,10 @@ aws_list_route_tables<-function(tag_filter = NULL,
 
 
 
-aws_config_route_table <- function(config){
+ecs_config_route_table <- function(config){
   if(!is_valid(config, "route_table_id")){
-    aws_config_vpc_id(config)
-    route_table_list <- aws_list_route_tables(vpc_filter = config$vpc_id)
+    ecs_config_vpc_id(config)
+    route_table_list <- ecs_list_route_tables(vpc_filter = config$vpc_id)
     if(config$route_table_id=="auto"){
       config$route_table_id <- route_table_list$route_id[1]
     }else{
@@ -61,7 +61,7 @@ aws_config_route_table <- function(config){
         }
       }
     }
-    aws_config_default_route(config)
+    ecs_config_default_route(config)
     set_valid(config, "route_table_id")
   }
   config$route_table_id
@@ -71,7 +71,7 @@ aws_config_route_table <- function(config){
 #################################
 # route rule in a tale
 #################################
-aws_list_route<-function(table_id = NULL){
+ecs_list_route<-function(table_id = NULL){
   action <- "DescribeRouteTables"
   query <- list()
   query[["RouteTableId.1"]] <- table_id
@@ -88,9 +88,9 @@ aws_list_route<-function(table_id = NULL){
              gateway = gateway_ids)
 }
 
-aws_config_default_route<-function(config){
-  aws_config_internet_gateway(config)
-  route_list <- aws_list_route(config$route_table_id)
+ecs_config_default_route<-function(config){
+  ecs_config_internet_gateway(config)
+  route_list <- ecs_list_route(config$route_table_id)
   if(!"0.0.0.0/0"%in%route_list$cidr){
       action <- "CreateRoute"
       query <- list(

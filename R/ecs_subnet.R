@@ -1,4 +1,4 @@
-aws_create_subnet <- function(vpc_id, cidr){
+ecs_create_subnet <- function(vpc_id, cidr){
   action <- "CreateSubnet"
   query <- list()
   query$VpcId <- vpc_id
@@ -9,14 +9,14 @@ aws_create_subnet <- function(vpc_id, cidr){
   response <- ec2_GET(action, query = query)
   response$subnet$subnetId[[1]]
 }
-aws_delete_subnet <- function(subnet_id){
+ecs_delete_subnet <- function(subnet_id){
   action <- "DeleteSubnet"
   query <- list(SubnetId=subnet_id)
   response <- ec2_GET(action = action, query = query)
   response
 }
 
-aws_list_subnets<-function(tag_filter = NULL, id_filter = NULL, vpc_filter = NULL){
+ecs_list_subnets<-function(tag_filter = NULL, id_filter = NULL, vpc_filter = NULL){
   action <- "DescribeSubnets"
   query <- list()
   filter_i <- 0
@@ -56,18 +56,18 @@ aws_list_subnets<-function(tag_filter = NULL, id_filter = NULL, vpc_filter = NUL
 }
 
 
-aws_config_subnet_id <- function(config){
+ecs_config_subnet_id <- function(config){
   if(!is_valid(config,"subnet_id")){
-    aws_config_vpc_id(config)
+    ecs_config_vpc_id(config)
     if(config$subnet_id=="auto"){
-      subnet_list <- aws_list_subnets(tag_filter = c(`tag:docker-parallel-tag`="docker-parallel-tag"))
+      subnet_list <- ecs_list_subnets(tag_filter = c(`tag:docker-parallel-tag`="docker-parallel-tag"))
       if(nrow(subnet_list)!=0){
         config$subnet_id <- subnet_list$subnet_id[1]
       }else{
-        config$subnet_id <- aws_create_subnet(config$vpc_id, "10.0.0.0/16")
+        config$subnet_id <- ecs_create_subnet(config$vpc_id, "10.0.0.0/16")
       }
     }else{
-      subnet_list <- aws_list_subnets(id_filter = config$subnet_id)
+      subnet_list <- ecs_list_subnets(id_filter = config$subnet_id)
       if(nrow(subnet_list)==0){
         stop("The subnet <",config$subnet_id,"> does not exist!")
       }

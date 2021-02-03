@@ -1,4 +1,4 @@
-aws_create_security_group <- function(group_name, vpc_id){
+ecs_create_security_group <- function(group_name, vpc_id){
   action <- "CreateSecurityGroup"
   query <- list()
   query$GroupDescription <- "Security group used by R worker nodes"
@@ -10,13 +10,13 @@ aws_create_security_group <- function(group_name, vpc_id){
   response <- ec2_GET(action, query = query)
   response$groupId[[1]]
 }
-aws_delete_security_group <- function(group_id){
+ecs_delete_security_group <- function(group_id){
   action <- "DeleteSecurityGroup"
   query <- list(GroupId=group_id)
   response <- ec2_GET(action = action, query = query)
   response
 }
-aws_list_security_groups<-function(tag_filter = NULL,
+ecs_list_security_groups<-function(tag_filter = NULL,
                                    vpc_filter = NULL, name_filter = NULL, id_filter = NULL){
   action <- "DescribeSecurityGroups"
   query <- list()
@@ -63,24 +63,24 @@ aws_list_security_groups<-function(tag_filter = NULL,
              vpc_id= group_vpc_ids)
 }
 
-aws_config_security_group_id <- function(config){
+ecs_config_security_group_id <- function(config){
   if(!is_valid(config, "security_group_id")){
-    aws_config_vpc_id(config)
+    ecs_config_vpc_id(config)
     if(config$security_group_id=="auto"){
-      security_group_list <- aws_list_security_groups(name_filter = config$security_group_name
+      security_group_list <- ecs_list_security_groups(name_filter = config$security_group_name
                                                       ,vpc_filter = config$vpc_id)
       if(nrow(security_group_list)!=0){
         config$security_group_id <- security_group_list$group_id[1]
       }else{
         config$security_group_id <-
-          aws_create_security_group(config$security_group_name, config$vpc_id)
+          ecs_create_security_group(config$security_group_name, config$vpc_id)
       }
     }else{
-      security_group_list <- aws_list_security_groups(id_filter = config$security_group_id
+      security_group_list <- ecs_list_security_groups(id_filter = config$security_group_id
                                                       ,vpc_filter = config$vpc_id)
       config$security_group_name <- security_group_list$name[1]
     }
-    aws_config_inbound_permissions(config)
+    ecs_config_inbound_permissions(config)
     set_valid(config, "security_group_id")
   }
   config$security_group_id
@@ -89,7 +89,7 @@ aws_config_security_group_id <- function(config){
 #################################
 # security group policy
 #################################
-aws_create_security_group_ipv4_rule <- function(security_group_id){
+ecs_create_security_group_ipv4_rule <- function(security_group_id){
   action <- "AuthorizeSecurityGroupIngress"
   query <- list()
   query$GroupId <- security_group_id
@@ -101,7 +101,7 @@ aws_create_security_group_ipv4_rule <- function(security_group_id){
   response <- ec2_GET(action, query = query)
   response
 }
-aws_create_security_group_ipv6_rule <- function(security_group_id){
+ecs_create_security_group_ipv6_rule <- function(security_group_id){
   action <- "AuthorizeSecurityGroupIngress"
   query <- list()
   query$GroupId <- security_group_id
@@ -114,7 +114,7 @@ aws_create_security_group_ipv6_rule <- function(security_group_id){
   response
 }
 
-aws_list_security_inbound_rule<-function(security_group_id){
+ecs_list_security_inbound_rule<-function(security_group_id){
   action <- "DescribeSecurityGroups"
   query <- list()
   filter_i <- 1
@@ -139,16 +139,16 @@ aws_list_security_inbound_rule<-function(security_group_id){
 }
 
 
-aws_config_inbound_permissions<-function(config){
-  inbound_rules <- aws_list_security_inbound_rule(config$security_group_id)
+ecs_config_inbound_permissions<-function(config){
+  inbound_rules <- ecs_list_security_inbound_rule(config$security_group_id)
   ipv4_idx <- which(inbound_rules$ip=="0.0.0.0/0")
   if(length(ipv4_idx)==0||
      all(inbound_rules$from[ipv4_idx]>22|inbound_rules$to[ipv4_idx]<22)){
-    aws_create_security_group_ipv4_rule(config$security_group_id)
+    ecs_create_security_group_ipv4_rule(config$security_group_id)
   }
   ipv6_idx <- which(inbound_rules$ip=="::/0")
   if(length(ipv6_idx)==0||
      all(inbound_rules$from[ipv6_idx]>22|inbound_rules$to[ipv6_idx]<22)){
-    aws_create_security_group_ipv6_rule(config$security_group_id)
+    ecs_create_security_group_ipv6_rule(config$security_group_id)
   }
 }

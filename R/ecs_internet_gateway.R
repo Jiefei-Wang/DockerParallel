@@ -1,4 +1,4 @@
-aws_create_internet_gateway <- function(){
+ecs_create_internet_gateway <- function(){
   action <- "CreateInternetGateway"
   query <- list()
   query[["TagSpecification.1.ResourceType"]] <-"internet-gateway"
@@ -7,8 +7,8 @@ aws_create_internet_gateway <- function(){
   response <- ec2_GET(action, query = query)
   response$internetGateway$internetGatewayId[[1]]
 }
-aws_delete_internet_gateway <- function(gateway_id){
-  gateway_list <- aws_list_internet_gateways(id_filter = gateway_id)
+ecs_delete_internet_gateway <- function(gateway_id){
+  gateway_list <- ecs_list_internet_gateways(id_filter = gateway_id)
   if(all(gateway_list$gateway_id!=gateway_id)){
     return()
   }
@@ -23,7 +23,7 @@ aws_delete_internet_gateway <- function(gateway_id){
   response
 }
 
-aws_list_internet_gateways<-function(tag_filter = NULL,
+ecs_list_internet_gateways<-function(tag_filter = NULL,
                                      vpc_filter = NULL, id_filter = NULL){
   action <- "DescribeInternetGateways"
   query <- list()
@@ -76,10 +76,10 @@ process_gateway<-function(gateway){
   data.frame(gateway_id=rep(id,length(attached_vpc)),vpc_id=attached_vpc)
 }
 
-aws_config_internet_gateway <- function(config){
+ecs_config_internet_gateway <- function(config){
   if(!is_valid(config,"internet_gateway_id")){
-    aws_config_vpc_id(config)
-    gateway_list <- aws_list_internet_gateways(tag_filter = c(`tag:docker-parallel-tag`="docker-parallel-tag"))
+    ecs_config_vpc_id(config)
+    gateway_list <- ecs_list_internet_gateways(tag_filter = c(`tag:docker-parallel-tag`="docker-parallel-tag"))
     require_attach <- TRUE
     if(nrow(gateway_list)!=0){
       if(any(gateway_list$vpc_id==config$vpc_id)){
@@ -88,10 +88,10 @@ aws_config_internet_gateway <- function(config){
       }else if(any(gateway_list$vpc_id=="NULL")){
         config$internet_gateway_id <- gateway_list$gateway_id[gateway_list$vpc_id=="NULL"][1]
       }else{
-        config$internet_gateway_id <- aws_create_internet_gateway()
+        config$internet_gateway_id <- ecs_create_internet_gateway()
       }
     }else{
-      config$internet_gateway_id <- aws_create_internet_gateway()
+      config$internet_gateway_id <- ecs_create_internet_gateway()
     }
     if(require_attach){
       attach_internet_gateway(config$vpc_id, config$internet_gateway_id)

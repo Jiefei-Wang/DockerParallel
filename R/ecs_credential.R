@@ -1,9 +1,9 @@
-aws_package_configure <- new.env()
-aws_package_configure$access_key_id <- NULL
-aws_package_configure$secret_access_key <- NULL
-aws_package_configure$region <- NULL
+ecs_package_configure <- new.env()
+ecs_package_configure$access_key_id <- NULL
+ecs_package_configure$secret_access_key <- NULL
+ecs_package_configure$region <- NULL
 
-aws_set_credentials<-function(key_file=NULL,
+ecs_set_credentials<-function(key_file=NULL,
                               access_key_id=NULL, secret_access_key=NULL, region = NULL,
                               profile = NULL){
   if(!is.null(key_file)){
@@ -22,17 +22,17 @@ aws_set_credentials<-function(key_file=NULL,
                                     region=region,
                                     profile=profile)
   if(!is.null(credentials$key)&&!is.null(credentials$secret)){
-    aws_package_configure$access_key_id <- credentials$key
-    aws_package_configure$secret_access_key <- credentials$secret
+    ecs_package_configure$access_key_id <- credentials$key
+    ecs_package_configure$secret_access_key <- credentials$secret
   }
   if(!is.null(credentials$region)){
-    aws_package_configure$region <- credentials$region
+    ecs_package_configure$region <- credentials$region
   }
 }
 
-aws_get_credentials <- function(){
-  out_access_key_id <- aws_package_configure$access_key_id
-  out_secret_access_key <- aws_package_configure$secret_access_key
+ecs_get_credentials <- function(){
+  out_access_key_id <- ecs_package_configure$access_key_id
+  out_secret_access_key <- ecs_package_configure$secret_access_key
   if(!is.null(out_access_key_id)){
     substr(out_access_key_id,3,nchar(out_access_key_id)-4) <-
       paste0(rep("*",nchar(out_access_key_id)-6),collapse = "")
@@ -48,27 +48,27 @@ aws_get_credentials <- function(){
   list(
     access_key_id = out_access_key_id,
     secret_access_key = out_secret_access_key,
-    region = aws_package_configure$region
+    region = ecs_package_configure$region
   )
 }
 
 get_access_key_id <- function(){
-  aws_package_configure$access_key_id
+  ecs_package_configure$access_key_id
 }
 
 get_secret_access_key <- function(){
-  aws_package_configure$secret_access_key
+  ecs_package_configure$secret_access_key
 }
 
-get_aws_region<-function(){
-  aws_package_configure$region
+get_ecs_region<-function(){
+  ecs_package_configure$region
 }
 
 #
-# aws_package_configure$region<- "ap-southeast-1"
+# ecs_package_configure$region<- "ap-southeast-1"
 #
 # key_file <- "../accessKeys.csv"
-# aws_set_credentials(key_file)
+# ecs_set_credentials(key_file)
 #
 #
 # library(aws.signature)
@@ -82,8 +82,8 @@ get_aws_region<-function(){
 #   region=region,
 #   verb = "POST", service = service, action = "/",
 #   request_body = request_body,
-#   key=package_configure$aws_credentials$access_key_id,
-#   secret=package_configure$aws_credentials$secret_access_key,
+#   key=package_configure$ecs_credentials$access_key_id,
+#   secret=package_configure$ecs_credentials$secret_access_key,
 #   canonical_headers = c(
 #     Host = "ecs.ap-southeast-1.amazonaws.com",
 #     `Content-Type` = "application/x-amz-json-1.1",

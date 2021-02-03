@@ -1,4 +1,4 @@
-aws_create_vpc <- function(){
+ecs_create_vpc <- function(){
   action <- "CreateVpc"
   query <- list()
   query$CidrBlock <- "10.0.0.0/16"
@@ -9,18 +9,18 @@ aws_create_vpc <- function(){
   response$vpc$vpcId[[1]]
 }
 
-aws_delete_vpc <- function(vpc_id){
-  gateway_list<- aws_list_internet_gateways(vpc_filter = vpc_id)
+ecs_delete_vpc <- function(vpc_id){
+  gateway_list<- ecs_list_internet_gateways(vpc_filter = vpc_id)
   for(i in gateway_list$gateway_id){
     detach_internet_gateway(vpc_id, i)
   }
-  security_group_list <- aws_list_security_groups(vpc_filter = vpc_id)
+  security_group_list <- ecs_list_security_groups(vpc_filter = vpc_id)
   for(i in security_group_list$group_id[security_group_list$name!="default"]){
-    aws_delete_security_group(i)
+    ecs_delete_security_group(i)
   }
-  subnet_list <- aws_list_subnets(vpc_filter = vpc_id)
+  subnet_list <- ecs_list_subnets(vpc_filter = vpc_id)
   for(i in subnet_list$subnet_id){
-    aws_delete_subnet(i)
+    ecs_delete_subnet(i)
   }
   action <- "DeleteVpc"
   query <- list(VpcId=vpc_id)
@@ -28,7 +28,7 @@ aws_delete_vpc <- function(vpc_id){
   response
 }
 
-aws_list_vpcs<-function(tag_filter = NULL, id_filter = NULL){
+ecs_list_vpcs<-function(tag_filter = NULL, id_filter = NULL){
   action <- "DescribeVpcs"
   query <- list()
   filter_i <- 0
@@ -54,17 +54,17 @@ aws_list_vpcs<-function(tag_filter = NULL, id_filter = NULL){
   unname(vpc_ids)
 }
 
-aws_config_vpc_id <- function(config){
+ecs_config_vpc_id <- function(config){
   if(!is_valid(config,"vpc_id")){
     if(config$vpc_id=="auto"){
-      vpc_list <- aws_list_vpcs(tag_filter = c(`tag:docker-parallel-tag`="docker-parallel-tag"))
+      vpc_list <- ecs_list_vpcs(tag_filter = c(`tag:docker-parallel-tag`="docker-parallel-tag"))
       if(length(vpc_list)!=0){
         config$vpc_id <- vpc_list[1]
       }else{
-        config$vpc_id <- aws_create_vpc()
+        config$vpc_id <- ecs_create_vpc()
       }
     }else{
-      vpc_list <- aws_list_vpcs(id_filter = config$vpc_id)
+      vpc_list <- ecs_list_vpcs(id_filter = config$vpc_id)
       if(length(vpc_list)==0){
         stop("The specific vpc id <",config$vpc_id,"> does not exist!")
       }

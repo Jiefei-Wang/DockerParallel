@@ -1,5 +1,5 @@
-aws_create_task_definition <- function(task_name, image){
-  request <- aws_get_json("task-definition.json")
+ecs_create_task_definition <- function(task_name, image){
+  request <- ecs_get_json("task-definition.json")
   request$family <- task_name
   request$cpu <- "256"
   request$memory <- "512"
@@ -8,13 +8,13 @@ aws_create_task_definition <- function(task_name, image){
   response$taskDefinition$taskDefinitionArn
 }
 
-aws_delete_task_definition <- function(task_name){
+ecsdelete_task_definition <- function(task_name){
   request <- list(taskDefinition=task_name)
   response <- ecs_POST("DeregisterTaskDefinition", request = request)
   response
 }
 
-aws_list_task_definitions<-function(task_name = NULL){
+ecs_list_task_definitions<-function(task_name = NULL){
   request <- list()
   if(!is.null(task_name)){
     request$familyPrefix <- task_name
@@ -36,15 +36,15 @@ aws_list_task_definitions<-function(task_name = NULL){
 
 
 
-aws_config_task_definition <- function(config){
+ecs_config_task_definition <- function(config){
   task_definition_name <- config$task_definition_name
   if(!is_valid(config, task_definition_name)){
-    task_definition_list <- aws_list_task_definitions(task_definition_name)
+    task_definition_list <- ecs_list_task_definitions(task_definition_name)
     if(nrow(task_definition_list)==0){
-      aws_create_task_definition(task_definition_name,
+      ecs_create_task_definition(task_definition_name,
                                  image = config$image)
     }
-    # task_definition_list <- aws_list_task_definitions(task_definition_name)
+    # task_definition_list <- ecs_list_task_definitions(task_definition_name)
     # idx <- which.max(task_definition_list$version)
     # config$task_definition_id <- paste0(
     #   task_definition_list$name[idx],

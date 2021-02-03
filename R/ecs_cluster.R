@@ -1,17 +1,17 @@
-# config <- aws_configuration()
-aws_create_cluster<-function(cluster_name){
-  request <- aws_get_json("create-cluster.json")
+# config <- ecs_configuration()
+ecs_create_cluster<-function(cluster_name){
+  request <- ecs_get_json("create-cluster.json")
   request$clusterName <- cluster_name
   response <- ecs_POST("CreateCluster", request = request)
   response
 }
 
-aws_delete_cluster <- function(cluster_name){
+ecs_delete_cluster <- function(cluster_name){
   request <- list(cluster = cluster_name)
   response <- ecs_POST("DeleteCluster", request = request)
   response
 }
-aws_list_clusters <- function(){
+ecs_list_clusters <- function(){
   target <- "ListClusters"
   response <- ecs_POST(target)
   cluster_list <- unlist(response$clusterArns)
@@ -22,11 +22,11 @@ aws_list_clusters <- function(){
   }
   get_resource_names(cluster_list)
 }
-aws_config_cluster_name <- function(config){
+ecs_config_cluster_name <- function(config){
   if(!is_valid(config, "cluster_name")){
-    cluster_list <- aws_list_clusters()
+    cluster_list <- ecs_list_clusters()
     if(!any(cluster_list==config$cluster_name)){
-      aws_create_cluster(config$cluster_name)
+      ecs_create_cluster(config$cluster_name)
     }
     set_valid(config, "cluster_name")
   }

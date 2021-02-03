@@ -1,11 +1,11 @@
 #################################
 #  task management
 #################################
-## config <- aws_configuration()
-## aws_run_task(config, 4)
-aws_run_task <- function(config, n_workers = 1, verbose= TRUE){
+## config <- ecs_configuration()
+## ecs_run_task(config, 4)
+ecs_run_task <- function(config, n_workers = 1, verbose= TRUE){
   check_ssh_key()
-  aws_initialize_configuration(config, verbose)
+  ecs_initialize_configuration(config, verbose)
   ## configure hardware
   cpu <- as.numeric(config$cpu)
   memory <- as.numeric(config$memory)
@@ -43,7 +43,7 @@ aws_run_task <- function(config, n_workers = 1, verbose= TRUE){
     }
     if(regular_container_number>0){
       task_ids<-c(task_ids,
-                  aws_run_task_internal(config=config,
+                  ecs_run_task_internal(config=config,
                                         cpu = regular_container_hardware$cpu,
                                         memory = regular_container_hardware$memory,
                                         task_count=regular_container_number,
@@ -51,7 +51,7 @@ aws_run_task <- function(config, n_workers = 1, verbose= TRUE){
     }
     if(last_container_indicator){
       task_ids<-c(task_ids,
-                  aws_run_task_internal(config=config,
+                  ecs_run_task_internal(config=config,
                                         cpu = last_containder_hardware$cpu,
                                         memory = last_containder_hardware$memory,
                                         task_count=1,
@@ -74,7 +74,7 @@ aws_run_task <- function(config, n_workers = 1, verbose= TRUE){
 
 
 ## CPU and memory must be valid
-aws_run_task_internal<-function(config, cpu, memory, task_count = 1, verbose= TRUE){
+ecs_run_task_internal<-function(config, cpu, memory, task_count = 1, verbose= TRUE){
   stopifnot(task_count<=10)
   request <- fromJSON(file="R/json_config/run-task.json",simplify=FALSE)
   request$cluster <- config$cluster_name
@@ -85,14 +85,14 @@ aws_run_task_internal<-function(config, cpu, memory, task_count = 1, verbose= TR
   request$overrides$containerOverrides[[1]]$environment[[1]]$value <- get_ssh_public_key_value()
   request$networkConfiguration$awsvpcConfiguration$securityGroups[[1]]<-config$security_group_id
   request$networkConfiguration$awsvpcConfiguration$subnets[[1]]<-config$subnet_id
-  #existing_rule <- aws_list_security_rule()
+  #existing_rule <- ecs_list_security_rule()
   response <- ecs_POST("RunTask", request = request)
   ids <- vapply(response$tasks,function(x)x$taskArn, character(1))
   ids
 }
 
 
-aws_list_tasks<-function(cluster_name,
+ecs_list_tasks<-function(cluster_name,
                          status = c("RUNNING", "PENDING","STOPPED"),
                          task_family = NULL){
   status <- match.arg(status)
@@ -108,7 +108,7 @@ aws_list_tasks<-function(cluster_name,
   arns <- unlist(response$taskArns)
   arns
 }
-aws_stop_tasks<-function(cluster_name, task_ids){
+ecs_stop_tasks<-function(cluster_name, task_ids){
   target <- "StopTask"
   request <- list()
   request$cluster <- cluster_name
@@ -120,20 +120,20 @@ aws_stop_tasks<-function(cluster_name, task_ids){
 
 
 
-aws_get_task_details <- function(cluster_name, task_ids, get_ip = FALSE){
+ecs_get_task_details <- function(cluster_name, task_ids, get_ip = FALSE){
   result <- c()
   described_task_number <- 0
   while(described_task_number!=length(task_ids)){
     current_task_number <- min(100,length(task_ids)-described_task_number)
     current_task_id <- task_ids[(described_task_number+1):(described_task_number+current_task_number)]
     result<-rbind(result,
-                  aws_get_task_details_internal(cluster_name, current_task_id,get_ip=get_ip))
+                  ecs_get_task_details_internal(cluster_name, current_task_id,get_ip=get_ip))
     described_task_number <- described_task_number + current_task_number
   }
   result
 }
 
-aws_get_task_details_internal<-function(cluster_name, task_ids, get_ip = FALSE){
+ecs_get_task_details_internal<-function(cluster_name, task_ids, get_ip = FALSE){
   target <- "DescribeTasks"
   request <- list(
     cluster = cluster_name,
@@ -183,7 +183,7 @@ wait_tasks_to_run<-function(cluster_name, task_ids, progress_bar = FALSE){
   }
   while(sum(instance_indicator)<n_instance){
     pending_idx <- which(!instance_indicator)
-    task_details <- aws_get_task_details(cluster_name, task_ids[pending_idx])
+    task_details <- ecs_get_task_details(cluster_name, task_ids[pending_idx])
     if(nrow(task_details)!=length(pending_idx)){
       warning("Requestion task number and result does not match")
       break

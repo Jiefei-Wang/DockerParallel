@@ -2,7 +2,7 @@ SERVICE_ID <- "AmazonEC2ContainerServiceV20141113"
 
 ecs_REST_request <-function(method, target, headers, body){
   service= "ecs"
-  region <- get_aws_region()
+  region <- get_ecs_region()
   host <- paste0(service, ".", region,".amazonaws.com")
   url <- paste0("https://", host)
   amz_target <- paste0(SERVICE_ID, ".", target)
@@ -61,7 +61,7 @@ ec2_GET <-
     headers = list()
   ) {
     version = "2016-11-15"
-    region <- get_aws_region()
+    region <- get_ecs_region()
     query$Action = action
     query$Version <- version
     url <- paste0("https://ec2.", region, ".amazonaws.com")

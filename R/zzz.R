@@ -67,6 +67,6 @@ get_ssh_public_key_value <- function(){
 
 .onLoad <- function(libname, pkgname){
   set_ssh_key()
-  aws_set_credentials()
+  ecs_set_credentials()
 
 }

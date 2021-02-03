@@ -1,6 +1,6 @@
-.AWS_Configuration <- setClass("AWS_Configuration", representation(config = "environment", validation = "environment"))
+.ECS_configuration <- setClass("ECS_configuration", representation(config = "environment", validation = "environment"))
 
-aws_configuration<-function(cpu = "256", memory = "512"){
+ecs_configuration<-function(cpu = "256", memory = "512"){
   config <- new.env(parent = emptyenv())
   config$cpu <- cpu
   config$memory <- memory
@@ -15,10 +15,10 @@ aws_configuration<-function(cpu = "256", memory = "512"){
   config$route_table_id <- "auto"
   config$image <- "szwjf08/dockerparallel-worker-image"
 
-  .AWS_Configuration(config = config, validation = new.env(parent = emptyenv()))
+  .ECS_configuration(config = config, validation = new.env(parent = emptyenv()))
 }
 #' @export
-setMethod(f = "show",signature = "AWS_Configuration",
+setMethod(f = "show",signature = "ECS_configuration",
           definition = function(object){
             var_list<- c("cpu","memory",
                          "cluster_name",
@@ -34,29 +34,29 @@ setMethod(f = "show",signature = "AWS_Configuration",
 
 
 #' @export
-setMethod(f = "names",signature = "AWS_Configuration",
+setMethod(f = "names",signature = "ECS_configuration",
           definition = function(x){
               names(x@config)
           })
 
 #' @export
-setMethod(f = "$",signature = "AWS_Configuration",
+setMethod(f = "$",signature = "ECS_configuration",
           definition = function(x, name){
             x@config[[name, exact = FALSE]]
           })
 #' @export
-setMethod(f = "$<-",signature = "AWS_Configuration",
+setMethod(f = "$<-",signature = "ECS_configuration",
           definition = function(x, name, value){
             x@config[[name]] <- value
             x
           })
 #' @export
-setMethod(f = "[[",signature = "AWS_Configuration",
+setMethod(f = "[[",signature = "ECS_configuration",
           definition = function(x, i, j, ...){
             x@config[[i]]
           })
 #' @export
-setMethod(f = "[[<-",signature = "AWS_Configuration",
+setMethod(f = "[[<-",signature = "ECS_configuration",
           definition = function(x, i, j, ...,value){
             x@config[[i]] <- value
             set_invalid(x, i)
