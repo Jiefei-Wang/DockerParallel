@@ -3,6 +3,12 @@ ecs_package_configure$access_key_id <- NULL
 ecs_package_configure$secret_access_key <- NULL
 ecs_package_configure$region <- NULL
 
+#' Setting up AWS credentials
+#'
+#' Setting up AWS credentials. For details, see `?aws.signature::locate_credentials`
+#'
+#' @param key_file The csv credential file that is downloaded from AWS
+#' @export
 ecs_set_credentials<-function(key_file=NULL,
                               access_key_id=NULL, secret_access_key=NULL, region = NULL,
                               profile = NULL){
@@ -28,6 +34,7 @@ ecs_set_credentials<-function(key_file=NULL,
   if(!is.null(credentials$region)){
     ecs_package_configure$region <- credentials$region
   }
+  ecs_get_credentials()
 }
 
 ecs_get_credentials <- function(){

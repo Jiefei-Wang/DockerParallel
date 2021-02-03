@@ -1,0 +1,82 @@
+---
+title: "vignette"
+author: 
+- name: Jiefei Wang
+  affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
+date: "`r Sys.Date()`"
+output:
+    BiocStyle::html_document:
+        toc: true
+        toc_float: true
+vignette: >
+  %\VignetteIndexEntry{vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+package: DockerParallel
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(DockerParallel)
+# knitr::knit("vignettes/vignette.Rmd", output = "README.md")
+```
+
+# Introduction
+With increasing needs for computing resources, parallel computing has became an important tool to analysis large and complex data. However, this needs cannot be easily met by having a local computing cluster as deploying the cluster is not only difficult, but also expensive. Cloud computing makes the large-scale parallel computing affordable by allowing users to run their tasks in a powerful server and pay for what they have used. Due to this reason, allowing R to work with the cloud environment is a natural idea.
+
+
+`DockerParallel` is a package that can help users to build a cluster with the workers on the cloud. It uses docker container to build and run the worker nodes. As docker provides a standardized way to run the program and hides the differences between operating systems, the worker nodes can be easily deployed on a variety of cloud servers. In this vignette, we will demonstrate how to use `DockerParallel` to run a cluster using Amazon Elastic Compute Service(ECS).
+
+# The framework of ECS
+ECS takes over the management of hardware and isolate the container from the hardware that the container runs. To create a container on ECS, the user only need to specify the image and the resources the container requires. ECS will deploy it on a server with the sufficient hardware resources. The workflow of the `DockerParallel` package is as follow
+
+1. Authenticate with the cloud provider
+2. Choose the hardware of the worker node
+3. Create the cluster and run your parallel task
+
+In the rest of the vignette we will introduce then step by step
+
+
+# Authentication
+
+Before using the package, you need to authenticate with the cloud provider, so the package can send requests to the cloud on your behalf. The Amazon cloud uses `access key id` and `secret access key` to do the authentication. You can find the instruction on how to download your credentials from [AWS Documentation]. Once you have the credentials, you can specify them by
+```{r}
+ecs_set_credentials()
+```
+`ecs_set_credentials` will determine your credentials as well as the region of the cloud service. The function uses a variety of ways to find such information. The most important methods are as follow(sorted by the search order):
+
+1. user-supplied values passed to the function
+
+2. environment variables `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION`, and `AWS_SESSION_TOKEN`
+
+You can either explicitly specify them or provide them as environment variables.
+
+[AWS Documentation]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey
+
+# configure worker node
+The next step is to configure the hardware and docker image of your worker nodes. The information of the worker nodes is stored as an S4 class, you can get a default one from
+```{r}
+config <- ecs_configuration()
+config
+```
+The most important settings are the CPU and memory of the worker node. The unit of CPU and memory are CPU unit and MB respectively. A single CPU core represent 1024 CPU unit. You can specify up to 4096 CPU units and 30GB memory for a worker. The price of the workers will be calculated based on the region, CPU and memory that you specified and the time you use the workers. The image is the image of the docker. Currently we do not allow users to change it, but in future this can also be an option.
+
+# Create cluster
+The last step is to create your cluster. You can do it by
+```{r}
+cl <- make_aws_cluster(config, 2)
+```
+The function takes the `config` object as the worker template and try to find the best fitted hardware for the workers on the cloud. It will return a cluster with 2 worker nodes whose CPU and memory are not smaller than the values you pick. After the cluster is created,  you can treat the cluster as the one returned by `parallel::makeCluster` and do your computation as usual. For example
+```{r}
+parallel::parLapply(cl, 1:4, function(i) runif(i))
+```
+This will dispatch your parallel task to the worker nodes you just created. After you finish your work, the cluster can be closed as usual
+```{r}
+parallel::stopCluster(cl)
+```
+Once the workers are stopped, you will be billed by worker utilization and pay for what you have used.
+
+

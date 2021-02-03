@@ -1,12 +1,12 @@
 .ECS_configuration <- setClass("ECS_configuration", representation(config = "environment", validation = "environment"))
 
+#' @export
 ecs_configuration<-function(cpu = "256", memory = "512"){
   config <- new.env(parent = emptyenv())
   config$cpu <- cpu
   config$memory <- memory
   config$cluster_name <- "R-worker-cluster"
   config$task_definition_name <- "R-worker-task-definition"
-  config$task_name <- "R-worker-task"
   config$security_group_name <- "R-worker-security-group"
   config$vpc_id <- "auto"
   config$subnet_id <- "auto"
@@ -20,15 +20,19 @@ ecs_configuration<-function(cpu = "256", memory = "512"){
 #' @export
 setMethod(f = "show",signature = "ECS_configuration",
           definition = function(object){
-            var_list<- c("cpu","memory",
-                         "cluster_name",
-                         "task_definition_name",
-                         "task_name",
-                         "security_group_name",
-                         "vpc_id","subnet_id","security_group_id","internet_gateway_id","route_table_id")
-            for(i in var_list){
-              cat(paste0(i,": \t", object@config[[i]]),"\n")
-            }
+            # var_list<- c("cluster_name",
+            #              "cpu","memory",
+            #              "image"
+            #              )
+            #"security_group_name", "task_definition_name",
+            #"vpc_id","subnet_id","security_group_id","internet_gateway_id","route_table_id"
+            # for(i in var_list){
+            #     cat(paste0(i,": \t", object@config[[i]]),"\n")
+            # }
+            cat(paste0("cluster_name:\t", object@config[["cluster_name"]]),"\n")
+            cat(paste0("cpu:\t\t", object@config[["cpu"]]),"\n")
+            cat(paste0("memory:\t\t", object@config[["memory"]]),"\n")
+            cat(paste0("image:\t", object@config[["image"]]),"\n")
             invisible(NULL)
           })
 
