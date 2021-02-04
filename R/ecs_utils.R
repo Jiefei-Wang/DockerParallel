@@ -1,5 +1,10 @@
 ecs_get_json <-function(file_name){
-  fromJSON(file=paste0("R/json_config/",file_name),simplify=FALSE)
+  pkg_path <- find.package("DockerParallel")
+  file_path <- file.path(pkg_path,"json_config",file_name)
+  if(!file.exists(file_path)){
+    file_path <- file.path("inst","json_config",file_name)
+  }
+  fromJSON(file=file_path,simplify=FALSE)
 }
 
 verbose_print<-function(verbose, ...){

@@ -14,6 +14,20 @@ ecs_set_credentials(
 }
 \arguments{
 \item{key_file}{The csv credential file that is downloaded from AWS}
+
+\item{access_key_id}{An AWS Access Key ID}
+
+\item{secret_access_key}{An AWS Secret Access Key}
+
+\item{region}{A character string containing the AWS region for the request.
+If missing, “us-east-1” is assumed.}
+
+\item{profile}{A character string specifying which profile to use from the
+file. By default, the profile named in \code{AWS_PROFILE} is used, otherwise the
+“default” profile is used.}
+}
+\value{
+A list containing credentials(with asterisk) and region.
 }
 \description{
 Setting up AWS credentials. For details, see \code{?aws.signature::locate_credentials}

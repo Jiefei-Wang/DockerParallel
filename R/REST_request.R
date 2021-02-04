@@ -7,13 +7,16 @@ retry_on_error <- function(func, ..., n_try){
     if(!is.null(response)){
       return(response)
     }
-    print("REST request failed, retrying")
+    if(package_setting$print_when_retrying)
+      print("REST request failed, retrying")
   }
 }
 
 GET_EX <- function(..., n_try = 3){
-  retry_on_error(func = httr::GET, ..., n_try=n_try)
+  retry_on_error(func = httr::GET, ..., n_try=package_setting$retry_time,
+                 timeout(package_setting$REST_timeout))
 }
 POST_EX <- function(..., n_try = 3){
-  retry_on_error(func = httr::POST, ..., n_try=n_try)
+  retry_on_error(func = httr::POST, ..., n_try=package_setting$retry_time,
+                 timeout(package_setting$REST_timeout))
 }

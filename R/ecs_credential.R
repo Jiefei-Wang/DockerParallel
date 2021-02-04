@@ -8,6 +8,15 @@ ecs_package_configure$region <- NULL
 #' Setting up AWS credentials. For details, see `?aws.signature::locate_credentials`
 #'
 #' @param key_file The csv credential file that is downloaded from AWS
+#' @param access_key_id An AWS Access Key ID
+#' @param secret_access_key An AWS Secret Access Key
+#' @param region A character string containing the AWS region for the request.
+#' If missing, “us-east-1” is assumed.
+#' @param profile A character string specifying which profile to use from the
+#' file. By default, the profile named in `AWS_PROFILE` is used, otherwise the
+#' “default” profile is used.
+#' @return
+#' A list containing credentials(with asterisk) and region.
 #' @export
 ecs_set_credentials<-function(key_file=NULL,
                               access_key_id=NULL, secret_access_key=NULL, region = NULL,
@@ -70,47 +79,3 @@ get_secret_access_key <- function(){
 get_ecs_region<-function(){
   ecs_package_configure$region
 }
-
-#
-# ecs_package_configure$region<- "ap-southeast-1"
-#
-# key_file <- "../accessKeys.csv"
-# ecs_set_credentials(key_file)
-#
-#
-# library(aws.signature)
-# service = "ecs"
-# region="ap-southeast-1"
-# host <- paste0("https://",service, ".", region, ".amazonaws.com")
-# datetime <- format(Sys.time(), "%Y%m%dT%H%M%SZ", tz = "UTC")
-# request_body="{}"
-# sig <- signature_v4_auth(
-#   datetime = datetime,
-#   region=region,
-#   verb = "POST", service = service, action = "/",
-#   request_body = request_body,
-#   key=package_configure$ecs_credentials$access_key_id,
-#   secret=package_configure$ecs_credentials$secret_access_key,
-#   canonical_headers = c(
-#     Host = "ecs.ap-southeast-1.amazonaws.com",
-#     `Content-Type` = "application/x-amz-json-1.1",
-#     `X-Amz-Target` = paste0(SERVICE_ID, ".", action),
-#     `X-Amz-Date` = datetime
-#   )
-# )
-#
-#
-# SERVICE_ID <- "AmazonEC2ContainerServiceV20141113"
-# action <- "ListClusters"
-# response <- POST(
-#   host,
-#   add_headers(
-#     `Content-Type` = "application/x-amz-json-1.1",
-#     `X-Amz-Date` = datetime,
-#     `X-Amz-Target` = paste0(SERVICE_ID, ".", action),
-#     Authorization= sig$SignatureHeader
-#   ),
-#   body = sig$Body
-# )
-# #stop_for_status(response)
-# content(response, type = "application/json")

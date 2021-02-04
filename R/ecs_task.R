@@ -76,7 +76,8 @@ ecs_run_task <- function(config, n_workers = 1, verbose= TRUE){
 ## CPU and memory must be valid
 ecs_run_task_internal<-function(config, cpu, memory, task_count = 1, verbose= TRUE){
   stopifnot(task_count<=10)
-  request <- fromJSON(file="R/json_config/run-task.json",simplify=FALSE)
+  request <- ecs_get_json("run-task.json")
+
   request$cluster <- config$cluster_name
   request$overrides$cpu<- as.character(cpu)
   request$overrides$memory<- as.character(memory)

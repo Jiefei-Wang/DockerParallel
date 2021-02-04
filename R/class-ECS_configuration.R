@@ -30,8 +30,8 @@ setMethod(f = "show",signature = "ECS_configuration",
             #     cat(paste0(i,": \t", object@config[[i]]),"\n")
             # }
             cat(paste0("cluster_name:\t", object@config[["cluster_name"]]),"\n")
-            cat(paste0("cpu:\t\t", object@config[["cpu"]]),"\n")
-            cat(paste0("memory:\t\t", object@config[["memory"]]),"\n")
+            cat(paste0("cpu:\t\t", object@config[["cpu"]])," CU\n")
+            cat(paste0("memory:\t\t", object@config[["memory"]])," MB\n")
             cat(paste0("image:\t", object@config[["image"]]),"\n")
             invisible(NULL)
           })

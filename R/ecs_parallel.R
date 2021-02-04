@@ -7,7 +7,6 @@ makeNodePSOCKEX <- function(...){
 }
 
 ## wait_tasks_to_run(a$task_id, progress_bar = TRUE)
-#' @export
 make_aws_cluster <- function(config, workers=1, verbose = FALSE){
   task_list <- ecs_run_task(config, n_workers  = workers, verbose = verbose)
   verbose_print(verbose,"Waiting for the initialization of the workers")
@@ -25,3 +24,12 @@ make_aws_cluster <- function(config, workers=1, verbose = FALSE){
     NULL
   }
 }
+
+
+
+#' @export
+setMethod(f = "docker_cluster",signature = "ECS_configuration",
+          definition = function(config, workers, ...){
+            make_aws_cluster(config = config, workers = workers, ...)
+          })
+
