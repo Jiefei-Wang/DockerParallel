@@ -7,7 +7,7 @@ ecs_get_json <-function(file_name){
   fromJSON(file=file_path,simplify=FALSE)
 }
 
-verbose_print<-function(verbose, ...){
+verbosePrint<-function(verbose, ...){
   if(verbose)
     message(...)
 }
@@ -34,7 +34,7 @@ valid_fargate_settings$"1024" <- 1024*(2:8)
 valid_fargate_settings$"2048" <- 1024*(4:16)
 valid_fargate_settings$"4096" <- 1024*(8:30)
 
-get_valid_fargate_cpu_memory<-function(cpu,memory){
+getValidFargateCpuMemory<-function(cpu,memory){
   result <- list()
   valid_cpu_numbers <- as.numeric(names(valid_fargate_settings))
   valid_cpus <- valid_cpu_numbers[valid_cpu_numbers>=cpu]
@@ -47,7 +47,7 @@ get_valid_fargate_cpu_memory<-function(cpu,memory){
   NULL
 }
 
-get_n_worker_per_container <- function(cpu_per_worker, memory_per_worker){
+getNWorkerPerContainer <- function(cpu_per_worker, memory_per_worker){
   max_worker <- min(floor(4096/as.numeric(cpu_per_worker)),floor(1024*30/as.numeric(memory_per_worker)))
   if(max_worker==0){
     stop("Cannot find a fargate hardware to accommodate the CPU and memory requirement for the worker")
@@ -62,4 +62,30 @@ get_tag_value <-function(tag_list, tag_name, tag_value, target){
     }
   }
   return(NULL)
+}
+
+
+getFilter <- function(x){
+  query <- list()
+  filter_name <- names(x)
+  for(i in seq_along(x)){
+    query[[paste0("Filter.",i,".Name")]] <- filter_name[i]
+    for(j in seq_along(x[[i]])){
+      query[[paste0("Filter.",i,".Value.",j)]] <- x[[i]][[j]]
+    }
+  }
+  query
+}
+
+is.empty <- function(x){
+    is.null(x) || length(x)==0
+}
+
+
+getEnvJson <- function(x){
+    result <- list()
+    for(i in seq_along(x)){
+        result[[i]] <- list(name = names(x)[i], value = as.character(x[[i]]))
+    }
+    result
 }

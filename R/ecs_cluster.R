@@ -1,34 +1,37 @@
 # config <- ecs_configuration()
-ecs_create_cluster<-function(cluster_name){
-  request <- ecs_get_json("create-cluster.json")
-  request$clusterName <- cluster_name
-  response <- ecs_POST("CreateCluster", request = request)
-  response
+createCluster<-function(clusterName){
+    request <- ecs_get_json("create-cluster.json")
+    request$clusterName <- clusterName
+    response <- ecs_create_cluster(request)
+    response
 }
 
-ecs_delete_cluster <- function(cluster_name){
-  request <- list(cluster = cluster_name)
-  response <- ecs_POST("DeleteCluster", request = request)
-  response
+deleteCluster <- function(clusterName){
+    request <- list(cluster = clusterName)
+    response <- ecs_delete_cluster(request)
+    response
 }
-ecs_list_clusters <- function(){
-  target <- "ListClusters"
-  response <- ecs_POST(target)
-  cluster_list <- unlist(response$clusterArns)
-  while(!is.null(response$nextToken)){
-    request <- list(nextToken = response$nextToken)
-    response <- ecs_POST(target, request = request)
-    cluster_list <- c(cluster_list, unlist(response$clusterArns))
-  }
-  get_resource_names(cluster_list)
+listClusters <- function(){
+    response <- ecs_list_clusters()
+    get_resource_names(response)
 }
-ecs_config_cluster_name <- function(config){
-  if(!is_valid(config, "cluster_name")){
-    cluster_list <- ecs_list_clusters()
-    if(!any(cluster_list==config$cluster_name)){
-      ecs_create_cluster(config$cluster_name)
+
+configClusterName <- function(x){
+    clusterName <- getECSData(x, "clusterName")
+    if(is.empty(clusterName)){
+        clusterList <- listClusters()
+        if(!is.empty(x@clusterName)){
+            if(!any(clusterList==x@clusterName)){
+                clusterName <- createCluster(x@clusterName)
+            }
+            clusterName <- x@clusterName
+        }else{
+            if(!any(clusterList==ECSDefault$clusterName)){
+                createCluster(ECSDefault$clusterName)
+            }
+            clusterName <- ECSDefault$clusterName
+        }
+        setECSData(x, "clusterName", clusterName)
     }
-    set_valid(config, "cluster_name")
-  }
-  config$cluster_name
+    clusterName
 }

@@ -8,11 +8,9 @@ Authors@R:
            email = "szwjf08@gmail.com")
 Description: What the package does (one paragraph).
 Imports:
+  simpleECS,
   rjson,
-  parallelly,
-  aws.signature,
-  httr,
-  xml2
+  doRedis
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
