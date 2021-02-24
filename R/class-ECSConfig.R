@@ -87,7 +87,7 @@ setMethod(f = "$",signature = "ECSConfig",
 setMethod(f = "$<-",signature = "ECSConfig",
           definition = function(x, name, value){
               if(name != "more"){
-                  x@cloudData[[name, exact = FALSE]] <- value
+                  x[[name, exact = FALSE]] <- value
                   x
               }else{
                   stop("`@more` is not assignable")
@@ -104,7 +104,7 @@ setMethod(f = "[[",signature = "ECSConfig",
                       i <- slotNames(x)[[idx]]
                   }
               }
-              result <- x@cloudData[[i, ...]]
+              result <- getECSCloudData(x, i)
               if(is.null(result)){
                   result <- do.call("@",list(x,i))
               }
@@ -118,7 +118,7 @@ setMethod(f = "[[",signature = "ECSConfig",
 #' @export
 setMethod(f = "[[<-",signature = "ECSConfig",
           definition = function(x, i, j, ...,value){
-              do.call("@<-",list(x,i,value))
+              x <- do.call("@<-",list(x,i,value))
               setECSCloudData(x, i, NULL)
               if(i=="routeTableId"){
                   setECSCloudData(x, "defaultRouteInitialized", NULL)

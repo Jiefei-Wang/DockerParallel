@@ -111,19 +111,6 @@ runServer <- function(x, verbose = TRUE){
 runWorkers <- function(x, workerNum = 1, verbose= TRUE){
     worker <- x@worker
     hardware <- x@workerHardware
-    ## configure hardware
-    CPU <- hardware$CPU
-    memory <- hardware$memory
-    hardware <- getValidFargateCpuMemory(CPU, memory)
-    if(hardware$CPU!=CPU||
-       hardware$memory!= memory){
-        message("The required Fargate hardware does not exist,\n",
-                "we have upgrate it to CPU ",
-                hardware$CPU
-                ,"units and memory ",
-                hardware$CPU
-                ,"MB")
-    }
 
     ## initialize the queue info
     if(is.empty(getECSClusterData(x, "serverQueue"))){
@@ -138,6 +125,8 @@ runWorkers <- function(x, workerNum = 1, verbose= TRUE){
 
     ## Compute the maximum worker per container based on
     ## the hardware requirement per worker
+    CPU <- hardware$CPU
+    memory <- hardware$memory
     workersPerContainer <- getMaxWorkerPerContainer(CPU,memory)
     containerNum <- ceiling(workerNum/workersPerContainer)
     workerLastContainer <- workerNum%%workersPerContainer
@@ -151,9 +140,9 @@ runWorkers <- function(x, workerNum = 1, verbose= TRUE){
         message("The required Fargate hardware does not exist,\n",
                 "we have upgrate it to CPU ",
                 round(regularContainerHardware$CPU/workersPerContainer,3)
-                ,"units and memory ",
+                ," units and memory ",
                 round(regularContainerHardware$memory/workersPerContainer,3)
-                ,"MB")
+                ," MB")
     }
 
     ## Try to deploy the worker containers
@@ -176,6 +165,7 @@ runWorkers <- function(x, workerNum = 1, verbose= TRUE){
                                  runWorkersInternal(x = x,
                                                     CPU = regularContainerHardware$CPU,
                                                     memory = regularContainerHardware$memory,
+                                                    workerNum = workersPerContainer,
                                                     taskCount = regularContainerNumber,
                                                     verbose=verbose))
         }
@@ -184,6 +174,7 @@ runWorkers <- function(x, workerNum = 1, verbose= TRUE){
                                  runWorkersInternal(x = x,
                                                     CPU = lastContainderHardware$CPU,
                                                     memory = lastContainderHardware$memory,
+                                                    workerNum = workerLastContainer,
                                                     taskCount=1,
                                                     verbose=verbose))
         }
@@ -217,7 +208,7 @@ runWorkers <- function(x, workerNum = 1, verbose= TRUE){
 ## run the same container `taskCount` times
 ## CPU and memory must be valid fargate settings
 runWorkersInternal <- function(x,
-                               CPU, memory, taskCount = 1, verbose= TRUE){
+                               CPU, memory, workerNum, taskCount = 1, verbose= TRUE){
     stopifnot(taskCount<=10)
     workerEnv <- x@worker@environment
     sshPubKey <- getSSHPubKeyValue()
@@ -232,6 +223,7 @@ runWorkersInternal <- function(x,
     workerEnv[["redisPort"]] <- serverPort
     serverQueue <- getECSClusterData(x, "serverQueue")
     workerEnv[["redisQueue"]] <- serverQueue
+    workerEnv[["workerNum"]] <- workerNum
 
     ids <- runTask(x$clusterName,x$workerTaskDefName,taskCount,
                    CPU=CPU,memory=memory,

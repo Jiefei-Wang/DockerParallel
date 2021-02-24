@@ -11,3 +11,15 @@ setMethod(f = "$",signature = "ECSHardware",
               else
                   return(do.call("@", list(x,name)))
           })
+
+
+
+#' @export
+setMethod(f = "show",signature = "ECSHardware",
+          definition = function(object){
+              cat("ECSHardware S4 object\n")
+              cat("  Type:", object@type, "\n")
+              cat("  CPU:", object@CPU, "cores\n")
+              cat("  Memory:", object@memory, "MB\n")
+              invisible(NULL)
+          })
