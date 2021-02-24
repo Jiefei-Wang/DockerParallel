@@ -17,8 +17,8 @@ listClusters <- function(){
 }
 
 configClusterName <- function(x){
-    clusterName <- getECSData(x, "clusterName")
-    if(is.empty(clusterName)){
+    clusterName <- getECSCloudData(x, "clusterName")
+    if(is.invalid(x, "clusterName")){
         clusterList <- listClusters()
         if(!is.empty(x@clusterName)){
             if(!any(clusterList==x@clusterName)){
@@ -31,7 +31,7 @@ configClusterName <- function(x){
             }
             clusterName <- ECSDefault$clusterName
         }
-        setECSData(x, "clusterName", clusterName)
+        setECSCloudData(x, "clusterName", clusterName)
     }
     clusterName
 }

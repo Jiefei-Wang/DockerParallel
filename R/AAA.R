@@ -2,43 +2,57 @@ setClassUnion("NumOrChar",c("numeric","character"))
 setClassUnion("CharOrNULL",c("NULL","character"))
 
 .Container <- setClass(
-  "Container",
-  representation(
-    cpu = "NumOrChar",
-    memory = "NumOrChar",
-    environment = "list",
-    image = "character",
-    exec = "CharOrNULL"
-  )
+    "Container",
+    representation(
+        environment = "list",
+        image = "character",
+        command = "CharOrNULL"
+    )
 )
 
+## dedicated redis server
+.DedicatedServer <- setClass(
+    "DedicatedServer",
+    representation(
+        IP = "character",
+        port = "integer",
+        password = "CharOrNULL"
+    )
+)
+
+setClassUnion("ContainerOrDedicatedServer",c("Container","DedicatedServer"))
+
+
 .ECSHardware <- setClass(
-  "ECSHardware",
-  representation(
-   type = "character",
-   id = "character"
-  )
+    "ECSHardware",
+    representation(
+        CPU = "numeric",
+        memory = "numeric",
+        type = "character",
+        id = "CharOrNULL"
+    )
 )
 
 .ECSConfig <- setClass(
-  "ECSConfig",
-  representation(
-    server = "Container",
-    worker = "Container",
-    workerNum = "numeric",
-    workerHardware = "ECSHardware",
-    serverHardware = "ECSHardware",
-    clusterName = "character",
-    serverTaskDefName = "character",
-    workerTaskDefName = "character",
-    securityGroupName = "character",
-    VPCId = "character",
-    subnetId = "character",
-    securityGroupId = "character",
-    internetGatewayId = "character",
-    routeTableId = "character",
-    data = "environment"
-  )
+    "ECSConfig",
+    representation(
+        server = "ContainerOrDedicatedServer",
+        worker = "Container",
+        workerNum = "numeric",
+        workerHardware = "ECSHardware",
+        serverHardware = "ECSHardware",
+        clusterName = "character",
+        serverTaskDefName = "character",
+        workerTaskDefName = "character",
+        securityGroupName = "character",
+        VPCId = "character",
+        subnetId = "character",
+        securityGroupId = "character",
+        internetGatewayId = "character",
+        routeTableId = "character",
+        cloudData = "environment",
+        clusterData = "environment"
+    )
 )
 
 

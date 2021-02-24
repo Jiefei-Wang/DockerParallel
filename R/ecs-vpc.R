@@ -38,8 +38,8 @@ listVPCs<-function(filterList = list(), idFilter = NULL){
 }
 
 configVPCId <- function(x){
-  VPCId <- getECSData(x,"VPCId")
-  if(is.null(VPCId)){
+  VPCId <- getECSCloudData(x,"VPCId")
+  if(is.invalid(x, "VPCId")){
     if(!is.empty(x@VPCId)){
       VPCList <- listVPCs()
       if(all(VPCList != x@VPCId)){
@@ -48,7 +48,7 @@ configVPCId <- function(x){
       VPCId <- x@VPCId
     }else{
       VPCList <- listVPCs(
-        filterList = list(`tag:docker-parallel-tag`="docker-parallel-tag")
+        filterList = ECSfilterList
       )
       if(length(VPCList)!=0){
         VPCId <- VPCList[1]
@@ -56,7 +56,7 @@ configVPCId <- function(x){
         VPCId <- createVPC()
       }
     }
-    setECSData(x, "VPCId", VPCId)
+      setECSCloudData(x, "VPCId", VPCId)
   }
   VPCId
 }

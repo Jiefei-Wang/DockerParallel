@@ -32,24 +32,23 @@ listSubnets<-function(filterList = list(), idFilter = NULL, VPCFilter = NULL){
 
 
 configSubnetId <- function(x){
-  subnetId <- getECSData(x, "subnetId")
-  if(is.null(subnetId)){
+  subnetId <- getECSCloudData(x, "subnetId")
+  if(is.invalid(x, "subnetId")){
       VPCId <- configVPCId(x)
       subnetList <- listSubnets(VPCFilter = VPCId)
       if(is.empty(x@subnetId)){
-        if(nrow(subnetList)!=0){
-          subnetId <- subnetList$subnetId[1]
+        if(any(subnetList$cidr=="10.0.0.0/16")){
+          subnetId <- subnetList$subnetId[subnetList$cidr=="10.0.0.0/16"]
         }else{
           subnetId <- createSubnet(VPCId, "10.0.0.0/16")
         }
       }else{
-        if(!any(subnetList$subnetId==x@subnetId&
-                subnetList$VPCId==VPCId)){
+        if(!any(subnetList$subnetId==x@subnetId)){
           stop("The subnet id <",x@subnetId,"> does not exist")
         }
         subnetId <- x@subnetId
       }
-      setECSData(x, "subnetId", subnetId)
+      setECSCloudData(x, "subnetId", subnetId)
   }
   subnetId
 }

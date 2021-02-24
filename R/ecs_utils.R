@@ -27,32 +27,32 @@ get_resource_name <- function(ARN){
 }
 
 
-valid_fargate_settings <- list()
-valid_fargate_settings$"256" <- c(512,1024,2048)
-valid_fargate_settings$"512" <- 1024*(1:4)
-valid_fargate_settings$"1024" <- 1024*(2:8)
-valid_fargate_settings$"2048" <- 1024*(4:16)
-valid_fargate_settings$"4096" <- 1024*(8:30)
+validFargateSettings <- list()
+validFargateSettings$"256" <- c(512,1024,2048)
+validFargateSettings$"512" <- 1024*(1:4)
+validFargateSettings$"1024" <- 1024*(2:8)
+validFargateSettings$"2048" <- 1024*(4:16)
+validFargateSettings$"4096" <- 1024*(8:30)
 
-getValidFargateCpuMemory<-function(cpu,memory){
+getValidFargateCpuMemory<-function(CPU,memory){
   result <- list()
-  valid_cpu_numbers <- as.numeric(names(valid_fargate_settings))
-  valid_cpus <- valid_cpu_numbers[valid_cpu_numbers>=cpu]
-  for(i in valid_cpus){
-    idx <- which(valid_fargate_settings[[as.character(i)]]>=memory)
+  validCPUNumbers <- as.numeric(names(validFargateSettings))
+  validCPUs <- validCPUNumbers[validCPUNumbers>=CPU]
+  for(i in validCPUs){
+    idx <- which(validFargateSettings[[as.character(i)]]>=memory)
     if(length(idx)!=0){
-      return(list(cpu = i, memory = valid_fargate_settings[[as.character(i)]][idx[1]]))
+      return(list(CPU = i, memory = validFargateSettings[[as.character(i)]][idx[1]]))
     }
   }
   NULL
 }
 
-getNWorkerPerContainer <- function(cpu_per_worker, memory_per_worker){
-  max_worker <- min(floor(4096/as.numeric(cpu_per_worker)),floor(1024*30/as.numeric(memory_per_worker)))
-  if(max_worker==0){
+getMaxWorkerPerContainer <- function(CPUPerWorker, memoryPerWorker){
+  maxWorker <- min(floor(4096/as.numeric(CPUPerWorker)),floor(1024*30/as.numeric(memoryPerWorker)))
+  if(maxWorker==0){
     stop("Cannot find a fargate hardware to accommodate the CPU and memory requirement for the worker")
   }
-  max_worker
+  maxWorker
 }
 
 get_tag_value <-function(tag_list, tag_name, tag_value, target){
@@ -80,7 +80,19 @@ getFilter <- function(x){
 is.empty <- function(x){
     is.null(x) || length(x)==0
 }
+is.valid <- function(x, attrName){
+  data1 <- getECSCloudData(x, attrName)
+  data2 <- do.call("@",list(x, attrName))
+  if(is.empty(data2)){
+    !is.empty(data1)
+  }else{
+    !is.empty(data1)&& data1==data2
+  }
+}
 
+is.invalid <- function(x, attrName){
+  !is.valid(x, attrName)
+}
 
 getEnvJson <- function(x){
     result <- list()

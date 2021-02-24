@@ -41,35 +41,40 @@ listSecurityGroups <- function(filterList = list(),
 }
 
 configSecurityGroupId <- function(x){
-    securityGroupId <- getECSData(x, "securityGroupId")
-    if(is.null(securityGroupId)){
+    securityGroupId <- getECSCloudData(x, "securityGroupId")
+    if(is.invalid(x, "securityGroupId")){
         VPCId <- configVPCId(x)
         securityGroupList <- listSecurityGroups(VPCFilter = VPCId)
         if(is.empty(x@securityGroupId)&&is.empty(x@securityGroupName)){
             idx <- which(securityGroupList$name == ECSDefault$securityGroupName)
             if(length(idx)!=0){
+                securityGroupName <- securityGroupList$name[idx[1]]
                 securityGroupId <- securityGroupList$groupId[idx[1]]
             }else{
+                securityGroupName <- ECSDefault$securityGroupName
                 securityGroupId <-
-                    createSecurityGroup(ECSDefault$securityGroupName,
+                    createSecurityGroup(securityGroupName,
                                         VPCId)
             }
         }else{
-            if(is.empty(x@securityGroupName)){
+            if(!is.empty(x@securityGroupName)){
                 idx <- which(securityGroupList$name == x@securityGroupName)
                 if(length(idx)==0){
                     stop("The security group name <",x@securityGroupName,"> does not exist")
                 }
+                securityGroupName <- x@securityGroupName
                 securityGroupId <- securityGroupList$groupId[idx[1]]
             }else{
                 idx <- which(securityGroupList$groupId == x@securityGroupId)
                 if(length(idx)==0){
                     stop("The security group id <",x@securityGroupId,"> does not exist")
                 }
+                securityGroupName <- securityGroupList$name[idx[1]]
                 securityGroupId <- x@securityGroupId
             }
         }
-        setECSData(x, "securityGroupId", securityGroupId)
+        setECSCloudData(x, "securityGroupId", securityGroupId)
+        setECSCloudData(x, "securityGroupName", securityGroupName)
     }
     securityGroupId
 }
@@ -125,12 +130,12 @@ listSecurityInboundRule<-function(securityGroupId){
 
 
 ConfigInboundPermissions<-function(x, ports){
-    if(is.null(getECSData(x, "inboundPermissionInitialized"))){
+    if(is.null(getECSCloudData(x, "inboundPermissionInitialized"))){
         securityGroupId <- configSecurityGroupId(x)
         inboundRules <- listSecurityInboundRule(securityGroupId)
         for(i in ports)
             ConfigInboundPermissionsInternal(securityGroupId, inboundRules, i)
-        setECSData(x, "inboundPermissionInitialized", TRUE)
+        setECSCloudData(x, "inboundPermissionInitialized", TRUE)
     }
 }
 

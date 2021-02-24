@@ -1,5 +1,8 @@
 createRouteTable <- function(VPCId){
     query <- list(VpcId = VPCId)
+    query[["TagSpecification.1.ResourceType"]] <-"route-table"
+    query[["TagSpecification.1.Tag.1.Key"]] <-"docker-parallel-tag"
+    query[["TagSpecification.1.Tag.1.Value"]] <-"docker-parallel-tag"
     response <- ec2_create_route_table(query)
     response
 }
@@ -34,8 +37,8 @@ listRouteTables<-function(filterList = list(),
 }
 
 configRouteTable <- function(x){
-    routeId <- getECSData(x, "routeTableId")
-    if(is.null(routeId)){
+    routeId <- getECSCloudData(x, "routeTableId")
+    if(is.invalid(x, "routeTableId")){
         VPCId <- configVPCId(x)
         routeTableList <- listRouteTables(VPCFilter = VPCId)
         if(is.empty(x@routeTableId)){
@@ -49,7 +52,7 @@ configRouteTable <- function(x){
             }
             routeId <- x@routeTableId
         }
-        setECSData(x, "routeTableId", routeId)
+        setECSCloudData(x, "routeTableId", routeId)
     }
     routeId
 }

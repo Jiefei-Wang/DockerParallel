@@ -1,47 +1,18 @@
-Container <- function(cpu = 0.25, memory = 1024, ...){
-  .Container(cpu = cpu, memory = memory, ...)
-}
-
-redisServerContainer <- function(cpu = 0.25, memory = 2048,
-                                 environment = list(),
-                                 image = "dockerparallel/parallel-redis-server",
-                                 exec = NULL
-                                 ){
-  Container(cpu = cpu,
-            memory = memory,
-            environment = environment,
-            image = image,
-            exec = exec
-            )
-}
-
-redisWorkerContainer <- function(cpu = 0.25, memory = 512,
-                                 environment = list(),
-                                 image = "dockerparallel/parallel-redis-worker",
-                                 exec = NULL
-){
-  Container(cpu = cpu,
-            memory = memory,
-            environment = environment,
-            image = image,
-            exec = exec
-  )
+Container <- function(image, environment = list(), command = NULL){
+  .Container(image = image, environment = environment, command = command)
 }
 
 
 setMethod("show", "Container", function(object){
-  cat("  image:  ", object@image, "\n")
-  cat("  CPU:    ", object@cpu, "cores\n")
-  cat("  Memory: ", object@memory, "MB\n")
+cat("S4 Container object\n")
+  cat("  Image:  ", object@image, "\n")
+  cat("  Command:", object@command, "\n")
+  cat("  Environment variables:")
+  for(i in names(object@environment)){
+      cat("    ",i,": ", object@environment[[i]], "\n",sep="")
+  }
   invisible(NULL)
 })
 
-getECSCPU <- function(container){
-    as.numeric(container@cpu)*1024
-}
-
-getECSMem <- function(container){
-    as.numeric(container@memory)
-}
 
 

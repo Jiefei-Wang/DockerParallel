@@ -57,32 +57,43 @@ processGateway<-function(gateway){
 }
 
 configInternetGateway <- function(x){
-    internetGatewayId <- getECSData(x, "internetGatewayId")
-    if(is.null(internetGatewayId)){
+    internetGatewayId <- getECSCloudData(x, "internetGatewayId")
+    if(is.invalid(x, "internetGatewayId")){
         VPCId <- configVPCId(x)
-        gatewayList <-
-            listInternetGateways(
-                VPCFilter = VPCId)
+        needAttach <- FALSE
         if(is.empty(x@internetGatewayId)){
+            gatewayList <-
+                listInternetGateways(
+                    VPCFilter = VPCId,
+                    filterList = ECSfilterList
+                    )
             if(nrow(gatewayList)!=0){
                 internetGatewayId <- gatewayList$gatewayId[1]
             }else{
                 internetGatewayId <- createInternetGateway()
+                needAttach <- TRUE
             }
         }else{
-            if(all(gatewayList$gatewayId!=x@internetGatewayId)){
+            gatewayList <-
+                listInternetGateways(idFilter = x@internetGatewayId)
+            if(nrow(gatewayList)!=1){
                 stop("The gateway id <",x@internetGatewayId,"> does not exist")
             }
+            if(gatewayList$VPCId!=VPCId){
+                stop("The gateway id <",
+                     x@internetGatewayId,
+                     "> has been attached to a wrong VPC")
+            }
             internetGatewayId <- x@internetGatewayId
+            needAttach <- gatewayList$VPCId == "NULL"
         }
-        gatewayList <-
-            listInternetGateways(
-                idFilter = internetGatewayId)
-        if(gatewayList$VPCId=="NULL"){
+
+        if(needAttach){
             attachInternetGateway(
-                VPCId, internetGatewayId)
+                VPCId, internetGatewayId
+                )
         }
-        setECSData(x, "internetGatewayId", internetGatewayId)
+        setECSCloudData(x, "internetGatewayId", internetGatewayId)
     }
     internetGatewayId
 }

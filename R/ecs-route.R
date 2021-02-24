@@ -43,7 +43,7 @@ listRoute<-function(routeTableId = NULL){
 configDefaultRoute<-function(x){
     internetGatewayId <- configInternetGateway(x)
     routeTableId <- configRouteTable(x)
-    defaultRouteInitialized <- getECSData(x, "defaultRouteInitialized")
+    defaultRouteInitialized <- getECSCloudData(x, "defaultRouteInitialized")
     if(is.null(defaultRouteInitialized)){
         routeList <- listRoute(routeTableId)
         if(!any(routeList$cidr=="0.0.0.0/0"&
@@ -52,7 +52,7 @@ configDefaultRoute<-function(x){
                         internetGatewayId,
                         routeTableId)
         }
-        setECSData(x, "defaultRouteInitialized", TRUE)
+        setECSCloudData(x, "defaultRouteInitialized", TRUE)
     }
 }
 

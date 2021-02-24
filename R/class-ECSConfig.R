@@ -1,51 +1,3 @@
-ECSDefault <- list(
-  clusterName = "R-worker-cluster",
-  serverTaskDefName = "R-server-task-definition",
-  workerTaskDefName = "R-worker-task-definition",
-  securityGroupName = "R-worker-security-group"
-)
-
-ECSFargateConfig <- function(workerNum = 1,
-                             workerCPU = 0.25,
-                             workerMem = 512,
-                             serverCPU = 0.25,
-                             serverMem = 2048,
-                             serverContainer = redisServerContainer(),
-                             workerContainer = redisWorkerContainer()
-){
-  serverContainer@cpu <- serverCPU
-  serverContainer@memory <- serverMem
-  workerContainer@cpu <- workerCPU
-  workerContainer@memory <- workerMem
-  fargate <- .ECSHardware(type = "fargate")
-  serverData <- new.env(parent = emptyenv())
-  serverData$clusterName <- NULL
-  serverData$serverTaskDefName <- NULL
-  serverData$workerTaskDefName <- NULL
-  serverData$securityGroupName <- NULL
-  serverData$VPCId <- NULL
-  serverData$subnetId <- NULL
-  serverData$securityGroupId <- NULL
-  serverData$internetGatewayId <- NULL
-  serverData$routeTableId <- NULL
-
-  .ECSConfig(server = serverContainer,
-             worker = workerContainer,
-             workerNum = workerNum,
-             workerHardware = fargate,
-             serverHardware = fargate,
-             data = new.env(parent = emptyenv()))
-}
-
-getECSData <- function(x, name){
-  x@data[[name]]
-}
-
-setECSData <- function(x, name, value){
-  x@data[[name]] <- value
-}
-
-
 # cloud and hardware is binded
 
 # cloud <- ECSFargateConfig()
@@ -54,134 +6,132 @@ setECSData <- function(x, name, value){
 # getRunningContainer(cloud)
 # getCluster(cloud)
 
+ECSDefault <- list(
+    clusterName = "R-worker-cluster",
+    serverTaskDefName = "R-server-task-definition",
+    workerTaskDefName = "R-worker-task-definition",
+    securityGroupName = "R-parallel-security-group"
+)
 
-resetCloudConfig <- function(x){
-  rm(list=names(x@data),envir = x@data)
+
+ECSfilterList <- list(`tag:docker-parallel-tag`="docker-parallel-tag")
+
+ECSFargateConfig <- function(workerNum = 1,
+                             workerCPU = 0.25,
+                             workerMem = 512,
+                             serverCPU = 0.25,
+                             serverMem = 2048,
+                             server = Container("dockerparallel/parallel-redis-server"),
+                             worker = Container("dockerparallel/parallel-redis-worker")
+){
+    serverHardware <- ECSHardware(type = "fargate",
+                                   CPU = serverCPU,
+                                   memory = serverMem)
+    workerHardware <- ECSHardware(type = "fargate",
+                                   CPU = workerCPU,
+                                   memory = workerMem)
+    cloudData <- new.env(parent = emptyenv())
+    ## contains:
+    ## serverWorkerIP, serverClientIP, serverPort,
+    ## serverPassword, serverInstanceId
+    ## queue, workerIPs, workerInstanceIds, workerNums
+    clusterData <- new.env(parent = emptyenv())
+
+    .ECSConfig(server = server,
+               worker = worker,
+               workerNum = workerNum,
+               workerHardware = workerHardware,
+               serverHardware = serverHardware,
+               cloudData = cloudData,
+               clusterData = clusterData)
 }
+
+
 
 
 #' @export
 setMethod(f = "show",signature = "ECSConfig",
           definition = function(object){
-            cat("ECS config object\n")
-            cat("Server config:\n")
-            show(object@server)
-            cat("Worker config\n")
-            cat("  workerNum:", object@workerNum,"\n")
-            show(object@worker)
-            invisible(NULL)
+              cat("ECS config object\n")
+              cat("Server config:\n")
+              cat("  CPU:       ", object@serverHardware@CPU, "cores\n")
+              cat("  Memory:    ", object@serverHardware@memory, "MB\n")
+              cat("  Image:     ", object@server@image, "\n")
+              cat("Worker config:\n")
+              cat("  Worker num:", object@workerNum,"\n")
+              cat("  CPU:       ", object@workerHardware@CPU, "cores\n")
+              cat("  Memory:    ", object@workerHardware@memory, "MB\n")
+              cat("  Image:     ", object@worker@image, "\n")
+              cat("Use <$more()> to see the cloud configuration")
+              invisible(NULL)
           })
+
 
 #' @export
 setMethod(f = "names",signature = "ECSConfig",
           definition = function(x){
-            nms <- slotNames(x)
-            nms[nms != "data"]
+              nms <- slotNames(x)
+              c(nms[!nms %in% c("cloudData", "clusterData")], "more")
           })
 
 #' @export
 setMethod(f = "$",signature = "ECSConfig",
           definition = function(x, name){
-            x@data[[name, exact = FALSE]]
+              if(name != "more"){
+                  x[[name, exact = FALSE]]
+              }else{
+                  function()showDetails(x)
+              }
           })
 #' @export
 setMethod(f = "$<-",signature = "ECSConfig",
           definition = function(x, name, value){
-            x@data[[name]] <- value
-            x
+              if(name != "more"){
+                  x@cloudData[[name, exact = FALSE]] <- value
+                  x
+              }else{
+                  stop("`@more` is not assignable")
+              }
           })
 #' @export
 setMethod(f = "[[",signature = "ECSConfig",
           definition = function(x, i, j, ...){
-            result <- x@data[[name,...]]
-            if(is.null(result)){
-              result <- `@`(x, name)
-            }
-            result
+              ## Do the partial match first
+              args <- list(...)
+              if("exact"%in%names(args)&& !args$exact){
+                  idx <- pmatch(i, slotNames(x))
+                  if(!is.na(idx)){
+                      i <- slotNames(x)[[idx]]
+                  }
+              }
+              result <- x@cloudData[[i, ...]]
+              if(is.null(result)){
+                  result <- do.call("@",list(x,i))
+              }
+              if(is.empty(result)){
+                  if(i%in%names(ECSDefault)){
+                      result <- ECSDefault[[i]]
+                  }
+              }
+              result
           })
 #' @export
 setMethod(f = "[[<-",signature = "ECSConfig",
           definition = function(x, i, j, ...,value){
-            `@`(x, i) <- value
-            x@data[[i]] <- NULL
-            x
+              do.call("@<-",list(x,i,value))
+              setECSCloudData(x, i, NULL)
+              if(i=="routeTableId"){
+                  setECSCloudData(x, "defaultRouteInitialized", NULL)
+              }
+              if(i%in%c("securityGroupId", "securityGroupName")){
+                  setECSCloudData(x, "securityGroupId", NULL)
+                  setECSCloudData(x, "securityGroupName", NULL)
+                  setECSCloudData(x, "inboundPermissionInitialized", NULL)
+              }
+              if(i=="server"){
+                  setECSCloudData(x, "inboundPermissionInitialized", NULL)
+              }
+              x
           })
-
-
-initConfig<-function(x, verbose= TRUE){
-  ## Cluster name
-  verbosePrint(verbose, "Setting up cluster")
-  clusterName <- configClusterName(x)
-  verbosePrint(verbose, "Cluster name: \t", clusterName)
-  ## VPC
-  verbosePrint(verbose, "Setting up VPC")
-  VPCId <- configVPCId(x)
-  verbosePrint(verbose, "VPC: \t", VPCId)
-  ## subnet
-  verbosePrint(verbose, "Setting up subnet")
-  subnetId <- configSubnetId(x)
-  verbosePrint(verbose, "Subnet id: \t", subnetId)
-  ## gateway
-  verbosePrint(verbose, "Setting up gateway")
-  gatewayId <- configInternetGateway(x)
-  verbosePrint(verbose, "Gateway: \t", gatewayId)
-  ## route table
-  verbosePrint(verbose, "Setting up route table")
-  routeTableId <- configRouteTable(x)
-  verbosePrint(verbose, "Route table: \t", routeTableId)
-  ## route
-  verbosePrint(verbose, "Setting up default route")
-  configDefaultRoute(x)
-  verbosePrint(verbose, "Default route finished")
-  ## security group
-  verbosePrint(verbose, "Setting up security group")
-  securityGroupId <- configSecurityGroupId(x)
-  verbosePrint(verbose, "Security group: ",securityGroupId)
-  ## Inbound permission
-  verbosePrint(verbose, "Setting up inbound permission")
-  if(is.null(x@server@environment$redisPort)){
-    redisPort <- 6379
-  }else{
-    redisPort <- as.numeric(x@server@environment$redisPort)
-  }
-  ports <- c(22,redisPort)
-  ConfigInboundPermissions(x, ports)
-  verbosePrint(verbose, "Inbound permission finished")
-  ## Task definition
-  verbosePrint(verbose, "Setting up task defintion")
-  configTaskDefinition(x)
-  verbosePrint(verbose, "Task defintion finished")
-}
-
-cleanupConfig <- function(x, verbose = TRUE){
-  if(is.empty(x@clusterName) &&
-     !is.empty(getECSData(x, "clusterName"))){
-    verbosePrint(verbose, "Deleting worker cluster")
-    tryCatch({
-      deleteCluster(getECSData(x, "clusterName"))
-      setECSData(x, "clusterName", NULL)
-    },
-    error = function(e) message(e))
-  }
-  if(is.empty(x@VPCId) &&
-     !is.empty(getECSData(x, "VPCId"))){
-    verbosePrint(verbose, "Deleting vpc")
-    tryCatch({
-      deleteVPC(getECSData(x, "VPCId"))
-      setECSData(x, "VPCId", NULL)
-    },
-    error = function(e) message(e))
-  }
-  verbosePrint(verbose, "Deleting internet gateway")
-  if(is.empty(x@internetGatewayId) &&
-     !is.empty(getECSData(x, "internetGatewayId"))){
-    tryCatch({
-      deleteInternetGateway(getECSData(x, "internetGatewayId"))
-      setECSData(x, "internetGatewayId", NULL)
-    },
-    error = function(e) message(e))
-  }
-  invisible()
-}
 
 

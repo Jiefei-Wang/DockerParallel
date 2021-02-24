@@ -5,9 +5,10 @@
 
 
 runTask <- function(clusterName, taskDefName, taskCount,
-                    cpu, memory,
+                    CPU, memory,
                     securityGroupId,
                     subnetId,
+                    command = NULL,
                     env = list()
 ){
     stopifnot(taskCount<=10)
@@ -15,14 +16,18 @@ runTask <- function(clusterName, taskDefName, taskCount,
 
     request <- ecs_get_json("run-task.json")
     request$cluster <- clusterName
-    request$overrides$cpu<- as.character(cpu)
-    request$overrides$memory<- as.character(memory)
     request$taskDefinition <- taskDefName
     request$count <- taskCount
 
-    request$overrides$containerOverrides[[1]]$environment <- envJson
     request$networkConfiguration$awsvpcConfiguration$securityGroups[[1]]<- securityGroupId
     request$networkConfiguration$awsvpcConfiguration$subnets[[1]]<- subnetId
+
+    request$overrides$containerOverrides[[1]]$environment <- envJson
+    request$overrides$cpu<- as.character(CPU)
+    request$overrides$memory<- as.character(memory)
+    if(!is.null(command)){
+        request$overrides$containerOverrides[[1]]$command <- list(command)
+    }
     #existing_rule <- ecs_list_security_rule()
     response <- ecs_run_task(request)
     ids <- vapply(response$tasks,function(x)x$taskArn, character(1))
@@ -31,8 +36,8 @@ runTask <- function(clusterName, taskDefName, taskCount,
 
 
 listTasks<-function(clusterName,
-                         status = c("RUNNING", "PENDING","STOPPED"),
-                         taskFamily = NULL){
+                    status = c("RUNNING", "PENDING","STOPPED"),
+                    taskFamily = NULL){
     status <- match.arg(status)
     request <- list()
     request$cluster <- clusterName
@@ -77,14 +82,24 @@ geTaskDetailsInternal<-function(clusterName, taskIds, getIP = FALSE){
 
     taskIds <- vapply(response$tasks,function(x)x$taskArn, character(1))
     status <- vapply(response$tasks,function(x)x$lastStatus, character(1))
+    privateIPs <- vapply(response$tasks,function(x){
+        networkInterface <- x$containers[[1]]$networkInterfaces
+        if(length(networkInterface)!=0){
+            x$containers[[1]]$networkInterfaces[[1]]$privateIpv4Address
+        }else{
+            ""
+        }
+    }
+
+    , character(1))
     if(getIP){
         ENIs <- vapply(response$tasks,getInstanceENI,character(1))
         idx <- which(ENIs!="")
-        IPs <- rep("", length(taskIds))
-        IPs[idx] <- getInstanceIP(ENIs[idx])
-        data.frame(taskId = taskIds, status = status, IP = IPs)
+        publicIPs <- rep("", length(taskIds))
+        publicIPs[idx] <- getInstanceIP(ENIs[idx])
+        data.frame(taskId = taskIds, status = status, privateIP = privateIPs, publicIP = publicIPs)
     }else{
-        data.frame(taskId = taskIds, status = status)
+        data.frame(taskId = taskIds, status = status, privateIP = privateIPs)
     }
 }
 getInstanceENI<-function(x){

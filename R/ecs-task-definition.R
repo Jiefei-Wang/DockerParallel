@@ -1,16 +1,21 @@
-CreateTaskDefinition <- function(taskName, container){
+CreateTaskDefinition <- function(taskName, CPU = 256, memory = 512, image){
     request <- ecs_get_json("task-definition.json")
     request$family <- taskName
-    request$cpu <- as.character(getECSCPU(container))
-    request$memory <- as.character(getECSMem(container))
-    request$containerDefinitions[[1]]$image <- container@image
+    request$cpu <- as.character(CPU)
+    request$memory <- as.character(memory)
+    request$containerDefinitions[[1]]$image <- image
     response <- ecs_register_task_definition(request)
     response$taskDefinition$taskDefinitionArn
 }
 
-deleteTaskDefinition <- function(task_name){
-    request <- list(taskDefinition = task_name)
+deleteTaskDefinition <- function(taskName){
+    request <- list(taskDefinition = taskName)
     response <- ecs_deregister_task_definition(request)
+    response
+}
+
+describeTaskDefinition <- function(taskName){
+    response <- ecs_describe_task_definition(list(taskDefinition = taskName))
     response
 }
 
@@ -28,32 +33,35 @@ listTaskDefinitions<-function(taskName = NULL){
 }
 
 configTaskDefinition <- function(x){
-    serverTaskDefName <- getECSData(x, "serverTaskDefName")
-    if(is.null(serverTaskDefName)){
-        if(is.empty(x@serverTaskDefName)){
-            serverTaskDefName <-ECSDefault$serverTaskDefName
-        }else{
-            serverTaskDefName <- x@serverTaskDefName
-        }
-        serverTaskDefName <- CreateTaskDefinition(
-            serverTaskDefName,
-            x@server
-        )
-        setECSData(x, "serverTaskDefName", serverTaskDefName)
+    if(is(x@server, "Container")){
+        configTaskDefinitionInternal(x, "serverTaskDefName", x@server@image)
     }
+    configTaskDefinitionInternal(x, "workerTaskDefName", x@worker@image)
+}
 
-    workerTaskDefName <- getECSData(x, "workerTaskDefName")
-    if(is.null(workerTaskDefName)){
-        if(is.empty(x@workerTaskDefName)){
-            workerTaskDefName <-ECSDefault$workerTaskDefName
+configTaskDefinitionInternal <- function(x, taskAttrName, image){
+    taskDefName <- getECSCloudData(x, taskAttrName)
+    if(is.empty(taskDefName)){
+        if(is.empty(do.call("@",list(x,taskAttrName)))){
+            taskDefName <-ECSDefault[[taskAttrName]]
         }else{
-            workerTaskDefName <- x@workerTaskDefName
+            taskDefName <- do.call("@",list(x, taskAttrName))
         }
-        workerTaskDefName <- CreateTaskDefinition(
-            workerTaskDefName,
-            x@worker
-        )
-        setECSData(x, "workerTaskDefName", workerTaskDefName)
+        definitionList <- listTaskDefinitions(taskDefName)
+        if(nrow(definitionList)!=0){
+            taskDescription <- describeTaskDefinition(taskDefName)
+            taskImage <- taskDescription$taskDefinition$containerDefinitions[[1]]$image
+        }else{
+            taskImage <- "NULL"
+        }
+
+        if(taskImage != image){
+            taskDefName <- CreateTaskDefinition(
+                taskName = taskDefName,
+                image = image
+            )
+        }
+        setECSCloudData(x, taskAttrName, taskDefName)
     }
 }
 

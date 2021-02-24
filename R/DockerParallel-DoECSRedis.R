@@ -1,6 +1,11 @@
 registerDoECSRedis <- function(x, verbose = FALSE){
-    queue <- x$serverQueue
+    queue <- getECSClusterData(x, "serverQueue")
+    serverClientIP <- getECSClusterData(x, "serverClientIP")
+    serverPassword <- getECSClusterData(x, "serverPassword")
     doRedis::registerDoRedis(queue,
-                    host = x$serverIP,
-                    password = x$serverPassword)
+                    host = serverClientIP,
+                    password = serverPassword)
 }
+
+
+
