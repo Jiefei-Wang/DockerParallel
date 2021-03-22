@@ -1,0 +1,47 @@
+ECSProvider <- function(clusterName = "R-worker-cluster",
+                        serverTaskDefName = "R-server-task-definition",
+                        workerTaskDefName = "R-worker-task-definition",
+                        securityGroupName = "R-parallel-security-group",
+                        vpcId = NULL,
+                        subnetId = NULL,
+                        securityGroupId = NULL,
+                        internetGatewayId = NULL,
+                        routeTableId = NULL){
+    .ECSProvider$new(
+        clusterName = clusterName,
+        serverTaskDefName = serverTaskDefName,
+        workerTaskDefName = workerTaskDefName,
+        securityGroupName = securityGroupName,
+        vpcId = vpcId,
+        subnetId = subnetId,
+        securityGroupId = securityGroupId,
+        internetGatewayId = internetGatewayId,
+        routeTableId = routeTableId
+    )
+}
+
+.ECSProvider$methods(
+    show = function(){
+        cat("Cluster name:        ", .self$clusterName, "\n")
+        cat("Server definition:   ", .self$serverTaskDefName, "\n")
+        cat("Worker definition:   ", .self$workerTaskDefName, "\n")
+        cat("Security group name: ", .self$securityGroupName, "\n")
+
+        if(!is.null(.self$vpcId)){
+            cat("VPC ID:              ", .self$vpcId, "\n")
+        }
+        if(!is.null(.self$subnetId)){
+            cat("Subnet ID:           ", .self$subnetId, "\n")
+        }
+        if(!is.null(.self$securityGroupId)){
+            cat("Security group ID:   ", .self$securityGroupId, "\n")
+        }
+        if(!is.null(.self$internetGatewayId)){
+            cat("Internet gateway ID: ", .self$internetGatewayId, "\n")
+        }
+        if(!is.null(.self$routeTableId)){
+            cat("Route table ID:      ", .self$routeTableId, "\n")
+        }
+        invisible(NULL)
+    }
+)

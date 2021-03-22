@@ -1,17 +1,3 @@
-# cloud and hardware is binded
-
-# cloud <- ECSFargateConfig()
-# addWorker(cloud, worker, hardware)
-# deployContainers(cloud)
-# getRunningContainer(cloud)
-# getCluster(cloud)
-
-ECSDefault <- list(
-    clusterName = "R-worker-cluster",
-    serverTaskDefName = "R-server-task-definition",
-    workerTaskDefName = "R-worker-task-definition",
-    securityGroupName = "R-parallel-security-group"
-)
 
 
 ECSfilterList <- list(`tag:docker-parallel-tag`="docker-parallel-tag")

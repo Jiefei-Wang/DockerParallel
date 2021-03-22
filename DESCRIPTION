@@ -8,7 +8,6 @@ Authors@R:
            email = "szwjf08@gmail.com")
 Description: What the package does (one paragraph).
 Imports:
-  simpleECS,
   rjson,
   doRedis
 License: GPL-3

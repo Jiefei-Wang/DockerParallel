@@ -1,55 +1,5 @@
-showDetails <- function(x){
-    attrNames <- c("clusterName","serverTaskDefName",
-                   "workerTaskDefName","securityGroupName",
-                   "VPCId","subnetId",
-                   "securityGroupId","internetGatewayId","routeTableId")
-    clusterName <- x$clusterName
-    for(i in attrNames){
-        value <- x[[i]]
-        cat(i,": ", value,"\n", sep = "")
-    }
-    invisible(NULL)
-}
 
-
-getECSCloudData <- function(x, name){
-    x@cloudData[[name]]
-}
-
-setECSCloudData <- function(x, name, value){
-    x@cloudData[[name]] <- value
-}
-
-getECSClusterData <- function(x, name){
-    x@clusterData[[name]]
-}
-
-setECSClusterData <- function(x, name, value){
-    x@clusterData[[name]] <- value
-}
-
-
-getRedisServerPort <- function(x){
-    server <- x@server
-    if(is(server, "Container")){
-        redisPort <- as.numeric(server@environment$redisPort)
-    }else{
-        redisPort <- server@port
-    }
-    if(is.empty(redisPort)){
-        redisPort <- 6379
-    }
-    redisPort
-}
-
-resetCloudConfig <- function(x){
-    rm(list=names(x@cloudData),envir = x@cloudData)
-}
-
-
-## x <-ECSFargateConfig()
-## initConfig(x)
-initConfig<-function(x, verbose= TRUE){
+initProvider<-function(x, verbose= TRUE){
     ## Cluster name
     verbosePrint(verbose, "Setting up cluster")
     clusterName <- configClusterName(x)
