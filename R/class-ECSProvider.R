@@ -16,7 +16,17 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
         subnetId = subnetId,
         securityGroupId = securityGroupId,
         internetGatewayId = internetGatewayId,
-        routeTableId = routeTableId
+        routeTableId = routeTableId,
+        clusterNameVerified = FALSE,
+        serverTaskDefNameVerified = FALSE,
+        workerTaskDefNameVerified = FALSE,
+        securityGroupVerified = FALSE,
+        vpcVerified = FALSE,
+        subnetVerified = FALSE,
+        internetGatewayVerified = FALSE,
+        routeTableVerified = FALSE,
+        routeVerified = FALSE,
+        inboundPermissionVerified = FALSE
     )
 }
 
@@ -45,3 +55,8 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
         invisible(NULL)
     }
 )
+
+
+setMethod("runContainers", "ECSProvider",definition = function(provider, container, containerNumber){
+
+})

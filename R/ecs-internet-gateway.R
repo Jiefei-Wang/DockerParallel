@@ -1,10 +1,8 @@
 createInternetGateway <- function(){
-    query <- list()
-    query[["TagSpecification.1.ResourceType"]] <-"internet-gateway"
-    query[["TagSpecification.1.Tag.1.Key"]] <-"docker-parallel-tag"
-    query[["TagSpecification.1.Tag.1.Value"]] <-"docker-parallel-tag"
-    response <- ec2_create_internet_gateway(query)
-    response$internetGateway$internetGatewayId[[1]]
+    tagSpecification <- ECSTagTemplate
+    tagSpecification[[1]]$ResourceType <- "internet-gateway"
+    response <- ec2_create_internet_gateway(TagSpecification=tagSpecification)
+    response$internetGatewayId[[1]]
 }
 deleteInternetGateway <- function(gatewayId){
     gatewayList <- listInternetGateways(idFilter = gatewayId)
@@ -12,32 +10,29 @@ deleteInternetGateway <- function(gatewayId){
         return()
     }
     idx <- which(gatewayList$gatewayId==gatewayId)
-    VPCId <- gatewayList$VPCId[idx]
-    if(VPCId != "NULL"){
-        detachInternetGateway(VPCId,gatewayId)
+    vpcId <- gatewayList$vpcId[idx]
+    if(vpcId != "NULL"){
+        detachInternetGateway(vpcId,gatewayId)
     }
-    query <- list(InternetGatewayId=gatewayId)
-    response <- ec2_delete_internet_gateway(query)
+    response <- ec2_delete_internet_gateway(InternetGatewayId=gatewayId)
     response
 }
 
-listInternetGateways<-function(filterList = NULL,
-                               VPCFilter = NULL, idFilter = NULL){
-    action <- "DescribeInternetGateways"
-    if(!is.null(VPCFilter)){
-        filterList[["attachment.vpc-id"]] <- VPCFilter
+listInternetGateways<-function(filterList = list(),
+                               vpcFilter = NULL, idFilter = NULL){
+    if(!is.null(vpcFilter)){
+        filterList[["attachment.vpc-id"]] <- vpcFilter
     }
     if(!is.null(idFilter)){
         filterList[["internet-gateway-id"]] <- idFilter
     }
-    query <- getFilter(filterList)
 
-    response <- ec2_describe_internet_gateways(query)
+    response <- ec2_describe_internet_gateways(Filter = filterList)
     result <- lapply(response,processGateway)
     result <- do.call("rbind", result)
     if(is.null(result)){
         data.frame(gatewayId=character(),
-                   VPCId=character())
+                   vpcId=character())
     }else{
         result
     }
@@ -46,66 +41,63 @@ listInternetGateways<-function(filterList = NULL,
 
 processGateway<-function(gateway){
     id <- gateway$internetGatewayId[[1]]
-    attachedVPC <- lapply(gateway$attachmentSet,function(x)x$vpcId[[1]])
-    idx <- which(!vapply(attachedVPC, is.null, logical(1)))
+    attachedVpc <- lapply(gateway$attachmentSet,function(x)x$vpcId[[1]])
+    idx <- which(!vapply(attachedVpc, is.null, logical(1)))
     if(length(idx)==0){
-        attachedVPC<- "NULL"
+        attachedVpc<- "NULL"
     }else{
-        attachedVPC <- attachedVPC[[idx]]
+        attachedVpc <- attachedVpc[[idx]]
     }
-    data.frame(gatewayId=rep(id,length(attachedVPC)),VPCId=attachedVPC)
+    data.frame(gatewayId=rep(id,length(attachedVpc)),vpcId=attachedVpc)
 }
 
 configInternetGateway <- function(x){
-    internetGatewayId <- getECSCloudData(x, "internetGatewayId")
-    if(is.invalid(x, "internetGatewayId")){
-        VPCId <- configVPCId(x)
+    if(!x$internetGatewayVerified){
+        vpcId <- configVpcId(x)
         needAttach <- FALSE
-        if(is.empty(x@internetGatewayId)){
+        if(is.empty(x$internetGatewayId)){
             gatewayList <-
                 listInternetGateways(
-                    VPCFilter = VPCId,
+                    vpcFilter = vpcId,
                     filterList = ECSfilterList
                     )
             if(nrow(gatewayList)!=0){
-                internetGatewayId <- gatewayList$gatewayId[1]
+                x$internetGatewayId <- gatewayList$gatewayId[1]
             }else{
-                internetGatewayId <- createInternetGateway()
+                x$internetGatewayId <- createInternetGateway()
                 needAttach <- TRUE
             }
         }else{
             gatewayList <-
-                listInternetGateways(idFilter = x@internetGatewayId)
+                listInternetGateways(idFilter = x$internetGatewayId)
             if(nrow(gatewayList)!=1){
-                stop("The gateway id <",x@internetGatewayId,"> does not exist")
+                stop("The gateway id <",x$internetGatewayId,"> does not exist")
             }
-            if(gatewayList$VPCId!=VPCId){
+            currentVpcId <- gatewayList$vpcId[gatewayList$gatewayId==x$internetGatewayId]
+            if(currentVpcId != "NULL" && currentVpcId!=vpcId){
                 stop("The gateway id <",
-                     x@internetGatewayId,
-                     "> has been attached to a wrong VPC")
+                     x$internetGatewayId,
+                     "> has been attached to a different VPC")
             }
-            internetGatewayId <- x@internetGatewayId
-            needAttach <- gatewayList$VPCId == "NULL"
+            needAttach <- currentVpcId == "NULL"
         }
 
         if(needAttach){
             attachInternetGateway(
-                VPCId, internetGatewayId
+                vpcId, x$internetGatewayId
                 )
         }
-        setECSCloudData(x, "internetGatewayId", internetGatewayId)
+        x$internetGatewayVerified <- TRUE
     }
-    internetGatewayId
+    x$internetGatewayId
 }
 
-attachInternetGateway<-function(VPCId, gatewayId){
-    query <- list(InternetGatewayId = gatewayId, VpcId = VPCId)
-    response <- ec2_attach_internet_gateway(query)
+attachInternetGateway<-function(vpcId, gatewayId){
+    response <- ec2_attach_internet_gateway(InternetGatewayId = gatewayId, VpcId = vpcId)
     response
 }
 
-detachInternetGateway<-function(VPCId, gatewayId){
-    query <- list(InternetGatewayId = gatewayId, VpcId = VPCId)
-    response <- ec2_detach_internet_gateway(query)
+detachInternetGateway<-function(vpcId, gatewayId){
+    response <- ec2_detach_internet_gateway(InternetGatewayId = gatewayId, VpcId = vpcId)
     response
 }

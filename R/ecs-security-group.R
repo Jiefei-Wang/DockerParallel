@@ -1,26 +1,24 @@
-createSecurityGroup <- function(groupName, VPCId){
-    query <- list()
-    query$GroupDescription <- "Security group used by R worker nodes"
-    query$GroupName <- groupName
-    query$VpcId <- VPCId
-    query[["TagSpecification.1.ResourceType"]] <-"security-group"
-    query[["TagSpecification.1.Tag.1.Key"]] <-"docker-parallel-tag"
-    query[["TagSpecification.1.Tag.1.Value"]] <-"docker-parallel-tag"
-    response <- ec2_create_security_group(query)
+createSecurityGroup <- function(groupName, vpcId){
+    tagSpecification <- ECSTagTemplate
+    tagSpecification[[1]]$ResourceType <- "security-group"
+    response <- ec2_create_security_group(
+        GroupName = groupName,
+        VpcId = vpcId,
+        TagSpecification=tagSpecification,
+        GroupDescription = "Security group used by R worker nodes")
     response$groupId[[1]]
 }
 deleteSecurityGroup <- function(groupId){
-    query <- list(GroupId=groupId)
-    response <- ec2_delete_security_group(query)
+    response <- ec2_delete_security_group(GroupId=groupId)
     response
 }
 
 listSecurityGroups <- function(filterList = list(),
-                               VPCFilter = NULL,
+                               vpcFilter = NULL,
                                nameFilter = NULL,
                                idFilter = NULL){
-    if(!is.null(VPCFilter)){
-        filterList[["vpc-id"]] <- VPCFilter
+    if(!is.null(vpcFilter)){
+        filterList[["vpc-id"]] <- vpcFilter
     }
     if(!is.null(nameFilter)){
         filterList[["group-name"]] <- nameFilter
@@ -28,89 +26,81 @@ listSecurityGroups <- function(filterList = list(),
     if(!is.null(idFilter)){
         filterList[["group-id"]] <- idFilter
     }
-    query <- getFilter(filterList)
-    response <- ec2_describe_security_groups(query)
+    response <- ec2_describe_security_groups(Filter = filterList)
 
     groupNames <- vapply(response, function(x)x$groupName[[1]], character(1))
     groupIds <- vapply(response, function(x)x$groupId[[1]], character(1))
-    groupVPCIds <- vapply(response, function(x)x$vpcId[[1]], character(1))
+    groupvpcIds <- vapply(response, function(x)x$vpcId[[1]], character(1))
 
     data.frame(name=groupNames,
                groupId= groupIds,
-               VPCId= groupVPCIds)
+               vpcId= groupvpcIds)
 }
 
-configSecurityGroupId <- function(x){
-    securityGroupId <- getECSCloudData(x, "securityGroupId")
-    if(is.invalid(x, "securityGroupId")){
-        VPCId <- configVPCId(x)
-        securityGroupList <- listSecurityGroups(VPCFilter = VPCId)
-        if(is.empty(x@securityGroupId)&&is.empty(x@securityGroupName)){
-            idx <- which(securityGroupList$name == ECSDefault$securityGroupName)
+configSecurityGroup <- function(x){
+    if(!x$securityGroupVerified){
+        vpcId <- configVpcId(x)
+        securityGroupList <- listSecurityGroups(vpcFilter = vpcId)
+        if(is.empty(x$securityGroupId)){
+            idx <- which(securityGroupList$name == x$securityGroupName)
             if(length(idx)!=0){
-                securityGroupName <- securityGroupList$name[idx[1]]
-                securityGroupId <- securityGroupList$groupId[idx[1]]
+                x$securityGroupId <- securityGroupList$groupId[idx[1]]
             }else{
-                securityGroupName <- ECSDefault$securityGroupName
-                securityGroupId <-
-                    createSecurityGroup(securityGroupName,
-                                        VPCId)
+                x$securityGroupId <-
+                    createSecurityGroup(x$securityGroupName,
+                                        vpcId)
             }
         }else{
-            if(!is.empty(x@securityGroupName)){
-                idx <- which(securityGroupList$name == x@securityGroupName)
-                if(length(idx)==0){
-                    stop("The security group name <",x@securityGroupName,"> does not exist")
-                }
-                securityGroupName <- x@securityGroupName
-                securityGroupId <- securityGroupList$groupId[idx[1]]
-            }else{
-                idx <- which(securityGroupList$groupId == x@securityGroupId)
-                if(length(idx)==0){
-                    stop("The security group id <",x@securityGroupId,"> does not exist")
-                }
-                securityGroupName <- securityGroupList$name[idx[1]]
-                securityGroupId <- x@securityGroupId
+            idx <- which(securityGroupList$groupId == x@securityGroupId)
+            if(length(idx)==0){
+                stop("The security group id <",x@securityGroupId,"> does not exist")
             }
+            x$securityGroupName <- securityGroupList$name[idx[1]]
         }
-        setECSCloudData(x, "securityGroupId", securityGroupId)
-        setECSCloudData(x, "securityGroupName", securityGroupName)
+        x$securityGroupVerified <- TRUE
     }
-    securityGroupId
+    x$securityGroupId
 }
 
 #################################
 # security group policy
 #################################
 createSecurityGroupIpv4Rule <- function(securityGroupId, port){
-    action <- "AuthorizeSecurityGroupIngress"
-    query <- list()
-    query$GroupId <- securityGroupId
-    query[["IpPermissions.1.FromPort"]] <- port
-    query[["IpPermissions.1.ToPort"]] <- port
-    query[["IpPermissions.1.IpProtocol"]] <- "tcp"
-    query[["IpPermissions.1.IpRanges.CidrIp"]] <- "0.0.0.0/0"
-    query[["IpPermissions.1.IpRanges.Description"]] <- "allow all ipv4 ssh access"
-    response <- ec2_authorize_security_group_ingress(query)
+    ipPermissions <- list(
+        list(
+            FromPort = port,
+            ToPort = port,
+            IpProtocol = "tcp",
+            IpRanges.CidrIp = "0.0.0.0/0",
+            IpRanges.Description = "allow all ipv4 access"
+        )
+    )
+    response <- ec2_authorize_security_group_ingress(
+        GroupId = securityGroupId,
+        IpPermissions=ipPermissions
+    )
     response
 }
 createSecurityGroupIpv6Rule <- function(securityGroupId, port){
-    query <- list()
-    query$GroupId <- securityGroupId
-    query[["IpPermissions.1.FromPort"]] <- port
-    query[["IpPermissions.1.ToPort"]] <- port
-    query[["IpPermissions.1.IpProtocol"]] <- "tcp"
-    query[["IpPermissions.1.Ipv6Ranges.CidrIpv6"]] <- "::/0"
-    query[["IpPermissions.1.Ipv6Ranges.Description"]] <- "allow all ipv6 ssh access"
-    response <- ec2_authorize_security_group_ingress(query)
+    ipPermissions <- list(
+        list(
+            FromPort = port,
+            ToPort = port,
+            IpProtocol = "tcp",
+            Ipv6Ranges.CidrIpv6 = "::/0",
+            Ipv6Ranges.Description = "allow all ipv6 access"
+        )
+    )
+    response <- ec2_authorize_security_group_ingress(
+        GroupId = securityGroupId,
+        IpPermissions=ipPermissions
+    )
     response
 }
 
 listSecurityInboundRule<-function(securityGroupId){
-    action <- "DescribeSecurityGroups"
     filterList <- list("group-id" = securityGroupId)
-    query <- getFilter(filterList)
-    response <- ec2_describe_security_groups(query)
+    response <- ec2_describe_security_groups(Filter = filterList)
 
     from_port_list<-c()
     to_port_list<-c()
@@ -130,12 +120,12 @@ listSecurityInboundRule<-function(securityGroupId){
 
 
 ConfigInboundPermissions<-function(x, ports){
-    if(is.null(getECSCloudData(x, "inboundPermissionInitialized"))){
-        securityGroupId <- configSecurityGroupId(x)
+    if(!x$inboundPermissionVerified){
+        securityGroupId <- configSecurityGroup(x)
         inboundRules <- listSecurityInboundRule(securityGroupId)
         for(i in ports)
             ConfigInboundPermissionsInternal(securityGroupId, inboundRules, i)
-        setECSCloudData(x, "inboundPermissionInitialized", TRUE)
+        x$inboundPermissionVerified <- TRUE
     }
 }
 

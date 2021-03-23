@@ -1,37 +1,29 @@
 # config <- ecs_configuration()
 createCluster<-function(clusterName){
-    request <- ecs_get_json("create-cluster.json")
-    request$clusterName <- clusterName
-    response <- ecs_create_cluster(request)
+    tags <- ecs_list_to_array(list(DockerParallel = "DockerParallel"), name = "key")
+    response <-ecs_create_cluster(
+        clusterName = clusterName,
+        tags = tags,
+        capacityProviders = list("FARGATE"))
     response
 }
 
 deleteCluster <- function(clusterName){
-    request <- list(cluster = clusterName)
-    response <- ecs_delete_cluster(request)
+    response <- ecs_delete_cluster(cluster = clusterName)
     response
 }
 listClusters <- function(){
     response <- ecs_list_clusters()
-    get_resource_names(response)
+    ecs_get_resource_names(response)
 }
 
 configClusterName <- function(x){
-    clusterName <- getECSCloudData(x, "clusterName")
-    if(is.invalid(x, "clusterName")){
+    if(!x$clusterNameVerified){
         clusterList <- listClusters()
-        if(!is.empty(x@clusterName)){
-            if(!any(clusterList==x@clusterName)){
-                clusterName <- createCluster(x@clusterName)
-            }
-            clusterName <- x@clusterName
-        }else{
-            if(!any(clusterList==ECSDefault$clusterName)){
-                createCluster(ECSDefault$clusterName)
-            }
-            clusterName <- ECSDefault$clusterName
+        if(all(clusterList!=x$clusterName)){
+            createCluster(x$clusterName)
         }
-        setECSCloudData(x, "clusterName", clusterName)
+        x$clusterNameVerified <- TRUE
     }
-    clusterName
+    x$clusterName
 }

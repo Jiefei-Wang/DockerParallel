@@ -12,6 +12,13 @@ setClassUnion("CharOrNULL",c("NULL","character"))
 
 setClassUnion("ContainerOrNULL",c("NULL","Container"))
 
+#' The root class of the cloud provider
+#'
+#' The root class of the cloud provider
+#'
+#' @export
+.CloudProvider <- setRefClass("CloudProvider")
+
 #' The instance hardware for running the docker
 #'
 #' The instance hardware for running the docker
@@ -31,6 +38,15 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
         id = "CharOrNULL"
     )
 )
+
+.ContainerConfig <- setClass(
+    "ContainerConfig",
+    representation(
+        container = "list",
+        hardware = "list"
+    )
+)
+
 
 #' The cloud configuration
 #'
@@ -76,9 +92,10 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 .DockerCluster <- setClass(
     "DockerCluster",
     representation(
-        cloudProvider = "ANY",
+        cloudProvider = "CloudProvider",
         cloudConfig = "CloudConfig",
-        cloudRuntime = "CloudRuntime"
+        cloudRuntime = "CloudRuntime",
+        verbose = "logical"
     )
 )
 
@@ -86,6 +103,8 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 ###########################
 ## ECS provider
 ###########################
+
+
 .ECSProvider <- setRefClass(
     "ECSProvider",
     fields = list(
@@ -97,6 +116,17 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
         subnetId = "CharOrNULL",
         securityGroupId = "CharOrNULL",
         internetGatewayId = "CharOrNULL",
-        routeTableId = "CharOrNULL"
-    )
+        routeTableId = "CharOrNULL",
+        clusterNameVerified = "logical",
+        serverTaskDefNameVerified = "logical",
+        workerTaskDefNameVerified = "logical",
+        securityGroupVerified = "logical",
+        vpcVerified = "logical",
+        subnetVerified = "logical",
+        internetGatewayVerified = "logical",
+        routeTableVerified = "logical",
+        routeVerified = "logical",
+        inboundPermissionVerified = "logical"
+    ),
+    contains = "CloudProvider"
 )

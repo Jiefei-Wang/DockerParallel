@@ -4,18 +4,30 @@ ecs_get_json <-function(file_name){
   if(!file.exists(file_path)){
     file_path <- file.path("inst","json_config",file_name)
   }
-  fromJSON(file=file_path,simplify=FALSE)
+  rjson::fromJSON(file=file_path,simplify=FALSE)
 }
 
 verbosePrint<-function(verbose, ...){
   if(verbose)
     message(...)
 }
-## get resource name from ARN
-get_resource_names <- function(ARNs){
-  unname(vapply(ARNs, get_resource_name, character(1)))
+
+
+ecs_list_to_array <- function(x, name = "name", value = "value"){
+  result <- list()
+  for(i in seq_along(x)){
+    result[[i]] <- list()
+    result[[i]][[name]] <- names(x)[i]
+    result[[i]][[value]] <- x[[i]]
+  }
+  result
 }
-get_resource_name <- function(ARN){
+
+## get resource name from ARN
+ecs_get_resource_names <- function(ARNs){
+  unname(vapply(ARNs, ecs_get_resource_name, character(1)))
+}
+ecs_get_resource_name <- function(ARN){
   match_index <- gregexpr(":",ARN,fixed = TRUE)[[1]]
   x <- substring(ARN, match_index[5]+1)
   separator <-regexpr("/", x, fixed = TRUE)

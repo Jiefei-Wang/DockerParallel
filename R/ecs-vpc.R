@@ -1,62 +1,71 @@
-createVPC <- function(){
-  query <- list()
-  query$CidrBlock <- "10.0.0.0/16"
-  query[["TagSpecification.1.ResourceType"]] <-"vpc"
-  query[["TagSpecification.1.Tag.1.Key"]] <-"docker-parallel-tag"
-  query[["TagSpecification.1.Tag.1.Value"]] <-"docker-parallel-tag"
-  response <- ec2_create_vpc(query)
-  response$vpc$vpcId[[1]]
+createVpc <- function(){
+  # query <- list()
+  # query$CidrBlock <- "10.0.0.0/16"
+  # query[["TagSpecification.1.ResourceType"]] <-"vpc"
+  # query[["TagSpecification.1.Tag.1.Key"]] <-"docker-parallel-tag"
+  # query[["TagSpecification.1.Tag.1.Value"]] <-"docker-parallel-tag"
+
+  CidrBlock <- "10.0.0.0/16"
+  tagSpecification <- ECSTagTemplate
+  tagSpecification[[1]]$ResourceType <- "vpc"
+
+  response <- ec2_create_vpc(CidrBlock = "10.0.0.0/16", TagSpecification = tagSpecification)
+  response$vpcId[[1]]
 }
 
-deleteVPC <- function(VPCId){
-  gatewayList<- listInternetGateways(VPCFilter = VPCId)
+deleteVpc <- function(vpcId){
+  gatewayList<- listInternetGateways(vpcFilter = vpcId)
   for(i in gatewayList$gatewayId){
-    detachInternetGateway(VPCId, i)
+    detachInternetGateway(vpcId, i)
   }
-  securityGroupList <- listSecurityGroups(VPCFilter = VPCId)
+  securityGroupList <- listSecurityGroups(vpcFilter = vpcId)
   for(i in securityGroupList$groupId[securityGroupList$name!="default"]){
     deleteSecurityGroup(i)
   }
-  subnetList <- listSubnets(VPCFilter = VPCId)
+  subnetList <- listSubnets(vpcFilter = vpcId)
   for(i in subnetList$subnetId){
     deleteSubnet(i)
   }
-  query <- list(VpcId=VPCId)
-  response <- ec2_delete_vpc(query)
+  routeTableList <- listRouteTables(vpcFilter = vpcId)
+  for(i in routeTableList$routeId){
+    tryCatch(
+      deleteRouteTable(i),
+      error = function(e) e
+    )
+  }
+  response <- ec2_delete_vpc(VpcId=vpcId)
   response
 }
 
-listVPCs<-function(filterList = list(), idFilter = NULL){
+listVpcs<-function(filterList = list(), idFilter = NULL){
   if(!is.null(idFilter)){
     filterList[["vpc-id"]] <- idFilter
   }
   query <- getFilter(filterList)
 
-  response <- ec2_describe_vpcs(query)
+  response <- ec2_describe_vpcs(Filter = filterList)
   vpc_ids <- vapply(response,function(x)x$vpcId[[1]],character(1))
   unname(vpc_ids)
 }
 
-configVPCId <- function(x){
-  VPCId <- getECSCloudData(x,"VPCId")
-  if(is.invalid(x, "VPCId")){
-    if(!is.empty(x@VPCId)){
-      VPCList <- listVPCs()
-      if(all(VPCList != x@VPCId)){
-        stop("The VPC id <",x@VPCId,"> does not exist")
+configVpcId <- function(x){
+  if(!x$vpcVerified){
+    if(!is.empty(x$vpcId)){
+      vpcList <- listVpcs(idFilter = x$vpcId)
+      if(all(vpcList != x$vpcId)){
+        stop("The VPC id <",x$vpcId,"> does not exist")
       }
-      VPCId <- x@VPCId
     }else{
-      VPCList <- listVPCs(
+      vpcList <- listVpcs(
         filterList = ECSfilterList
       )
-      if(length(VPCList)!=0){
-        VPCId <- VPCList[1]
+      if(length(vpcList)!=0){
+        x$vpcId <- vpcList[1]
       }else{
-        VPCId <- createVPC()
+        x$vpcId <- createVpc()
       }
     }
-      setECSCloudData(x, "VPCId", VPCId)
+    x$vpcVerified <- TRUE
   }
-  VPCId
+  x$vpcId
 }

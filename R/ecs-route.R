@@ -1,24 +1,18 @@
 createRoute <- function(cidr, gatewayId, routeTableId){
-    query <- list(
-        DestinationCidrBlock = cidr,
-        GatewayId = gatewayId,
-        RouteTableId = routeTableId
-    )
-    response <- ec2_create_route(query)
+    response <- ec2_create_route(DestinationCidrBlock = cidr,
+                                 GatewayId = gatewayId,
+                                 RouteTableId = routeTableId)
     response
 }
 
 deleteRoute <- function(routeTableId, cidr){
-    query <- list(DestinationCidrBlock = cidr,
-                  RouteTableId = routeTableId)
-    response <- ec2_delete_route(query)
+    response <- ec2_delete_route(DestinationCidrBlock = cidr,
+                                 RouteTableId = routeTableId)
     response
 }
 
 listRoute<-function(routeTableId = NULL){
-    query <- list()
-    query[["RouteTableId.1"]] <- routeTableId
-    response <- ec2_describe_route_tables(query)
+    response <- ec2_describe_route_tables(RouteTableId=routeTableId)
     route_set <- response$item$routeSet
 
     destCidr <- lapply(route_set, function(x) x$destinationCidrBlock[[1]])
@@ -43,8 +37,7 @@ listRoute<-function(routeTableId = NULL){
 configDefaultRoute<-function(x){
     internetGatewayId <- configInternetGateway(x)
     routeTableId <- configRouteTable(x)
-    defaultRouteInitialized <- getECSCloudData(x, "defaultRouteInitialized")
-    if(is.null(defaultRouteInitialized)){
+    if(!x$routeVerified){
         routeList <- listRoute(routeTableId)
         if(!any(routeList$cidr=="0.0.0.0/0"&
                 routeList$gateway==internetGatewayId)){
@@ -52,7 +45,7 @@ configDefaultRoute<-function(x){
                         internetGatewayId,
                         routeTableId)
         }
-        setECSCloudData(x, "defaultRouteInitialized", TRUE)
+        x$routeVerified <- TRUE
     }
 }
 

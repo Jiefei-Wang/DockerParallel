@@ -1,77 +1,66 @@
+ECSfilterList <- list(`tag:docker-parallel-tag`="docker-parallel-tag")
+ECSTagTemplate <- list(
+    list(ResourceType=NULL,
+         Tag = list(
+             list(Key= "docker-parallel-tag", Value = "docker-parallel-tag")
+         )
+    )
+)
 
-initProvider<-function(x, verbose= TRUE){
-    ## Cluster name
-    verbosePrint(verbose, "Setting up cluster")
-    clusterName <- configClusterName(x)
-    verbosePrint(verbose, "Cluster name: \t", clusterName)
-    ## VPC
-    verbosePrint(verbose, "Setting up VPC")
-    VPCId <- configVPCId(x)
-    verbosePrint(verbose, "VPC: \t", VPCId)
-    ## subnet
-    verbosePrint(verbose, "Setting up subnet")
-    subnetId <- configSubnetId(x)
-    verbosePrint(verbose, "Subnet id: \t", subnetId)
-    ## gateway
-    verbosePrint(verbose, "Setting up gateway")
-    gatewayId <- configInternetGateway(x)
-    verbosePrint(verbose, "Gateway: \t", gatewayId)
-    ## route table
-    verbosePrint(verbose, "Setting up route table")
-    routeTableId <- configRouteTable(x)
-    verbosePrint(verbose, "Route table: \t", routeTableId)
-    ## route
-    verbosePrint(verbose, "Setting up default route")
-    configDefaultRoute(x)
-    verbosePrint(verbose, "Default route finished")
-    ## security group
-    verbosePrint(verbose, "Setting up security group")
-    securityGroupId <- configSecurityGroupId(x)
-    verbosePrint(verbose, "Security group: ",securityGroupId)
-    ## Inbound permission
-    verbosePrint(verbose, "Setting up inbound permission")
-    if(is(x@server, "Container")){
-        ports <- c(22, getRedisServerPort(x))
-    }else{
-        ports <- 22
-    }
-    ConfigInboundPermissions(x, ports)
+initCluster <- function(x, cluster, verbose = FALSE){
+    # Inbound permission
+    verbosePrint(verbose, "Setting up server-worker inbound permission")
+    port <- cluster@cloudRuntime$serverPort
+    ConfigInboundPermissions(x, port)
     verbosePrint(verbose, "Inbound permission finished")
-    ## Task definition
+
+    # Task definition
     verbosePrint(verbose, "Setting up task defintion")
-    configTaskDefinition(x)
+    workerImage <- cluster@cloudConfig$workerContainer@image
+    if(!is.null(cluster@cloudConfig$serverContainer)){
+        serverImage <-cluster@cloudConfig$serverContainer@image
+    }else{
+        serverImage <- NULL
+    }
+    configTaskDefinition(x, workerImage, serverImage)
     verbosePrint(verbose, "Task defintion finished")
 }
 
-cleanupConfig <- function(x, verbose = TRUE){
-    if(is.empty(x@clusterName) &&
-       !is.empty(getECSCloudData(x, "clusterName"))){
+
+
+
+
+
+cleanupProvider <- function(x, verbose = TRUE){
+    if(x$clusterNameVerified && x$clusterName=="R-worker-cluster"){
         verbosePrint(verbose, "Deleting worker cluster")
         tryCatch({
-            deleteCluster(getECSCloudData(x, "clusterName"))
-            setECSCloudData(x, "clusterName", NULL)
+            deleteCluster(x$clusterName)
+            x$clusterNameVerified <- FALSE
         },
         error = function(e) message(e))
     }
-    if(is.empty(x@VPCId) &&
-       !is.empty(getECSCloudData(x, "VPCId"))){
+
+    if(x$vpcVerified){
         verbosePrint(verbose, "Deleting vpc")
         tryCatch({
-            deleteVPC(getECSCloudData(x, "VPCId"))
-            setECSCloudData(x, "VPCId", NULL)
+            deleteVpc(x$vpcId)
+            x$vpcVerified <- FALSE
+            x$internetGatewayVerified <- FALSE
+            x$securityGroupVerified <- FALSE
+            x$subnetVerified <- FALSE
+            x$routeTableVerified <- FALSE
         },
         error = function(e) message(e))
     }
     verbosePrint(verbose, "Deleting internet gateway")
-    if(is.empty(x@internetGatewayId) &&
-       !is.empty(getECSCloudData(x, "internetGatewayId"))){
+    if(x$internetGatewayVerified){
         tryCatch({
-            deleteInternetGateway(getECSCloudData(x, "internetGatewayId"))
-            setECSCloudData(x, "internetGatewayId", NULL)
+            deleteInternetGateway(x$internetGatewayId)
+            x$internetGatewayVerified <- FALSE
         },
         error = function(e) message(e))
     }
     invisible()
 }
-
 
