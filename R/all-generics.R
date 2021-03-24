@@ -1,23 +1,34 @@
 ###############cloud provider###############
-setGeneric("initialProvider", function(provider, verbose = FALSE, ...){
+setGeneric("initialProvider", function(provider, cluster, verbose = FALSE, ...){
     standardGeneric("initialProvider")
 })
-setGeneric("initialCluster", function(provider, cluster, verbose = FALSE, ...){
-    standardGeneric("initialCluster")
-})
 
+#' Run the containers
 #'
+#' Run the containers and return a list of instance handles
+#'
+#' @return InstanceInfo object
 setGeneric("runContainers", function(provider, container, hardware, containerNumber, verbose = FALSE, ...){
     standardGeneric("runContainers")
 })
 
 
-#' @returns
-#' A data.frame with the columns `publicIp` and `privateIp`
-setGeneric("getInstanceIps", function(provider, instanceHandles, publicIp = TRUE,
-                                      privateIp = TRUE, verbose = FALSE, ...){
-    standardGeneric("getInstanceIps")
+#' Get the public Ips for the instances
+#'
+#' Get the public Ips for the instances
+#'
+#' @param instanceHandles A list of instance handles
+#'
+#' @return InstanceInfo object
+# setGeneric("getInstanceIps", function(provider, instanceHandles, verbose = FALSE, ...){
+#     standardGeneric("getInstanceIps")
+# })
+
+setGeneric("getClusterIp", function(provider, serverHandle, verbose = FALSE, ...){
+    standardGeneric("getClusterIp")
 })
+
+
 #' @returns
 #' A logical vector
 setGeneric("instanceAlive", function(provider, instanceHandles, verbose = FALSE, ...){
@@ -29,12 +40,13 @@ setGeneric("killInstances", function(provider, instanceHandles, verbose = FALSE,
 
 ###############container###############
 #' @returns
-#' A list object with element `container` and `hardware`
-setGeneric("createServerConfig", function(container, cluster, verbose = FALSE, ...){
-    standardGeneric("createServerConfig")
+#' `container` object
+setGeneric("configServerContainer", function(container, cluster, verbose = FALSE, ...){
+    standardGeneric("configServerContainer")
 })
+
 #' @returns
-#' A list object with element `container` and `hardware`
-setGeneric("createWorkerConfig", function(container, cluster, workerNumber, verbose = FALSE, ...){
-    standardGeneric("createWorkerConfig")
+#' `container` object
+setGeneric("configWorkerContainer", function(container, cluster, verbose = FALSE, ...){
+    standardGeneric("configWorkerContainer")
 })

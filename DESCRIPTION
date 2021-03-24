@@ -10,7 +10,8 @@ Description: What the package does (one paragraph).
 Imports:
   rjson,
   doRedis,
-  aws.ecx
+  aws.ecx,
+  adagio
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

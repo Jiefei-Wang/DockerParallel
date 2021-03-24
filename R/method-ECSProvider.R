@@ -1,4 +1,4 @@
-setMethod("initialProvider", "ECSProvider", function(provider, verbose, ...){
+setMethod("initialProvider", "ECSProvider", function(provider, cluster, verbose, ...){
     ## Cluster name
     verbosePrint(verbose, "Setting up cluster")
     clusterName <- configClusterName(provider)
@@ -28,20 +28,10 @@ setMethod("initialProvider", "ECSProvider", function(provider, verbose, ...){
     securityGroupId <- configSecurityGroup(provider)
     verbosePrint(verbose, "Security group: ",securityGroupId)
     # Inbound permission
-    verbosePrint(verbose, "Setting up SSH inbound permission")
-    port <- 22
+    verbosePrint(verbose, "Setting up SSH and server-worker inbound permission")
+    port <- c(22, cluster@cloudConfig$serverPort)
     ConfigInboundPermissions(provider, port)
     verbosePrint(verbose, "Inbound permission finished")
-})
-
-
-setMethod("initialCluster", "ANY", function(provider, cluster, verbose,...){
-    # Inbound permission
-    verbosePrint(verbose, "Setting up server-worker inbound permission")
-    port <- cluster@cloudRuntime$serverPort
-    ConfigInboundPermissions(provider, port)
-    verbosePrint(verbose, "Inbound permission finished")
-
     # Task definition
     verbosePrint(verbose, "Setting up task defintion")
     workerImage <- cluster@cloudConfig$workerContainer@image
@@ -53,6 +43,7 @@ setMethod("initialCluster", "ANY", function(provider, cluster, verbose,...){
     configTaskDefinition(provider, workerImage, serverImage)
     verbosePrint(verbose, "Task defintion finished")
 })
+
 
 
 setMethod("runContainers", "ECSProvider",

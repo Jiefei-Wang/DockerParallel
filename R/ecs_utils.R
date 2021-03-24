@@ -105,11 +105,3 @@ is.valid <- function(x, attrName){
 is.invalid <- function(x, attrName){
   !is.valid(x, attrName)
 }
-
-getEnvJson <- function(x){
-    result <- list()
-    for(i in seq_along(x)){
-        result[[i]] <- list(name = names(x)[i], value = as.character(x[[i]]))
-    }
-    result
-}

@@ -1,4 +1,14 @@
 setClassUnion("CharOrNULL",c("NULL","character"))
+setClassUnion("IntOrNULL",c("NULL","integer"))
+
+
+.InstanceInfo <- setClass(
+    "InstanceInfo",
+    representation(
+        instanceHandle = "list",
+        ip = "CharOrNULL"
+    )
+)
 
 .Container <- setClass(
     "Container",
@@ -70,21 +80,19 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
         serverContainer = "ContainerOrNULL",
         workerContainer = "Container",
         serverHardware = "CloudHardware",
-        workerHardware = "CloudHardware"
+        workerHardware = "CloudHardware",
+        serverPort = "IntOrNULL",
+        serverPassword = "CharOrNULL"
     )
 )
 
 .CloudRuntime <- setRefClass(
     "CloudRuntime",
     fields = list(
-        serverPublicIp = "CharOrNULL",
-        serverPrivateIp = "CharOrNULL",
-        serverPort = "integer",
-        serverPassword = "CharOrNULL",
-        workerPublicIps = "CharOrNULL",
-        workerPrivateIps = "CharOrNULL",
         serverHandle = "ANY",
-        workerHandles = "list"
+        workerHandles = "list",
+        workerPerHandle = "integer",
+        clusterIp = "CharOrNULL"
     )
 )
 
