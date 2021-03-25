@@ -2,14 +2,6 @@ setClassUnion("CharOrNULL",c("NULL","character"))
 setClassUnion("IntOrNULL",c("NULL","integer"))
 
 
-.InstanceInfo <- setClass(
-    "InstanceInfo",
-    representation(
-        instanceHandle = "list",
-        ip = "CharOrNULL"
-    )
-)
-
 .Container <- setClass(
     "Container",
     representation(
@@ -117,8 +109,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
     "ECSProvider",
     fields = list(
         clusterName = "CharOrNULL",
-        serverTaskDefName = "CharOrNULL",
-        workerTaskDefName = "CharOrNULL",
+        taskDefName = "CharOrNULL",
         securityGroupName = "CharOrNULL",
         vpcId = "CharOrNULL",
         subnetId = "CharOrNULL",
@@ -126,8 +117,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
         internetGatewayId = "CharOrNULL",
         routeTableId = "CharOrNULL",
         clusterNameVerified = "logical",
-        serverTaskDefNameVerified = "logical",
-        workerTaskDefNameVerified = "logical",
+        taskDefNameVerified = "logical",
         securityGroupVerified = "logical",
         vpcVerified = "logical",
         subnetVerified = "logical",

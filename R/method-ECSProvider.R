@@ -34,19 +34,28 @@ setMethod("initialProvider", "ECSProvider", function(provider, cluster, verbose,
     verbosePrint(verbose, "Inbound permission finished")
     # Task definition
     verbosePrint(verbose, "Setting up task defintion")
-    workerImage <- cluster@cloudConfig$workerContainer@image
-    if(!is.null(cluster@cloudConfig$serverContainer)){
-        serverImage <-cluster@cloudConfig$serverContainer@image
-    }else{
-        serverImage <- NULL
-    }
-    configTaskDefinition(provider, workerImage, serverImage)
+    configTaskDefinition(provider)
     verbosePrint(verbose, "Task defintion finished")
 })
 
 
+setMethod("runServerContainers", "ECSProvider",
+          function(provider, container, hardware, verbose = FALSE, ...){
+              hardware <- getValidFargateHardware(hardware)
 
-setMethod("runContainers", "ECSProvider",
-          function(provider, container, hardware, containerNumber, verbose = FALSE, ...){
 
 })
+setMethod("runWorkerContainers", "ECSProvider",
+          function(provider, container, hardware, containerNumber, verbose = FALSE, ...){
+
+
+})
+
+
+
+
+
+
+
+
+

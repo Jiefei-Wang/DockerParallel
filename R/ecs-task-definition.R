@@ -33,40 +33,22 @@ describeTaskDefinition <- function(taskName, version = NULL){
 
 listTaskDefinitions<-function(taskName = NULL){
     defArns <- ecs_list_task_definitions(familyPrefix = taskName)
-    defInfo <- ecs_get_resource_names(defArns)
+    defInfo <- ECSGetResourceNames(defArns)
     defInfo <- strsplit(defInfo,":", fixed = TRUE)
     defNames <- vapply(defInfo, function(x)x[1], character(1))
     defVersions <- vapply(defInfo, function(x)as.numeric(x[2]),numeric(1))
     data.frame(name = defNames, version = defVersions)
 }
 
-configTaskDefinition <- function(x, workerImage, serverImage = NULL){
-    if(!is.null(serverImage)){
-        if(!x$serverTaskDefNameVerified){
-            configTaskDefinitionInternal(x$serverTaskDefName, serverImage)
-            x$serverTaskDefNameVerified <- TRUE
+configTaskDefinition <- function(x){
+    if(!x$taskDefNameVerified){
+        definitionList <- listTaskDefinitions(taskName = x$taskDefName)
+        if(nrow(definitionList)==0){
+            taskDefName <- CreateTaskDefinition(
+                taskName = x$taskDefName,
+                image = "waiting-for-filling"
+            )
         }
-    }
-    if(!x$workerTaskDefNameVerified){
-        configTaskDefinitionInternal(x$workerTaskDefName, workerImage)
-        x$workerTaskDefNameVerified <- TRUE
+        x$taskDefNameVerified <- TRUE
     }
 }
-
-configTaskDefinitionInternal <- function(taskDefName, image){
-    definitionList <- listTaskDefinitions(taskDefName)
-    if(nrow(definitionList)!=0){
-        version <- max(definitionList$version)
-        taskDescription <- describeTaskDefinition(taskDefName,version = version)
-        taskImage <- taskDescription$containerDefinitions[[1]]$image
-    }else{
-        taskImage <- "NULL"
-    }
-    if(taskImage != image){
-        taskDefName <- CreateTaskDefinition(
-            taskName = taskDefName,
-            image = image
-        )
-    }
-}
-

@@ -1,36 +1,45 @@
 #################################
 #  task management
 #################################
-
-
-
 runTask <- function(clusterName, taskDefName, taskCount,
-                    CPU, memory,
+                    container,
+                    cpu, memory,
                     securityGroupId,
                     subnetId,
-                    command = NULL,
-                    env = list()
+                    enablePublicIp = TRUE
 ){
     stopifnot(taskCount<=10)
-    envJson <- getEnvJson(env)
+    envJson <- environmentToJSON(container@environment)
 
-    request <- ecs_get_json("run-task.json")
-    request$cluster <- clusterName
-    request$taskDefinition <- taskDefName
-    request$count <- taskCount
+    assignPublicIp <- ifelse(enablePublicIp, "ENABLED", "DISABLED")
 
-    request$networkConfiguration$awsvpcConfiguration$securityGroups[[1]]<- securityGroupId
-    request$networkConfiguration$awsvpcConfiguration$subnets[[1]]<- subnetId
-
+    networkConfiguration <-
+        list(
+            awsvpcConfiguration = list(subnets = list(subnetId),
+                                       securityGroups = list(securityGroupId),
+                                       assignPublicIp = assignPublicIp)
+        )
     request$overrides$containerOverrides[[1]]$environment <- envJson
     request$overrides$cpu<- as.character(CPU)
     request$overrides$memory<- as.character(memory)
+
+    overrides <- list(
+        containerOverrides = list(list(
+            name = "worker",environment = envJson)),
+        cpu = 0, memory = 0
+    )
     if(!is.null(command)){
-        request$overrides$containerOverrides[[1]]$command <- list(command)
+        overrides$containerOverrides[[1]]$command <- list(command)
     }
-    #existing_rule <- ecs_list_security_rule()
-    response <- ecs_run_task(request)
-    ids <- vapply(response$tasks,function(x)x$taskArn, character(1))
+    response <- ecs_run_task(cluster = clusterName,
+                             taskDefinition = taskDefName,
+                             count = taskCount,
+                             enableECSManagedTags = TRUE,
+                             launchType = "FARGATE",
+                             networkConfiguration=networkConfiguration,
+                             overrides=overrides
+    )
+    ids <- vapply(response,function(x)x$taskArn, character(1))
     ids
 }
 
@@ -39,46 +48,21 @@ listTasks<-function(clusterName,
                     status = c("RUNNING", "PENDING","STOPPED"),
                     taskFamily = NULL){
     status <- match.arg(status)
-    request <- list()
-    request$cluster <- clusterName
-    request$desiredStatus <- status
-    if(!is.null(taskFamily)){
-        request$family <- taskFamily
-    }
-    response <- ecs_list_tasks(request)
+    response <- ecs_list_tasks(cluster=cluster, desiredStatus = status,
+                               family = taskFamily)
     response
 }
 
 stopTasks <- function(clusterName, taskIds){
-    request <- list()
-    request$cluster <- clusterName
     for(id in taskIds){
-        request$task <- id
-        ecs_stop_task(request)
+        ecs_stop_task(cluster = clusterName, task = id)
     }
 }
 
 
-getTaskDetails <- function(clusterName, taskIds, getIP = FALSE){
-    result <- c()
-    describedTaskNumber <- 0
-    while(describedTaskNumber!=length(taskIds)){
-        currentTaskNumber <- min(100,length(taskIds)-describedTaskNumber)
-        currentTaskIds <- taskIds[(describedTaskNumber+1):(describedTaskNumber+currentTaskNumber)]
-        result<-rbind(result,
-                      geTaskDetailsInternal(clusterName, currentTaskIds, getIP=getIP))
-        describedTaskNumber <- describedTaskNumber + currentTaskNumber
-    }
-    result
-}
-
-geTaskDetailsInternal<-function(clusterName, taskIds, getIP = FALSE){
-    target <- "DescribeTasks"
-    request <- list(
-        cluster = clusterName,
-        tasks=as.list(taskIds)
-    )
-    response <- ecs_describe_tasks(request)
+getTaskDetails<-function(clusterName, taskIds, getIP = FALSE){
+    response <- ecs_describe_tasks(cluster = clusterName,
+                                   tasks=taskIds)
 
     taskIds <- vapply(response$tasks,function(x)x$taskArn, character(1))
     status <- vapply(response$tasks,function(x)x$lastStatus, character(1))
@@ -90,8 +74,8 @@ geTaskDetailsInternal<-function(clusterName, taskIds, getIP = FALSE){
             ""
         }
     }
-
     , character(1))
+
     if(getIP){
         ENIs <- vapply(response$tasks,getInstanceENI,character(1))
         idx <- which(ENIs!="")
@@ -102,6 +86,7 @@ geTaskDetailsInternal<-function(clusterName, taskIds, getIP = FALSE){
         data.frame(taskId = taskIds, status = status, privateIP = privateIPs)
     }
 }
+
 getInstanceENI<-function(x){
     eni<-""
     for(i in x$attachments){
@@ -113,11 +98,7 @@ getInstanceENI<-function(x){
 }
 
 getInstanceIP <- function(ENIs){
-    query <- list()
-    for(i in seq_along(ENIs)){
-        query[[paste0("NetworkInterfaceId.",i)]] <- ENIs[i]
-    }
-    response <- ec2_describe_network_interfaces(query)
+    response <- ec2_describe_network_interfaces(NetworkInterfaceId = ENIs)
     IPs<- vapply(response, function(x)x$association$publicIp[[1]], character(1))
     IPs
 }

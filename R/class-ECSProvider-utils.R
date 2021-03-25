@@ -7,30 +7,6 @@ ECSTagTemplate <- list(
     )
 )
 
-initCluster <- function(x, cluster, verbose = FALSE){
-    # Inbound permission
-    verbosePrint(verbose, "Setting up server-worker inbound permission")
-    port <- cluster@cloudRuntime$serverPort
-    ConfigInboundPermissions(x, port)
-    verbosePrint(verbose, "Inbound permission finished")
-
-    # Task definition
-    verbosePrint(verbose, "Setting up task defintion")
-    workerImage <- cluster@cloudConfig$workerContainer@image
-    if(!is.null(cluster@cloudConfig$serverContainer)){
-        serverImage <-cluster@cloudConfig$serverContainer@image
-    }else{
-        serverImage <- NULL
-    }
-    configTaskDefinition(x, workerImage, serverImage)
-    verbosePrint(verbose, "Task defintion finished")
-}
-
-
-
-
-
-
 cleanupProvider <- function(x, verbose = TRUE){
     if(x$clusterNameVerified && x$clusterName=="R-worker-cluster"){
         verbosePrint(verbose, "Deleting worker cluster")

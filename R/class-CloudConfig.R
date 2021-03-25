@@ -20,7 +20,7 @@ CloudConfig <- function(clusterName = "dockerCluster",
 
 .CloudConfig$methods(
     show = function(){
-        serverPasswordTmp <- ifelse(is.null(.self$serverPassword), "TRUE", "FALSE")
+        serverPasswordTmp <- ifelse(is.null(.self$serverPassword), "FALSE", "TRUE")
 
         cat("Cluster name:    ", .self$clusterName, "\n")
         cat("Worker number:   ", .self$workerNum, "\n")
@@ -28,8 +28,8 @@ CloudConfig <- function(clusterName = "dockerCluster",
             cat("Server container:", .self$serverContainer@image, "\n")
             cat("server CPU:      ", .self$serverHardware@cpu, " unit\n")
             cat("server memory:   ", .self$serverHardware@memory, " MB\n")
-            cat("Server port:     ", .self$serverPort)
-            cat("Server password: ", serverPasswordTmp)
+            cat("Server port:     ", .self$serverPort, "\n")
+            cat("Server password: ", serverPasswordTmp, "\n")
         }
         cat("Worker container:", .self$workerContainer@image, "\n")
         cat("Worker CPU:      ", .self$serverHardware@cpu, " unit\n")

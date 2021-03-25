@@ -8,7 +8,12 @@ setGeneric("initialProvider", function(provider, cluster, verbose = FALSE, ...){
 #' Run the containers and return a list of instance handles
 #'
 #' @return InstanceInfo object
-setGeneric("runContainers", function(provider, container, hardware, containerNumber, verbose = FALSE, ...){
+setGeneric("runServerContainer", function(provider, container, hardware, verbose = FALSE, ...){
+    standardGeneric("runContainers")
+})
+
+
+setGeneric("runWorkerContainers", function(provider, container, hardware, containerNumber, verbose = FALSE, ...){
     standardGeneric("runContainers")
 })
 

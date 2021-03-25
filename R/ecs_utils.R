@@ -24,10 +24,10 @@ ecs_list_to_array <- function(x, name = "name", value = "value"){
 }
 
 ## get resource name from ARN
-ecs_get_resource_names <- function(ARNs){
-  unname(vapply(ARNs, ecs_get_resource_name, character(1)))
+ECSGetResourceNames <- function(ARNs){
+  unname(vapply(ARNs, ECSGetResourceName, character(1)))
 }
-ecs_get_resource_name <- function(ARN){
+ECSGetResourceName <- function(ARN){
   match_index <- gregexpr(":",ARN,fixed = TRUE)[[1]]
   x <- substring(ARN, match_index[5]+1)
   separator <-regexpr("/", x, fixed = TRUE)
@@ -38,6 +38,14 @@ ecs_get_resource_name <- function(ARN){
   }
 }
 
+environmentToJSON <- function(x){
+  x <- x[!vapply(x, is.null, logical(1))]
+  result <- list()
+  for(i in seq_along(x)){
+    result[[i]] <- list(name = names(x)[i], value = as.character(x[[i]]))
+  }
+  result
+}
 
 validFargateSettings <- list()
 validFargateSettings$"256" <- c(512,1024,2048)
@@ -46,21 +54,28 @@ validFargateSettings$"1024" <- 1024*(2:8)
 validFargateSettings$"2048" <- 1024*(4:16)
 validFargateSettings$"4096" <- 1024*(8:30)
 
-getValidFargateCpuMemory<-function(CPU,memory){
+getValidFargateHardware<-function(hardware){
+  cpu <- hardware@cpu
+  memory <- hardware@memory
+
   result <- list()
-  validCPUNumbers <- as.numeric(names(validFargateSettings))
-  validCPUs <- validCPUNumbers[validCPUNumbers>=CPU]
-  for(i in validCPUs){
+  validCpuNumbers <- as.numeric(names(validFargateSettings))
+  validCpus <- validCpuNumbers[validCpuNumbers>=cpu]
+  for(i in validCpus){
     idx <- which(validFargateSettings[[as.character(i)]]>=memory)
     if(length(idx)!=0){
-      return(list(CPU = i, memory = validFargateSettings[[as.character(i)]][idx[1]]))
+      hardware@cpu <- i
+      hardware@memory <- validFargateSettings[[as.character(i)]][idx[1]]
+      break
     }
   }
-  NULL
+  hardware
 }
 
-getMaxWorkerPerContainer <- function(CPUPerWorker, memoryPerWorker){
-  maxWorker <- min(floor(4096/as.numeric(CPUPerWorker)),floor(1024*30/as.numeric(memoryPerWorker)))
+getMaxWorkerPerContainer <- function(hardware){
+  cpu <- hardware@cpu
+  memory <- hardware@memory
+  maxWorker <- min(floor(4096/cpu),floor(1024*30/memory))
   if(maxWorker==0){
     stop("Cannot find a fargate hardware to accommodate the CPU and memory requirement for the worker")
   }

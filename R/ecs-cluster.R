@@ -14,7 +14,7 @@ deleteCluster <- function(clusterName){
 }
 listClusters <- function(){
     response <- ecs_list_clusters()
-    ecs_get_resource_names(response)
+    ECSGetResourceNames(response)
 }
 
 configClusterName <- function(x){

@@ -35,8 +35,8 @@ removeDiedInstance <- function(cluster){
 # cluster$stopCluster()
 # cluster$stopServer()
 # cluster$stopWorkers(workerNum)
-# cluster$status()
 # cluster$getWorkerNumber()
+# cluster$status()
 startCluster <- function(cluster){
     verbose <- cluster@verbose
     provider <- cluster@cloudProvider
@@ -75,13 +75,11 @@ startServer <- function(cluster){
             serverContainer <- configServerContainer(cloudConfig$serverContainer,
                                                      cluster = cluster,
                                                      verbose = verbose)
-            instanceHandle <- runContainers(provider,
+            instanceHandle <- runServerContainer(provider,
                                             container=serverContainer,
                                             hardware=cloudConfig$serverHardware,
-                                            containerNumber = 1L,
                                             verbose = verbose)
-            stopifnot(length(instance@instanceHandle)==1)
-            cloudRuntime$serverHandle <- instance@instanceHandle[[1]]
+            cloudRuntime$serverHandle <- instanceHandle
         }
         ## Get cluster IP
         cloudRuntime$clusterIp <- getClusterIp(
@@ -103,7 +101,7 @@ startWorkers <- function(cluster, workerNumber){
     workerContainer <- configWorkerContainer(cloudConfig$workerContainer,
                                              cluster = cluster,
                                              verbose = verbose)
-    instanceHandles <- runContainers(provider,
+    instanceHandles <- runWorkerContainers(provider,
                                      container = workerContainer,
                                      hardware = cloudConfig$workerHardware,
                                      containerNumber = workerNumber,
@@ -166,4 +164,8 @@ stopWorkers<- function(cluster, workerNum){
 getWorkerNumber <- function(cluster){
     removeDiedInstance(cluster)
     sum(cluster@cloudRuntime$workerPerHandle)
+}
+
+status <- function(cluster){
+    cluster
 }

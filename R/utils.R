@@ -9,11 +9,3 @@ generateServerPassword <- function(len = 26){
 
 
 
-environmentToJSON <- function(x){
-    x <- x[!vapply(x, is.null, logical(1))]
-    result <- list()
-    for(i in seq_along(x)){
-        result[[i]] <- list(name = names(x)[i], value = as.character(x[[i]]))
-    }
-    result
-}

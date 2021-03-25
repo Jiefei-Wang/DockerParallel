@@ -1,11 +1,3 @@
-# cluster$startCluster()
-# cluster$startServer()
-# cluster$startWorkers(workerNum)
-# cluster$stopCluster()
-# cluster$stopServer()
-# cluster$stopWorkers(workerNum)
-# cluster$getWorkerNumber()
-# cluster$status()
 clusterMethods <- c(
     "startCluster",
     "startServer",
@@ -30,13 +22,43 @@ dockerCluster <- function(cloudProvider = ECSProvider(),
                    verbose= verbose)
 }
 
-
 #' @export
-setMethod(f = "$",signature = "ECSConfig",
-          definition = function(x, name){
-              if(name != "more"){
-                  x[[name, exact = FALSE]]
-              }else{
-                  function()showDetails(x)
-              }
+setMethod(f = "names",signature = "DockerCluster",
+          definition = function(x){
+              clusterMethods
           })
+#' @export
+setMethod(f = "$",signature = "DockerCluster",
+          definition = function(x, name){
+              if(name%in%clusterMethods){
+                    func <- get(name)
+                    newFunc <- createTempFunction(name, func)
+              }
+              parent.env(environment(newFunc)) <- environment()
+              newFunc
+          })
+
+createTempFunction <- function(name, func){
+    funcFormals <- formals(func)
+    funcFormals <- funcFormals[names(funcFormals)!="cluster"]
+    parameters <- ""
+    if(length(funcFormals)!=0){
+        parameters <- paste0(
+            paste0(names(funcFormals), "=", names(funcFormals)),collapse = ",")
+        parameters <- paste0(",", parameters)
+    }
+    functionTemplate <- "
+                              function(){
+                        functionName(cluster = x parameters)
+                    }
+                              "
+    functionTemplate <- sub("functionName",name, functionTemplate)
+    functionTemplate <- sub("parameters",parameters, functionTemplate)
+    newFuncExpression <-
+        parse(text = functionTemplate
+        )[[1]]
+
+    newFunc <- eval(newFuncExpression)
+    formals(newFunc) <- funcFormals
+    newFunc
+}
