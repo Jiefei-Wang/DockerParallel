@@ -12,14 +12,14 @@ clusterMethods <- c(
 dockerCluster <- function(cloudProvider = ECSProvider(),
                           cloudConfig = CloudConfig(),
                           cloudRuntime = CloudRuntime(),
-                          verbose = FALSE){
+                          verbose = 2){
     if(!is.null(cloudRuntime$clusterIp)){
         cloudConfig$serverContainer = NULL
     }
     .DockerCluster(cloudProvider=cloudProvider,
                    cloudConfig=cloudConfig,
                    cloudRuntime=cloudRuntime,
-                   verbose= verbose)
+                   verbose= as.integer(verbose))
 }
 
 #' @export

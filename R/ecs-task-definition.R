@@ -1,5 +1,4 @@
 CreateTaskDefinition <- function(taskName, image, cpu = 256, memory = 512){
-    request <- ecs_get_json("task-definition.json")
     containerDefinitions <- list(list(
         name = "dockerParallel",
         image=image,

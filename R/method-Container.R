@@ -11,8 +11,6 @@ setMethod("configServerContainer", "Container", function(container, cluster, ver
     container
 })
 
-
-
 setMethod("configWorkerContainer", "Container", function(container, cluster, verbose = FALSE, ...){
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
@@ -30,3 +28,25 @@ setMethod("configWorkerContainer", "Container", function(container, cluster, ver
     )
     container
 })
+
+setMethod("configWorkerNumber", "Container", function(container, workerNumber, verbose = FALSE, ...){
+    container@environment[["workerNum"]] <- workerNumber
+    container
+})
+
+
+
+setMethod("registerCluster", "Container", function(container, cluster, verbose = FALSE, ...){
+    cloudConfig <- cluster@cloudConfig
+    cloudRuntime <- cluster@cloudRuntime
+
+    queue <- cloudConfig$clusterName
+    serverClientIP <- cloudRuntime$clusterIp
+    password <- cloudConfig$serverPassword
+
+    doRedis::registerDoRedis(queue=queue,
+                             host = cloudRuntime$clusterIp,
+                             password = cloudConfig$serverPassword,
+                             port = cloudConfig$serverPort)
+})
+

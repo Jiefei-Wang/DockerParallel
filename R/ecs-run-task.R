@@ -19,37 +19,60 @@ runTask <- function(clusterName, taskDefName, taskCount,
                                        securityGroups = list(securityGroupId),
                                        assignPublicIp = assignPublicIp)
         )
-    request$overrides$containerOverrides[[1]]$environment <- envJson
-    request$overrides$cpu<- as.character(CPU)
-    request$overrides$memory<- as.character(memory)
-
     overrides <- list(
         containerOverrides = list(list(
-            name = "worker",environment = envJson)),
-        cpu = 0, memory = 0
+            name = "dockerParallel",environment = envJson)),
+        cpu = as.character(cpu), memory = as.character(memory)
     )
-    if(!is.null(command)){
-        overrides$containerOverrides[[1]]$command <- list(command)
+    if(!is.null(container@command)){
+        overrides$containerOverrides[[1]]$command <- list(container@command)
     }
-    response <- ecs_run_task(cluster = clusterName,
+    ## handling the network error and prevent
+    ## the container from duplicating.
+    tryNum <- 5
+    startedBy <- paste0(sample(letters, 30, TRUE),collapse = "")
+    response <- NULL
+    ids <- NULL
+    for(i in seq_along(tryNum)){
+        response <-
+            tryCatch(
+                ecs_run_task(cluster = clusterName,
                              taskDefinition = taskDefName,
                              count = taskCount,
                              enableECSManagedTags = TRUE,
                              launchType = "FARGATE",
                              networkConfiguration=networkConfiguration,
-                             overrides=overrides
-    )
-    ids <- vapply(response,function(x)x$taskArn, character(1))
+                             overrides=overrides,
+                             startedBy = startedBy,
+                             retry_time = 0,
+                             network_timeout = 2
+                ),
+                error = function(e) {message(e);NULL}
+            )
+        if(is.null(response)){
+            ids <- listTasks(clusterName = clusterName, startedBy = startedBy)
+            if(length(ids)!=0){
+                break
+            }
+        }else{
+            ids <- vapply(response$tasks,function(x)x$taskArn, character(1))
+            break
+        }
+    }
+
     ids
 }
 
 
 listTasks<-function(clusterName,
                     status = c("RUNNING", "PENDING","STOPPED"),
-                    taskFamily = NULL){
-    status <- match.arg(status)
-    response <- ecs_list_tasks(cluster=cluster, desiredStatus = status,
-                               family = taskFamily)
+                    taskFamily = NULL,
+                    startedBy = NULL){
+    if(!is.null(status)){
+        status <- match.arg(status)
+    }
+    response <- ecs_list_tasks(cluster=clusterName, desiredStatus = status,
+                               family = taskFamily, startedBy=startedBy)
     response
 }
 
@@ -80,7 +103,9 @@ getTaskDetails<-function(clusterName, taskIds, getIP = FALSE){
         ENIs <- vapply(response$tasks,getInstanceENI,character(1))
         idx <- which(ENIs!="")
         publicIPs <- rep("", length(taskIds))
-        publicIPs[idx] <- getInstanceIP(ENIs[idx])
+        if(length(idx)!=0){
+            publicIPs[idx] <- getInstanceIP(ENIs[idx])
+        }
         data.frame(taskId = taskIds, status = status, privateIP = privateIPs, publicIP = publicIPs)
     }else{
         data.frame(taskId = taskIds, status = status, privateIP = privateIPs)
@@ -91,7 +116,7 @@ getInstanceENI<-function(x){
     eni<-""
     for(i in x$attachments){
         if(i$type=="ElasticNetworkInterface"&&i$status=="ATTACHED"){
-            eni<- get_tag_value(i$details,"name","value","networkInterfaceId")
+            eni<- getTagValue(i$details,"name","value","networkInterfaceId")
         }
     }
     eni

@@ -95,7 +95,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
         cloudProvider = "CloudProvider",
         cloudConfig = "CloudConfig",
         cloudRuntime = "CloudRuntime",
-        verbose = "logical"
+        verbose = "integer"
     )
 )
 
@@ -116,6 +116,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
         securityGroupId = "CharOrNULL",
         internetGatewayId = "CharOrNULL",
         routeTableId = "CharOrNULL",
+        workerPublicIpEnable = "logical",
         clusterNameVerified = "logical",
         taskDefNameVerified = "logical",
         securityGroupVerified = "logical",

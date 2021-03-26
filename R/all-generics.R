@@ -8,27 +8,28 @@ setGeneric("initialProvider", function(provider, cluster, verbose = FALSE, ...){
 #' Run the containers and return a list of instance handles
 #'
 #' @return InstanceInfo object
-setGeneric("runServerContainer", function(provider, container, hardware, verbose = FALSE, ...){
-    standardGeneric("runContainers")
+setGeneric("runServer", function(provider, cluster, container, hardware, verbose = FALSE, ...){
+    standardGeneric("runServer")
 })
 
 
-setGeneric("runWorkerContainers", function(provider, container, hardware, containerNumber, verbose = FALSE, ...){
-    standardGeneric("runContainers")
+setGeneric("runWorkers", function(provider, cluster, container, hardware, containerNumber, verbose = FALSE, ...){
+    standardGeneric("runWorkers")
 })
 
 
-#' Get the public Ips for the instances
+#' Get the cluster IP
 #'
-#' Get the public Ips for the instances
+#' Get the cluster IP, the IP can be used for the worker to connect with
+#' the server. The IP can be anything and does not have to have any meaning
+#' to the cluster.
 #'
-#' @param instanceHandles A list of instance handles
+#' @param serverHandle the server handles
 #'
 #' @return InstanceInfo object
 # setGeneric("getInstanceIps", function(provider, instanceHandles, verbose = FALSE, ...){
 #     standardGeneric("getInstanceIps")
 # })
-
 setGeneric("getClusterIp", function(provider, serverHandle, verbose = FALSE, ...){
     standardGeneric("getClusterIp")
 })
@@ -39,9 +40,13 @@ setGeneric("getClusterIp", function(provider, serverHandle, verbose = FALSE, ...
 setGeneric("instanceAlive", function(provider, instanceHandles, verbose = FALSE, ...){
     standardGeneric("instanceAlive")
 })
+#' @return A logical vector
 setGeneric("killInstances", function(provider, instanceHandles, verbose = FALSE, ...){
     standardGeneric("killInstances")
 })
+
+
+
 
 ###############container###############
 #' @returns
@@ -55,3 +60,15 @@ setGeneric("configServerContainer", function(container, cluster, verbose = FALSE
 setGeneric("configWorkerContainer", function(container, cluster, verbose = FALSE, ...){
     standardGeneric("configWorkerContainer")
 })
+
+#' @returns
+#' `container` object
+setGeneric("configWorkerNumber", function(container, workerNumber, verbose = FALSE, ...){
+    standardGeneric("configWorkerNumber")
+})
+
+setGeneric("registerCluster", function(provider, cluster, verbose = FALSE, ...){
+    standardGeneric("registerCluster")
+})
+
+

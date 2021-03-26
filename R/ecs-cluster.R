@@ -1,6 +1,6 @@
 # config <- ecs_configuration()
 createCluster<-function(clusterName){
-    tags <- ecs_list_to_array(list(DockerParallel = "DockerParallel"), name = "key")
+    tags <- ListToArray(list(DockerParallel = "DockerParallel"), name = "key")
     response <-ecs_create_cluster(
         clusterName = clusterName,
         tags = tags,

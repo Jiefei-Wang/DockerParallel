@@ -1,11 +1,12 @@
 ECSProvider <- function(clusterName = "R-worker-cluster",
-                        taskDefName = "R-server-task-definition",
+                        taskDefName = "R-DockerParallel-task-definition",
                         securityGroupName = "R-parallel-security-group",
                         vpcId = NULL,
                         subnetId = NULL,
                         securityGroupId = NULL,
                         internetGatewayId = NULL,
-                        routeTableId = NULL){
+                        routeTableId = NULL,
+                        workerPublicIpEnable = TRUE){
     .ECSProvider$new(
         clusterName = clusterName,
         taskDefName = taskDefName,
@@ -15,6 +16,7 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
         securityGroupId = securityGroupId,
         internetGatewayId = internetGatewayId,
         routeTableId = routeTableId,
+        workerPublicIpEnable=workerPublicIpEnable,
         clusterNameVerified = FALSE,
         taskDefNameVerified = FALSE,
         securityGroupVerified = FALSE,
@@ -52,7 +54,3 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
     }
 )
 
-
-setMethod("runContainers", "ECSProvider",definition = function(provider, container, containerNumber){
-
-})

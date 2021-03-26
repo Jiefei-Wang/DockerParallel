@@ -41,7 +41,6 @@ listVpcs<-function(filterList = list(), idFilter = NULL){
   if(!is.null(idFilter)){
     filterList[["vpc-id"]] <- idFilter
   }
-  query <- getFilter(filterList)
 
   response <- ec2_describe_vpcs(Filter = filterList)
   vpc_ids <- vapply(response,function(x)x$vpcId[[1]],character(1))

@@ -39,22 +39,106 @@ setMethod("initialProvider", "ECSProvider", function(provider, cluster, verbose,
 })
 
 
-setMethod("runServerContainers", "ECSProvider",
-          function(provider, container, hardware, verbose = FALSE, ...){
-              hardware <- getValidFargateHardware(hardware)
 
 
+setMethod("runServer", "ECSProvider",
+          function(provider, cluster, container, hardware, verbose = FALSE, ...){
+              verbosePrint(verbose>0, "Deploying server container")
+              fargateHardware <- getValidFargateHardware(hardware)
+              if(verbose){
+                  informUpgradedHardware(fargateHardware, hardware, 1)
+              }
+              instanceId <- ecsTaskScheduler(provider, container, fargateHardware, 1, TRUE)
+              if(is.null(instanceId)){
+                  stop("Fail to deploy the ECS container, something is wrong")
+              }
+              instanceId
+          })
+setMethod("runWorkers", "ECSProvider",
+          function(provider, cluster, container, hardware, workerNumber, verbose = FALSE, ...){
+              verbosePrint(verbose>0, "Deploying server container")
+
+              instanceIds <- c()
+              maxWorkers <- getMaxWorkerPerContainer(hardware)
+              maxWorkers <- min(container@maxWorkers, maxWorkers)
+              ## run the containers which have the maximum worker number
+              containerWithMaxWorker <- floor(workerNumber/maxWorkers)
+              if(containerWithMaxWorker>0){
+
+                  instances <- ecsRunWorkers(
+                      provider=provider,
+                      container=container,
+                      hardware=hardware,
+                      containerNumber=containerWithMaxWorker,
+                      workerPerContainer=maxWorkers,
+                      verbose=verbose
+                  )
+                  if(length(instances)!= containerWithMaxWorker){
+                      stopTasks(provider$clusterName, instances)
+                      stop("Fail to deploy the ECS container, something is wrong")
+                  }
+                  instanceIds<-c(instanceIds, instances)
+              }
+              ## Run the container which does not have the maximum worker number
+              lastContainerWorkerNum <- workerNumber - maxWorkers*containerWithMaxWorker
+              if(lastContainerWorkerNum!=0){
+                  instance <- ecsRunWorkers(
+                      provider=provider,
+                      container=container,
+                      hardware=hardware,
+                      containerNumber=1,
+                      workerPerContainer=lastContainerWorkerNum,
+                      verbose=verbose)
+                  instanceIds <-c (instanceIds, instance)
+                  if(length(instance)!=1){
+                      stopTasks(provider$clusterName, instance)
+                      stop("Fail to deploy the ECS container, something is wrong")
+                  }
+              }
+
+              ## Repeat the instance id worker number times.
+              workerNumberPerContainer <- rep(maxWorkers, length(instanceIds))
+              if(lastContainerWorkerNum!=0){
+                  workerNumberPerContainer[length(instanceIds)] <- lastContainerWorkerNum
+              }
+              repeatVector(instanceIds, workerNumberPerContainer)
+          }
+)
+
+setMethod("getClusterIp", "ECSProvider",
+          function(provider, serverHandle, verbose = FALSE, ...){
+              while(TRUE){
+                  taskInfo <- getTaskDetails(provider$clusterName,
+                                             taskIds = serverHandle,
+                                             getIP = TRUE)
+                  if(taskInfo$status=="STOPPED"){
+                      stop("The server has been stopped")
+                  }
+                  if(taskInfo$publicIP!=""){
+                      break
+                  }
+              }
+              taskInfo$publicIP
+          }
+)
+
+
+setMethod("instanceAlive", "ECSProvider", function(provider, instanceHandles, verbose = FALSE, ...){
+    uniqueHandles <- unique(instanceHandles)
+    taskInfo <- getTaskDetails(provider$clusterName, taskIds = uniqueHandles)
+    instanceStatus <- taskInfo$status != "STOPPED"
+    result <- rep(FALSE, length(instanceHandles))
+    for(i in uniqueHandles){
+        result[instanceHandles==i] <- instanceStatus[i]
+    }
+    result
 })
-setMethod("runWorkerContainers", "ECSProvider",
-          function(provider, container, hardware, containerNumber, verbose = FALSE, ...){
 
 
+setMethod("killInstances", "ECSProvider", function(provider, instanceHandles, verbose = FALSE, ...){
+    stopTasks(provider$clusterName, taskIds = unique(instanceHandles))
+    rep(TRUE, length(instanceHandles))
 })
-
-
-
-
-
 
 
 

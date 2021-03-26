@@ -9,3 +9,10 @@ generateServerPassword <- function(len = 26){
 
 
 
+verbosePrint<-function(verbose, ...){
+    if(verbose)
+        message(...)
+}
+is.empty <- function(x){
+    is.null(x) || length(x)==0
+}
