@@ -1,41 +1,44 @@
 setMethod("initialProvider", "ECSProvider", function(provider, cluster, verbose, ...){
-    ## Cluster name
-    verbosePrint(verbose, "Setting up cluster")
-    clusterName <- configClusterName(provider)
-    verbosePrint(verbose, "Cluster name: \t", clusterName)
-    ## VPC
-    verbosePrint(verbose, "Setting up VPC")
-    VPCId <- configVpcId(provider)
-    verbosePrint(verbose, "VPC: \t", VPCId)
-    ## subnet
-    verbosePrint(verbose, "Setting up subnet")
-    subnetId <- configSubnetId(provider)
-    verbosePrint(verbose, "Subnet id: \t", subnetId)
-    ## gateway
-    verbosePrint(verbose, "Setting up gateway")
-    gatewayId <- configInternetGateway(provider)
-    verbosePrint(verbose, "Gateway: \t", gatewayId)
-    ## route table
-    verbosePrint(verbose, "Setting up route table")
-    routeTableId <- configRouteTable(provider)
-    verbosePrint(verbose, "Route table: \t", routeTableId)
-    ## route
-    verbosePrint(verbose, "Setting up default route")
-    configDefaultRoute(provider)
-    verbosePrint(verbose, "Default route finished")
-    ## security group
-    verbosePrint(verbose, "Setting up security group")
-    securityGroupId <- configSecurityGroup(provider)
-    verbosePrint(verbose, "Security group: ",securityGroupId)
-    # Inbound permission
-    verbosePrint(verbose, "Setting up SSH and server-worker inbound permission")
-    port <- c(22, cluster@cloudConfig$serverPort)
-    ConfigInboundPermissions(provider, port)
-    verbosePrint(verbose, "Inbound permission finished")
-    # Task definition
-    verbosePrint(verbose, "Setting up task defintion")
-    configTaskDefinition(provider)
-    verbosePrint(verbose, "Task defintion finished")
+    if(!provider$initialized){
+        ## Cluster name
+        verbosePrint(verbose, "Setting up cluster")
+        clusterName <- configClusterName(provider)
+        verbosePrint(verbose, "Cluster name: \t", clusterName)
+        ## VPC
+        verbosePrint(verbose, "Setting up VPC")
+        VPCId <- configVpcId(provider)
+        verbosePrint(verbose, "VPC: \t", VPCId)
+        ## subnet
+        verbosePrint(verbose, "Setting up subnet")
+        subnetId <- configSubnetId(provider)
+        verbosePrint(verbose, "Subnet id: \t", subnetId)
+        ## gateway
+        verbosePrint(verbose, "Setting up gateway")
+        gatewayId <- configInternetGateway(provider)
+        verbosePrint(verbose, "Gateway: \t", gatewayId)
+        ## route table
+        verbosePrint(verbose, "Setting up route table")
+        routeTableId <- configRouteTable(provider)
+        verbosePrint(verbose, "Route table: \t", routeTableId)
+        ## route
+        verbosePrint(verbose, "Setting up default route")
+        configDefaultRoute(provider)
+        verbosePrint(verbose, "Default route finished")
+        ## security group
+        verbosePrint(verbose, "Setting up security group")
+        securityGroupId <- configSecurityGroup(provider)
+        verbosePrint(verbose, "Security group: ",securityGroupId)
+        # Inbound permission
+        verbosePrint(verbose, "Setting up SSH and server-worker inbound permission")
+        port <- c(22, cluster@cloudConfig$serverPort)
+        ConfigInboundPermissions(provider, port)
+        verbosePrint(verbose, "Inbound permission finished")
+        # Task definition
+        verbosePrint(verbose, "Setting up task defintion")
+        configTaskDefinition(provider, cluster@cloudConfig)
+        verbosePrint(verbose, "Task defintion finished")
+        provider$initialized <- TRUE
+    }
 })
 
 
@@ -48,7 +51,15 @@ setMethod("runServer", "ECSProvider",
               if(verbose){
                   informUpgradedHardware(fargateHardware, hardware, 1)
               }
-              instanceId <- ecsTaskScheduler(provider, container, fargateHardware, 1, TRUE)
+              taskDefName <- provider$serverTaskDefName
+              instanceId <- ecsTaskScheduler(
+                  provider = provider,
+                  taskDefName=taskDefName,
+                  container=container,
+                  hardware= fargateHardware,
+                  containerNum=1,
+                  publicIpEnable=TRUE)
+
               if(is.null(instanceId)){
                   stop("Fail to deploy the ECS container, something is wrong")
               }
@@ -56,7 +67,7 @@ setMethod("runServer", "ECSProvider",
           })
 setMethod("runWorkers", "ECSProvider",
           function(provider, cluster, container, hardware, workerNumber, verbose = FALSE, ...){
-              verbosePrint(verbose>0, "Deploying server container")
+              verbosePrint(verbose>0, "Deploying worker container")
 
               instanceIds <- c()
               maxWorkers <- getMaxWorkerPerContainer(hardware)
@@ -75,7 +86,7 @@ setMethod("runWorkers", "ECSProvider",
                   )
                   if(length(instances)!= containerWithMaxWorker){
                       stopTasks(provider$clusterName, instances)
-                      stop("Fail to deploy the ECS container, something is wrong")
+                      stop("Fail to deploy the ECS worker container, something is wrong")
                   }
                   instanceIds<-c(instanceIds, instances)
               }
@@ -92,7 +103,7 @@ setMethod("runWorkers", "ECSProvider",
                   instanceIds <-c (instanceIds, instance)
                   if(length(instance)!=1){
                       stopTasks(provider$clusterName, instance)
-                      stop("Fail to deploy the ECS container, something is wrong")
+                      stop("Fail to deploy the ECS worker container, something is wrong")
                   }
               }
 
@@ -123,13 +134,16 @@ setMethod("getClusterIp", "ECSProvider",
 )
 
 
-setMethod("instanceAlive", "ECSProvider", function(provider, instanceHandles, verbose = FALSE, ...){
+setMethod("getInstanceStatus", "ECSProvider", function(provider, instanceHandles, verbose = FALSE, ...){
     uniqueHandles <- unique(instanceHandles)
     taskInfo <- getTaskDetails(provider$clusterName, taskIds = uniqueHandles)
-    instanceStatus <- taskInfo$status != "STOPPED"
-    result <- rep(FALSE, length(instanceHandles))
-    for(i in uniqueHandles){
-        result[instanceHandles==i] <- instanceStatus[i]
+    instanceStatus <- rep("initializing", length(uniqueHandles))
+    instanceStatus[taskInfo$status == "RUNNING"] <- "running"
+    instanceStatus[taskInfo$status == "STOPPED"] <- "stopped"
+    result <- rep("", length(instanceHandles))
+    for(i in seq_along(uniqueHandles)){
+        idx <- vapply(instanceHandles, function(x) identical(x, uniqueHandles[[i]]),logical(1))
+        result[idx] <- instanceStatus[i]
     }
     result
 })

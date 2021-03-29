@@ -29,8 +29,8 @@ cleanupProvider <- function(x, verbose = TRUE){
         },
         error = function(e) message(e))
     }
-    verbosePrint(verbose, "Deleting internet gateway")
     if(x$internetGatewayVerified){
+        verbosePrint(verbose, "Deleting internet gateway")
         tryCatch({
             deleteInternetGateway(x$internetGatewayId)
             x$internetGatewayVerified <- FALSE

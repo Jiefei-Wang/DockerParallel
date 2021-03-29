@@ -21,7 +21,7 @@ runTask <- function(clusterName, taskDefName, taskCount,
         )
     overrides <- list(
         containerOverrides = list(list(
-            name = "dockerParallel",environment = envJson)),
+            name = container@name, environment = envJson)),
         cpu = as.character(cpu), memory = as.character(memory)
     )
     if(!is.null(container@command)){
@@ -59,7 +59,6 @@ runTask <- function(clusterName, taskDefName, taskCount,
             break
         }
     }
-
     ids
 }
 

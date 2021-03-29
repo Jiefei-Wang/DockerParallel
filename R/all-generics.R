@@ -36,14 +36,36 @@ setGeneric("getClusterIp", function(provider, serverHandle, verbose = FALSE, ...
 
 
 #' @returns
-#' A logical vector
-setGeneric("instanceAlive", function(provider, instanceHandles, verbose = FALSE, ...){
-    standardGeneric("instanceAlive")
+#' A character vector with each element corresponding to an instance in `instanceHandles`.
+#' Each element must be one of three possible characters
+#' `initializing`, `running` and `stopped`
+setGeneric("getInstanceStatus", function(provider, instanceHandles, verbose = FALSE, ...){
+    standardGeneric("getInstanceStatus")
 })
+
+#' @returns
+#' A logical vector
+setGeneric("IsInstanceInitializing", function(provider, instanceHandles, verbose = FALSE, ...){
+    standardGeneric("IsInstanceInitializing")
+})
+
+#' @returns
+#' A logical vector
+setGeneric("IsInstanceRunning", function(provider, instanceHandles, verbose = FALSE, ...){
+    standardGeneric("IsInstanceRunning")
+})
+
+#' @returns
+#' A logical vector
+setGeneric("IsInstanceStopped", function(provider, instanceHandles, verbose = FALSE, ...){
+    standardGeneric("IsInstanceStopped")
+})
+
 #' @return A logical vector
 setGeneric("killInstances", function(provider, instanceHandles, verbose = FALSE, ...){
     standardGeneric("killInstances")
 })
+
 
 
 
@@ -67,8 +89,11 @@ setGeneric("configWorkerNumber", function(container, workerNumber, verbose = FAL
     standardGeneric("configWorkerNumber")
 })
 
-setGeneric("registerCluster", function(provider, cluster, verbose = FALSE, ...){
-    standardGeneric("registerCluster")
+setGeneric("registerParallelBackend", function(container, cluster, verbose = FALSE, ...){
+    standardGeneric("registerParallelBackend")
+})
+setGeneric("deregisterParallelBackend", function(container, cluster, verbose = FALSE, ...){
+    standardGeneric("deregisterParallelBackend")
 })
 
 

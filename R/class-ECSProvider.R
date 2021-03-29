@@ -1,5 +1,6 @@
 ECSProvider <- function(clusterName = "R-worker-cluster",
-                        taskDefName = "R-DockerParallel-task-definition",
+                        serverTaskDefName = "R-server-task-definition",
+                        workerTaskDefName = "R-worker-task-definition",
                         securityGroupName = "R-parallel-security-group",
                         vpcId = NULL,
                         subnetId = NULL,
@@ -9,7 +10,8 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
                         workerPublicIpEnable = TRUE){
     .ECSProvider$new(
         clusterName = clusterName,
-        taskDefName = taskDefName,
+        serverTaskDefName = serverTaskDefName,
+        workerTaskDefName = workerTaskDefName,
         securityGroupName = securityGroupName,
         vpcId = vpcId,
         subnetId = subnetId,
@@ -18,21 +20,24 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
         routeTableId = routeTableId,
         workerPublicIpEnable=workerPublicIpEnable,
         clusterNameVerified = FALSE,
-        taskDefNameVerified = FALSE,
+        serverTaskDefNameVerified = FALSE,
+        workerTaskDefNameVerified = FALSE,
         securityGroupVerified = FALSE,
         vpcVerified = FALSE,
         subnetVerified = FALSE,
         internetGatewayVerified = FALSE,
         routeTableVerified = FALSE,
         routeVerified = FALSE,
-        inboundPermissionVerified = FALSE
+        inboundPermissionVerified = FALSE,
+        initialized = FALSE
     )
 }
 
 .ECSProvider$methods(
     show = function(){
         cat("Cluster name:        ", .self$clusterName, "\n")
-        cat("Task definition:     ", .self$taskDefName, "\n")
+        cat("Server task definition:     ", .self$serverTaskDefName, "\n")
+        cat("Worker task definition:     ", .self$workerTaskDefName, "\n")
         cat("Security group name: ", .self$securityGroupName, "\n")
 
         if(!is.null(.self$vpcId)){

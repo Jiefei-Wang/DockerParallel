@@ -50,6 +50,8 @@ configRouteTable <- function(x){
                      "or does not match with the VPC id")
             }
         }
+        subnetId <- configSubnetId(x)
+        ec2_associate_route_table(RouteTableId = x$routeTableId,SubnetId = subnetId)
         x$routeTableVerified <- TRUE
     }
     x$routeTableId

@@ -36,7 +36,18 @@ setMethod("configWorkerNumber", "Container", function(container, workerNumber, v
 
 
 
-setMethod("registerCluster", "Container", function(container, cluster, verbose = FALSE, ...){
+
+setMethod("registerParallelBackend", "Container", function(container, cluster, verbose = FALSE, ...){
+    verbosePrint(verbose, "Registering foreach redis backend, it might take a few minutes")
+    if(!is.null(cluster@cloudRuntime$serverHandle)){
+        success <- waitInstanceUntilRunning(
+            cluster@cloudProvider,
+            list(cluster@cloudRuntime$serverHandle)
+        )
+        if(!success){
+            stop("The server is not running!")
+        }
+    }
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
 

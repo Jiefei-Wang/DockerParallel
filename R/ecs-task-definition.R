@@ -1,6 +1,6 @@
-CreateTaskDefinition <- function(taskName, image, cpu = 256, memory = 512){
+CreateTaskDefinition <- function(taskName, name, image, cpu = 256, memory = 512){
     containerDefinitions <- list(list(
-        name = "dockerParallel",
+        name = name,
         image=image,
         essential = TRUE
     ))
@@ -39,15 +39,47 @@ listTaskDefinitions<-function(taskName = NULL){
     data.frame(name = defNames, version = defVersions)
 }
 
-configTaskDefinition <- function(x){
-    if(!x$taskDefNameVerified){
-        definitionList <- listTaskDefinitions(taskName = x$taskDefName)
-        if(nrow(definitionList)==0){
-            taskDefName <- CreateTaskDefinition(
-                taskName = x$taskDefName,
-                image = "waiting-for-filling"
+configTaskDefinition <- function(x, cloudConfig){
+
+    configTaskDefinitionInternal(x,
+                                 "serverTaskDefName",
+                                 cloudConfig$serverContainer)
+    configTaskDefinitionInternal(x,
+                                 "workerTaskDefName",
+                                 cloudConfig$workerContainer)
+
+}
+
+configTaskDefinitionInternal <- function(x, taskNameSlot, container){
+    taskDefName <- x$field(taskNameSlot)
+    verifySlot <- paste0(taskNameSlot, "Verified")
+    taskDefNameVerified <- x$field(verifySlot)
+    if(!taskDefNameVerified){
+        definitionList <- listTaskDefinitions(taskName = taskDefName)
+        needDef <- nrow(definitionList)==0
+        if(!needDef){
+            idx <- which.max(definitionList$version)
+            taskInfo <- describeTaskDefinition(taskDefName, definitionList$version[idx])
+
+            nameCheck <- identical(
+                taskInfo$containerDefinitions[[1]]$name,
+                container@name
+                )
+            imageCheck <- identical(
+                taskInfo$containerDefinitions[[1]]$image,
+                container@image)
+
+            needDef <- !all(nameCheck, imageCheck)
+        }
+
+        if(needDef){
+            CreateTaskDefinition(
+                taskName = taskDefName,
+                name = container@name,
+                image =  container@image
             )
         }
-        x$taskDefNameVerified <- TRUE
+        x$field(verifySlot, TRUE)
     }
 }
+

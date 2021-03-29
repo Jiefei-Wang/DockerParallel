@@ -12,9 +12,9 @@ removeDiedServer <- function(cluster){
     provider <- cluster@cloudProvider
     cloudRuntime <- cluster@cloudRuntime
     if(!is.null(cloudRuntime$serverHandle)){
-        serverAlive <-
-            instanceAlive(provider, list(cloudRuntime$serverHandle), verbose=verbose)
-        if(!serverAlive){
+        stoppedServer <-
+            IsInstanceStopped(provider, list(cloudRuntime$serverHandle), verbose=verbose)
+        if(stoppedServer){
             resetRuntimeServer(cloudRuntime)
         }
     }
@@ -25,9 +25,9 @@ removeDiedWorkers <- function(cluster){
     provider <- cluster@cloudProvider
     cloudRuntime <- cluster@cloudRuntime
     if(length(cloudRuntime$workerHandles)!=0){
-        workersAlive <- instanceAlive(provider, cloudRuntime$workerHandles, verbose=verbose)
-        if(any(!workersAlive)){
-            removeRuntimeWorkers(cloudRuntime, which(!workersAlive))
+        stoppedWorkers <- IsInstanceStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
+        if(any(stoppedWorkers)){
+            removeRuntimeWorkers(cloudRuntime, which(stoppedWorkers))
         }
     }
 }
@@ -49,15 +49,16 @@ startCluster <- function(cluster){
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
 
-    initialProvider(provider = provider, cluster=cluster, verbose = verbose)
+    startServer(cluster)
 
     workerNumber <- cluster@cloudConfig$workerNum
-
-    startServer(cluster)
     if(workerNumber>0){
-        verbosePrint(verbose>0, "Adding ",workerNumber," workers")
-        startWorkers(cluster, workerNumber)
+        verbosePrint(verbose>0, "Running ",workerNumber," workers")
+        setWorkerNumber(cluster, workerNumber)
     }
+
+    registerBackend(cluster)
+    invisible(NULL)
 }
 
 #' Run the server
@@ -71,6 +72,7 @@ startServer <- function(cluster){
 
     initialProvider(provider = provider, cluster=cluster, verbose = verbose)
 
+    removeDiedServer(cluster)
     if(is.null(cloudRuntime$clusterIp)){
         ## Run the server if it does not exist
         if(is.null(cloudRuntime$serverHandle)){
@@ -94,9 +96,28 @@ startServer <- function(cluster){
             )
         }
     }
+    invisible(NULL)
 }
 
-startWorkers <- function(cluster, workerNumber){
+setWorkerNumber <- function(cluster, workerNumber){
+    verbose <- cluster@verbose
+    provider <- cluster@cloudProvider
+    cloudConfig <- cluster@cloudConfig
+    cloudRuntime <- cluster@cloudRuntime
+
+    currentWorkerNumber <- getWorkerNumber(cluster)
+    workerOffset <- workerNumber - currentWorkerNumber
+    if(workerOffset!=0){
+        if(workerOffset > 0){
+            addWorkers(cluster, workerOffset)
+        }else{
+            removeWorkers(cluster, abs(workerOffset))
+        }
+    }
+}
+
+
+addWorkers <- function(cluster, workerNumber){
     verbose <- cluster@verbose
     provider <- cluster@cloudProvider
     cloudConfig <- cluster@cloudConfig
@@ -127,30 +148,14 @@ startWorkers <- function(cluster, workerNumber){
     }
     cloudRuntime$workerHandles <- c(cloudRuntime$workerHandles, uniqueHandles)
     cloudRuntime$workerPerHandle <- c(cloudRuntime$workerPerHandle, as.integer(workerPerHandle))
+
+    invisible(NULL)
 }
 
-stopCluster <- function(cluster){
-    stopWorkers(cluster, Inf)
-    stopServer(cluster)
-}
 
-stopServer<- function(cluster){
-    verbose <- cluster@verbose
+removeWorkers<- function(cluster, workerNum){
+    cloudRuntime <- cluster@cloudRuntime
     provider <- cluster@cloudProvider
-    cloudRuntime <- cluster@cloudRuntime
-    if(!is.null(cloudRuntime$serverHandle)){
-        result <- killInstances(provider,
-                                instanceHandles = list(cloudRuntime$serverHandle),
-                                verbose = verbose)
-        if(result){
-            resetRuntimeServer(cloudRuntime)
-        }
-    }
-}
-
-stopWorkers<- function(cluster, workerNum){
-    removeDiedInstance(cluster)
-    cloudRuntime <- cluster@cloudRuntime
     verbose <- cluster@verbose
     ## Find which instances will be killed while satisfying
     ## that the killed workers is less than or equal to workerNum
@@ -172,18 +177,56 @@ stopWorkers<- function(cluster, workerNum){
                   instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
                   verbose = verbose)
     removeRuntimeWorkers(cloudRuntime, killedInstanceIndex)
+    invisible(NULL)
 }
 
+
+
+stopCluster <- function(cluster){
+    deregisterBackend(cluster)
+    setWorkerNumber(cluster, 0)
+    stopServer(cluster)
+    invisible(NULL)
+}
+
+stopServer<- function(cluster){
+    verbose <- cluster@verbose
+    provider <- cluster@cloudProvider
+    cloudRuntime <- cluster@cloudRuntime
+    if(!is.null(cloudRuntime$serverHandle)){
+        result <- killInstances(provider,
+                                instanceHandles = list(cloudRuntime$serverHandle),
+                                verbose = verbose)
+        if(result){
+            resetRuntimeServer(cloudRuntime)
+        }
+    }
+    invisible(NULL)
+}
+
+
 getWorkerNumber <- function(cluster){
-    removeDiedInstance(cluster)
+    removeDiedWorkers(cluster)
     sum(cluster@cloudRuntime$workerPerHandle)
 }
 
-registerForeach <- function(cluster){
+registerBackend <- function(cluster){
+    registerParallelBackend(container = cluster@cloudConfig$workerContainer,
+                            cluster = cluster,
+                            verbose = cluster@verbose)
+    invisible(NULL)
+}
 
+deregisterBackend <- function(cluster){
+    deregisterParallelBackend(container = cluster@cloudConfig$workerContainer,
+                              cluster = cluster,
+                              verbose = cluster@verbose)
+    invisible(NULL)
 }
 
 
-status <- function(cluster){
+update <- function(cluster){
+    removeDiedServer(cluster)
+    removeDiedWorkers(cluster)
     cluster
 }

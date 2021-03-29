@@ -7,10 +7,12 @@ validFargateSettings$"2048" <- 1024*(4:16)
 validFargateSettings$"4096" <- 1024*(8:30)
 
 
-ecsRunWorkers <- function(provider, container, hardware, containerNumber, workerPerContainer, verbose){
+ecsRunWorkers <- function(provider, container, hardware,
+                          containerNumber, workerPerContainer, verbose){
   verbosePrint(verbose>1,
                "Deploying ", containerNumber," container with ",
                workerPerContainer," workers per container.")
+  taskDefName <- provider$workerTaskDefName
   requiredHardware <- hardware
   requiredHardware@cpu <- hardware@cpu*workerPerContainer
   requiredHardware@memory <- hardware@memory*workerPerContainer
@@ -19,8 +21,12 @@ ecsRunWorkers <- function(provider, container, hardware, containerNumber, worker
     informUpgradedHardware(fargateHardware, requiredHardware, workerPerContainer)
   }
   container <- configWorkerNumber(container, workerPerContainer)
-  instances <- ecsTaskScheduler(provider, container, fargateHardware,
-                                containerNumber, TRUE)
+  instances <- ecsTaskScheduler(provider=provider,
+                                taskDefName=taskDefName,
+                                container=container,
+                                hardware=fargateHardware,
+                                containerNum=containerNumber,
+                                publicIpEnable=TRUE)
   instances
 }
 
@@ -48,7 +54,7 @@ getAvailableLaunchNumber <- function(){
   ecsLaunchThrottle$launchNumber - length(ecsLaunchHistory)
 }
 
-ecsTaskScheduler <- function(provider, container, hardware, containerNum, publicIpEnable){
+ecsTaskScheduler <- function(provider, taskDefName , container, hardware, containerNum, publicIpEnable){
   instanceIds <- c()
   while(length(instanceIds) < containerNum){
     requiredNum <- containerNum - length(instanceIds)
@@ -56,15 +62,15 @@ ecsTaskScheduler <- function(provider, container, hardware, containerNum, public
     if(availableNum<=0){
       next
     }
-    instances <- runTask(provider$clusterName,
-                         provider$taskDefName,
-                         availableNum,
-                         container,
-                         hardware@cpu,
-                         hardware@memory,
-                         provider$securityGroupId,
-                         provider$subnetId,
-                         publicIpEnable
+    instances <- runTask(clusterName=provider$clusterName,
+                         taskDefName=taskDefName,
+                         taskCount=availableNum,
+                         container=container,
+                         cpu=hardware@cpu,
+                         memory=hardware@memory,
+                         securityGroupId=provider$securityGroupId,
+                         subnetId=provider$subnetId,
+                         enablePublicIp=publicIpEnable
     )
     if(is.null(instances)){
       break
@@ -142,7 +148,7 @@ getTagValue <-function(tagList, tagName, tagValue, target){
 }
 
 is.empty <- function(x){
-    is.null(x) || length(x)==0
+  is.null(x) || length(x)==0
 }
 
 environmentToJSON <- function(x){

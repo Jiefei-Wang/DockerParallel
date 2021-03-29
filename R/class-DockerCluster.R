@@ -1,18 +1,25 @@
 clusterMethods <- c(
     "startCluster",
-    "startServer",
-    "startWorkers",
     "stopCluster",
+    "startServer",
     "stopServer",
-    "stopWorkers",
+    "setWorkerNumber",
     "getWorkerNumber",
-    "status"
+    "addWorkers",
+    "removeWorkers",
+    "status",
+    "registerBackend",
+    "deregisterBackend"
 )
+
+clusterVariables <- c(
+    "verbose"
+    )
 
 dockerCluster <- function(cloudProvider = ECSProvider(),
                           cloudConfig = CloudConfig(),
                           cloudRuntime = CloudRuntime(),
-                          verbose = 2){
+                          verbose = 1){
     if(!is.null(cloudRuntime$clusterIp)){
         cloudConfig$serverContainer = NULL
     }
@@ -25,16 +32,20 @@ dockerCluster <- function(cloudProvider = ECSProvider(),
 #' @export
 setMethod(f = "names",signature = "DockerCluster",
           definition = function(x){
-              clusterMethods
+              c(clusterMethods, clusterVariables)
           })
 #' @export
 setMethod(f = "$",signature = "DockerCluster",
           definition = function(x, name){
+              if(name%in% clusterVariables){
+                  return(`@`(x, name))
+              }
+
               if(name%in%clusterMethods){
                     func <- get(name)
                     newFunc <- createTempFunction(name, func)
               }
-              parent.env(environment(newFunc)) <- environment()
+              environment(newFunc) <- environment()
               newFunc
           })
 
