@@ -1,40 +1,3 @@
-resetRuntimeServer <- function(cloudRuntime){
-    cloudRuntime$clusterIp <- NULL
-    cloudRuntime$serverHandle <- NULL
-}
-removeRuntimeWorkers <- function(cloudRuntime, index){
-    cloudRuntime$workerHandles <- cloudRuntime$workerHandles[-index]
-    cloudRuntime$workerPerHandle <- cloudRuntime$workerPerHandle[-index]
-}
-
-removeDiedServer <- function(cluster){
-    verbose <- cluster@verbose
-    provider <- cluster@cloudProvider
-    cloudRuntime <- cluster@cloudRuntime
-    if(!is.null(cloudRuntime$serverHandle)){
-        stoppedServer <-
-            IsInstanceStopped(provider, list(cloudRuntime$serverHandle), verbose=verbose)
-        if(stoppedServer){
-            resetRuntimeServer(cloudRuntime)
-        }
-    }
-}
-
-removeDiedWorkers <- function(cluster){
-    verbose <- cluster@verbose
-    provider <- cluster@cloudProvider
-    cloudRuntime <- cluster@cloudRuntime
-    if(length(cloudRuntime$workerHandles)!=0){
-        stoppedWorkers <- IsInstanceStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
-        if(any(stoppedWorkers)){
-            removeRuntimeWorkers(cloudRuntime, which(stoppedWorkers))
-        }
-    }
-}
-
-
-
-#
 # cluster$startCluster()
 # cluster$startServer()
 # cluster$startWorkers(workerNum)
@@ -44,19 +7,17 @@ removeDiedWorkers <- function(cluster){
 # cluster$getWorkerNumber()
 # cluster$status()
 startCluster <- function(cluster){
-    verbose <- cluster@verbose
-    provider <- cluster@cloudProvider
-    cloudConfig <- cluster@cloudConfig
-    cloudRuntime <- cluster@cloudRuntime
+    verbose <- cluster$verbose
 
+    ## Start the server
     startServer(cluster)
 
-    workerNumber <- cluster@cloudConfig$workerNum
-    if(workerNumber>0){
-        verbosePrint(verbose>0, "Running ",workerNumber," workers")
-        setWorkerNumber(cluster, workerNumber)
-    }
+    ## Start the worker
+    workerNumber <- cluster@cloudConfig$workerNumber
+    verbosePrint(verbose>0, "The cluster has ",workerNumber," workers")
+    setWorkerNumber(cluster, workerNumber)
 
+    ## Register backend
     registerBackend(cluster)
     invisible(NULL)
 }
@@ -65,7 +26,7 @@ startCluster <- function(cluster){
 #'
 #' Run the server and set the cluster IP
 startServer <- function(cluster){
-    verbose <- cluster@verbose
+    verbose <- cluster$verbose
     provider <- cluster@cloudProvider
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
@@ -73,116 +34,107 @@ startServer <- function(cluster){
     initialProvider(provider = provider, cluster=cluster, verbose = verbose)
 
     removeDiedServer(cluster)
-    if(is.null(cloudRuntime$clusterIp)){
+    if(!isServerRunning(cluster)){
         ## Run the server if it does not exist
-        if(is.null(cloudRuntime$serverHandle)){
-            if(is.null(cloudConfig$serverContainer)){
-                stop("No server container can be found")
-            }
-            verbosePrint(verbose, "Launching server")
-            serverContainer <- configServerContainer(cloudConfig$serverContainer,
-                                                     cluster = cluster,
-                                                     verbose = verbose)
-            instanceHandle <- runServer(provider,
-                                        container=serverContainer,
-                                        hardware=cloudConfig$serverHardware,
-                                        verbose = verbose)
-            cloudRuntime$serverHandle <- instanceHandle
-
-            cloudRuntime$clusterIp <- getClusterIp(
-                provider,
-                serverHandle = cloudRuntime$serverHandle,
+        if(!is.null(cloudRuntime$serverHandle)){
+            stop("Server handle exists but the cluster IP does not")
+        }
+        if(is.null(cloudConfig$serverContainer)){
+            stop("No server container can be found")
+        }
+        verbosePrint(verbose, "Launching server")
+        serverContainer <-
+            configServerContainerEnv(
+                cloudConfig$serverContainer,
+                cluster = cluster,
                 verbose = verbose
             )
+        instanceHandle <- runServer(provider,
+                                    container=serverContainer,
+                                    hardware=cloudConfig$serverHardware,
+                                    verbose = verbose)
+        cloudRuntime$serverHandle <- instanceHandle
+        serverIp <- getInstanceIps(
+            provider,
+            instanceHandles = list(instanceHandle),
+            verbose = verbose
+        )
+        if(serverIp$privateIp==""){
+            cloudRuntime$serverPrivateIp <- NULL
+        }else{
+            cloudRuntime$serverPrivateIp <-serverIp$privateIp
+        }
+        if(serverIp$publicIp==""){
+            cloudRuntime$serverPublicIp <- NULL
+        }else{
+            cloudRuntime$serverPublicIp <-serverIp$publicIp
         }
     }
     invisible(NULL)
 }
 
 setWorkerNumber <- function(cluster, workerNumber){
-    verbose <- cluster@verbose
-    provider <- cluster@cloudProvider
+    stopifnot(workerNumber>=0)
+    workerNumber <- as.integer(workerNumber)
     cloudConfig <- cluster@cloudConfig
-    cloudRuntime <- cluster@cloudRuntime
 
-    currentWorkerNumber <- getWorkerNumber(cluster)
-    workerOffset <- workerNumber - currentWorkerNumber
-    if(workerOffset!=0){
-        if(workerOffset > 0){
-            addWorkers(cluster, workerOffset)
-        }else{
-            removeWorkers(cluster, abs(workerOffset))
-        }
+    cloudConfig$workerNumber <- workerNumber
+    workerOffset <- cloudConfig$workerNumber - getWorkerNumber(cluster)
+    if(workerOffset > 0){
+        addWorkersInternal(cluster, workerOffset)
     }
+    if(workerOffset < 0){
+        removeWorkersInternal(cluster, workerOffset)
+    }
+    invisible(NULL)
 }
 
 
 addWorkers <- function(cluster, workerNumber){
-    verbose <- cluster@verbose
+    workerNumber <- as.integer(workerNumber)
+
+    verbose <- cluster$verbose
     provider <- cluster@cloudProvider
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
 
     initialProvider(provider = provider, cluster=cluster, verbose = verbose)
+    ## get the expected worker number
+    cloudConfig$workerNumber <- cloudConfig$workerNumber + workerNumber
 
-    if(workerNumber<=0){
-        return()
+    ## get the number of workers that will be added
+    requiredAddedNumber <- cloudConfig$workerNumber - getWorkerNumber(cluster)
+    if(requiredAddedNumber<=0){
+        return(invisible(NULL))
     }
-
-    workerContainer <- configWorkerContainer(cloudConfig$workerContainer,
-                                             cluster = cluster,
-                                             verbose = verbose)
-    instanceHandles <- runWorkers(provider,
-                                  container = workerContainer,
-                                  hardware = cloudConfig$workerHardware,
-                                  workerNumber = workerNumber,
-                                  verbose = verbose)
-    ## Count the number of workers per handle
-    uniqueHandles <- unique(instanceHandles)
-    workerPerHandle <- rep(0, length(uniqueHandles))
-    for(i in seq_along(uniqueHandles)){
-        workerPerHandle[i] <- sum(
-            vapply(instanceHandles,
-                   function(x)identical(x,uniqueHandles[[i]]), logical(1))
-        )
-    }
-    cloudRuntime$workerHandles <- c(cloudRuntime$workerHandles, uniqueHandles)
-    cloudRuntime$workerPerHandle <- c(cloudRuntime$workerPerHandle, as.integer(workerPerHandle))
-
+    addWorkersInternl(cluster, requiredAddedNumber)
     invisible(NULL)
 }
 
 
-removeWorkers<- function(cluster, workerNum){
+removeWorkers<- function(cluster, workerNumber){
+    workerNumber <- as.integer(workerNumber)
     cloudRuntime <- cluster@cloudRuntime
     provider <- cluster@cloudProvider
-    verbose <- cluster@verbose
-    ## Find which instances will be killed while satisfying
-    ## that the killed workers is less than or equal to workerNum
-    KnapsackSolution <-
-        adagio::knapsack(cloudRuntime$workerPerHandle,
-                         cloudRuntime$workerPerHandle,
-                         workerNum)
-    killedWorkerNumber <- KnapsackSolution$capacity
-    killedInstanceIndex <- KnapsackSolution$indices
-    if(killedWorkerNumber < workerNum){
-        if(killedWorkerNumber==0){
-            message("No worker can be killed as all instances have more than ",workerNum," workers")
-        }else{
-            message(killedWorkerNumber,
-                    " workers will be killed as multiple workers share the same instance")
-        }
+    cloudConfig <- cluster@cloudConfig
+    verbose <- cluster$verbose
+
+    stopifnot(cloudConfig$workerNumber >= workerNumber)
+    ## set the expected worker number
+    cloudConfig$workerNumber <- cloudConfig$workerNumber - workerNumber
+
+    ## get the number of workers that will be killed
+    requiredKilledNumber <- getWorkerNumber(cluster) - cloudConfig$workerNumber
+    if(requiredKilledNumber <= 0){
+        return(invisible(NULL))
     }
-    killInstances(provider,
-                  instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
-                  verbose = verbose)
-    removeRuntimeWorkers(cloudRuntime, killedInstanceIndex)
-    invisible(NULL)
+    removeWorkersInternl(cluster, requiredKilledNumber)
 }
 
 
 
 stopCluster <- function(cluster){
+    verbosePrint(cluster$verbose, "Stopping cluster")
     deregisterBackend(cluster)
     setWorkerNumber(cluster, 0)
     stopServer(cluster)
@@ -190,7 +142,7 @@ stopCluster <- function(cluster){
 }
 
 stopServer<- function(cluster){
-    verbose <- cluster@verbose
+    verbose <- cluster$verbose
     provider <- cluster@cloudProvider
     cloudRuntime <- cluster@cloudRuntime
     if(!is.null(cloudRuntime$serverHandle)){
@@ -204,26 +156,51 @@ stopServer<- function(cluster){
     invisible(NULL)
 }
 
-
 getWorkerNumber <- function(cluster){
     removeDiedWorkers(cluster)
     sum(cluster@cloudRuntime$workerPerHandle)
 }
-
+getExpectedWorkerNumber <- function(cluster){
+    cluster@cloudConfig$workerNumber
+}
 registerBackend <- function(cluster){
-    registerParallelBackend(container = cluster@cloudConfig$workerContainer,
-                            cluster = cluster,
-                            verbose = cluster@verbose)
+    verbose <- cluster$verbose
+    if(!cluster@settings$parallelBackendRegistered){
+        verbosePrint(verbose, "Registering foreach redis backend, it might take a few minutes")
+        if(!is.null(cluster@cloudRuntime$serverHandle)){
+            success <- waitInstanceUntilRunning(
+                cluster@cloudProvider,
+                list(cluster@cloudRuntime$serverHandle)
+            )
+            if(!success){
+                stop("The server is not running!")
+            }
+        }
+        registerParallelBackend(container = cluster@cloudConfig$workerContainer,
+                                cluster = cluster,
+                                verbose = cluster$verbose)
+        cluster@settings$parallelBackendRegistered <- TRUE
+    }
     invisible(NULL)
 }
+
 
 deregisterBackend <- function(cluster){
-    deregisterParallelBackend(container = cluster@cloudConfig$workerContainer,
-                              cluster = cluster,
-                              verbose = cluster@verbose)
+    if(cluster@settings$parallelBackendRegistered){
+        deregisterParallelBackend(container = cluster@cloudConfig$workerContainer,
+                                  cluster = cluster,
+                                  verbose = cluster$verbose)
+        cluster@settings$parallelBackendRegistered <- FALSE
+    }
     invisible(NULL)
 }
 
+isServerRunning <- function(cluster){
+    !all(
+        is.null(cluster@cloudRuntime$serverPrivateIp),
+        is.null(cluster@cloudRuntime$serverPublicIp)
+    )
+}
 
 update <- function(cluster){
     removeDiedServer(cluster)

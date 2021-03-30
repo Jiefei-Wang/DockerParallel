@@ -20,7 +20,6 @@ ecsRunWorkers <- function(provider, container, hardware,
   if(verbose){
     informUpgradedHardware(fargateHardware, requiredHardware, workerPerContainer)
   }
-  container <- configWorkerNumber(container, workerPerContainer)
   instances <- ecsTaskScheduler(provider=provider,
                                 taskDefName=taskDefName,
                                 container=container,

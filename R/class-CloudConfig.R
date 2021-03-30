@@ -1,19 +1,23 @@
 CloudConfig <- function(clusterName = "dockerCluster",
-                        workerNum = 1L,
+                        workerNumber = 1L,
                         serverContainer = getServerContainer(),
                         workerContainer = getWorkerContainer(),
                         serverHardware = CloudHardware(),
                         workerHardware = CloudHardware(),
                         serverPort = 6379L,
-                        serverPassword = generateServerPassword()){
+                        serverPassword = generateRandomPassword(),
+                        serverWorkerSameNAT = TRUE,
+                        serverClientSameNAT = FALSE){
     .CloudConfig$new(clusterName = clusterName,
-                     workerNum = as.integer(workerNum),
+                     workerNumber = as.integer(workerNumber),
                      serverContainer = serverContainer,
                      workerContainer = workerContainer,
                      serverHardware = serverHardware,
                      workerHardware = workerHardware,
                      serverPort = as.integer(serverPort),
-                     serverPassword=serverPassword)
+                     serverPassword=serverPassword,
+                     serverWorkerSameNAT=serverWorkerSameNAT,
+                     serverClientSameNAT=serverClientSameNAT)
 }
 
 
@@ -23,7 +27,7 @@ CloudConfig <- function(clusterName = "dockerCluster",
         serverPasswordTmp <- ifelse(is.null(.self$serverPassword), "FALSE", "TRUE")
 
         cat("Cluster name:    ", .self$clusterName, "\n")
-        cat("Worker number:   ", .self$workerNum, "\n")
+        cat("Worker number:   ", .self$workerNumber, "\n")
         if(!is.null(.self$serverContainer)){
             cat("Server container:", .self$serverContainer@image, "\n")
             cat("server CPU:      ", .self$serverHardware@cpu, " unit\n")

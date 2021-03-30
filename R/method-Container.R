@@ -1,4 +1,4 @@
-setMethod("configServerContainer", "Container", function(container, cluster, verbose = FALSE, ...){
+setMethod("configServerContainerEnv", "Container", function(container, cluster, verbose = FALSE, ...){
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
     pubKeyValue <- getSSHPubKeyValue()
@@ -11,26 +11,28 @@ setMethod("configServerContainer", "Container", function(container, cluster, ver
     container
 })
 
-setMethod("configWorkerContainer", "Container", function(container, cluster, verbose = FALSE, ...){
+setMethod("configWorkerContainerEnv", "Container", function(container, cluster, workerNumber, verbose = FALSE, ...){
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
-    if(is.null(cloudRuntime$clusterIp)){
-        stop("Fail to find cluster Ip")
+
+    if(cloudConfig$serverWorkerSameNAT){
+        serverIp <- cloudRuntime$serverPrivateIp
+    }else{
+        serverIp <- cloudRuntime$serverPublicIp
+    }
+    if(is.null(serverIp)){
+        stop("Fail to find the server Ip")
     }
     stopifnot(!is.empty(cloudConfig$serverPort))
 
     container@environment <- list(
         clusterName = cloudConfig$clusterName,
-        serverIp = cloudRuntime$clusterIp,
+        serverIp = serverIp,
         serverPort = cloudConfig$serverPort,
         serverPassword = cloudConfig$serverPassword,
-        sshPubKey = getSSHPubKeyValue()
+        sshPubKey = getSSHPubKeyValue(),
+        workerNum = workerNumber
     )
-    container
-})
-
-setMethod("configWorkerNumber", "Container", function(container, workerNumber, verbose = FALSE, ...){
-    container@environment[["workerNum"]] <- workerNumber
     container
 })
 
@@ -38,26 +40,20 @@ setMethod("configWorkerNumber", "Container", function(container, workerNumber, v
 
 
 setMethod("registerParallelBackend", "Container", function(container, cluster, verbose = FALSE, ...){
-    verbosePrint(verbose, "Registering foreach redis backend, it might take a few minutes")
-    if(!is.null(cluster@cloudRuntime$serverHandle)){
-        success <- waitInstanceUntilRunning(
-            cluster@cloudProvider,
-            list(cluster@cloudRuntime$serverHandle)
-        )
-        if(!success){
-            stop("The server is not running!")
-        }
-    }
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
 
     queue <- cloudConfig$clusterName
-    serverClientIP <- cloudRuntime$clusterIp
+    if(cloudConfig$serverClientSameNAT){
+        serverClientIP <- cloudRuntime$serverPrivateIp
+    }else{
+        serverClientIP <- cloudRuntime$serverPublicIp
+    }
     password <- cloudConfig$serverPassword
 
     doRedis::registerDoRedis(queue=queue,
-                             host = cloudRuntime$clusterIp,
-                             password = cloudConfig$serverPassword,
+                             host = serverClientIP,
+                             password = password,
                              port = cloudConfig$serverPort)
 })
 

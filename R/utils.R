@@ -3,10 +3,9 @@ add_asteriod <- function(x, begin_number, end_number){
     paste0(rep("*",nchar(x)-begin_number-end_number),collapse = "")
 }
 
-generateServerPassword <- function(len = 26){
+generateRandomPassword <- function(len = 26){
     paste0(letters[sample(26, len, replace = TRUE)],collapse = "")
 }
-
 
 
 verbosePrint<-function(verbose, ...){

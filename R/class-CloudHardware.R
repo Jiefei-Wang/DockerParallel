@@ -1,4 +1,4 @@
-CloudHardware <- function(cpu = 256, memory = 256, id = NULL){
+CloudHardware <- function(cpu = 256, memory = 512, id = NULL){
     .CloudHardware(cpu=cpu,memory=memory, id = id)
 }
 

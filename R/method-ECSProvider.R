@@ -1,42 +1,46 @@
 setMethod("initialProvider", "ECSProvider", function(provider, cluster, verbose, ...){
     if(!provider$initialized){
+        # if(!is.null(cluster@cloudConfig$serverContainer)){
+        #     cluster@cloudConfig$serverWorkerSameNAT <- TRUE
+        # }
+        verbosePrint(verbose, "Initializing the ECS provider")
         ## Cluster name
-        verbosePrint(verbose, "Setting up cluster")
+        verbosePrint(verbose>1, "\tSetting up cluster")
         clusterName <- configClusterName(provider)
-        verbosePrint(verbose, "Cluster name: \t", clusterName)
+        verbosePrint(verbose>1, "\tCluster name: \t", clusterName)
         ## VPC
-        verbosePrint(verbose, "Setting up VPC")
+        verbosePrint(verbose>1, "\tSetting up VPC")
         VPCId <- configVpcId(provider)
-        verbosePrint(verbose, "VPC: \t", VPCId)
+        verbosePrint(verbose>1, "\tVPC: \t", VPCId)
         ## subnet
-        verbosePrint(verbose, "Setting up subnet")
+        verbosePrint(verbose>1, "\tSetting up subnet")
         subnetId <- configSubnetId(provider)
-        verbosePrint(verbose, "Subnet id: \t", subnetId)
+        verbosePrint(verbose>1, "\tSubnet id: \t", subnetId)
         ## gateway
-        verbosePrint(verbose, "Setting up gateway")
+        verbosePrint(verbose>1, "\tSetting up gateway")
         gatewayId <- configInternetGateway(provider)
-        verbosePrint(verbose, "Gateway: \t", gatewayId)
+        verbosePrint(verbose>1, "\tGateway: \t", gatewayId)
         ## route table
-        verbosePrint(verbose, "Setting up route table")
+        verbosePrint(verbose>1, "\tSetting up route table")
         routeTableId <- configRouteTable(provider)
-        verbosePrint(verbose, "Route table: \t", routeTableId)
+        verbosePrint(verbose>1, "\tRoute table: \t", routeTableId)
         ## route
-        verbosePrint(verbose, "Setting up default route")
+        verbosePrint(verbose>1, "\tSetting up default route")
         configDefaultRoute(provider)
-        verbosePrint(verbose, "Default route finished")
+        verbosePrint(verbose>1, "\tDefault route finished")
         ## security group
-        verbosePrint(verbose, "Setting up security group")
+        verbosePrint(verbose>1, "\tSetting up security group")
         securityGroupId <- configSecurityGroup(provider)
-        verbosePrint(verbose, "Security group: ",securityGroupId)
+        verbosePrint(verbose>1, "\tSecurity group: ",securityGroupId)
         # Inbound permission
-        verbosePrint(verbose, "Setting up SSH and server-worker inbound permission")
+        verbosePrint(verbose>1, "\tSetting up SSH and server-worker inbound permission")
         port <- c(22, cluster@cloudConfig$serverPort)
         ConfigInboundPermissions(provider, port)
-        verbosePrint(verbose, "Inbound permission finished")
+        verbosePrint(verbose>1, "\tInbound permission finished")
         # Task definition
-        verbosePrint(verbose, "Setting up task defintion")
+        verbosePrint(verbose>1, "\tSetting up task defintion")
         configTaskDefinition(provider, cluster@cloudConfig)
-        verbosePrint(verbose, "Task defintion finished")
+        verbosePrint(verbose>1, "\tTask defintion finished")
         provider$initialized <- TRUE
     }
 })
@@ -75,10 +79,16 @@ setMethod("runWorkers", "ECSProvider",
               ## run the containers which have the maximum worker number
               containerWithMaxWorker <- floor(workerNumber/maxWorkers)
               if(containerWithMaxWorker>0){
-
+                  ## Set the worker container environment
+                  workerContainer <- configWorkerContainerEnv(
+                      container = container,
+                      cluster = cluster,
+                      workerNumber = maxWorkers,
+                      verbose = verbose
+                  )
                   instances <- ecsRunWorkers(
                       provider=provider,
-                      container=container,
+                      container=workerContainer,
                       hardware=hardware,
                       containerNumber=containerWithMaxWorker,
                       workerPerContainer=maxWorkers,
@@ -93,9 +103,16 @@ setMethod("runWorkers", "ECSProvider",
               ## Run the container which does not have the maximum worker number
               lastContainerWorkerNum <- workerNumber - maxWorkers*containerWithMaxWorker
               if(lastContainerWorkerNum!=0){
+                  ## Set the worker container environment
+                  workerContainer <- configWorkerContainerEnv(
+                      container = container,
+                      cluster = cluster,
+                      workerNumber = lastContainerWorkerNum,
+                      verbose = verbose
+                  )
                   instance <- ecsRunWorkers(
                       provider=provider,
-                      container=container,
+                      container=workerContainer,
                       hardware=hardware,
                       containerNumber=1,
                       workerPerContainer=lastContainerWorkerNum,
@@ -116,20 +133,20 @@ setMethod("runWorkers", "ECSProvider",
           }
 )
 
-setMethod("getClusterIp", "ECSProvider",
-          function(provider, serverHandle, verbose = FALSE, ...){
+setMethod("getInstanceIps", "ECSProvider",
+          function(provider, instanceHandles, verbose = FALSE, ...){
               while(TRUE){
                   taskInfo <- getTaskDetails(provider$clusterName,
-                                             taskIds = serverHandle,
+                                             taskIds = instanceHandles,
                                              getIP = TRUE)
+                  if(taskInfo$publicIp!=""&&taskInfo$privateIp!=""){
+                      break
+                  }
                   if(taskInfo$status=="STOPPED"){
                       stop("The server has been stopped")
                   }
-                  if(taskInfo$publicIP!=""){
-                      break
-                  }
               }
-              taskInfo$publicIP
+              taskInfo
           }
 )
 

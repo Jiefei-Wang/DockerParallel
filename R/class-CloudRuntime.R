@@ -2,22 +2,25 @@ CloudRuntime <- function(
     serverHandle = NULL,
     workerHandles = list(),
     workerPerHandle = c(),
-    clusterIp = NULL
+    serverPublicIp = NULL,
+    serverPrivateIp = NULL
     ){
     .CloudRuntime$new(serverHandle = serverHandle,
                       workerHandles = workerHandles,
                       workerPerHandle = as.integer(workerPerHandle),
-                      clusterIp=clusterIp)
+                      serverPublicIp=serverPublicIp,
+                      serverPrivateIp=serverPrivateIp
+                      )
 }
 
 
 .CloudRuntime$methods(
     show = function(){
-        clusterIpTmp <- ifelse(is.null(.self$clusterIp), "NULL", .self$clusterIp)
+        publicIp <- ifelse(is.null(.self$serverPublicIp), "NULL", .self$serverPublicIp)
         workerNumber <- sum(.self$workerPerHandle)
 
-        cat("Cluster Ip:    ", clusterIpTmp, "\n")
-        cat("Worker number: ", workerNumber, "\n")
+        cat("Server public Ip: ", publicIp, "\n")
+        cat("Worker number:    ", workerNumber, "\n")
         invisible(NULL)
     }
 )

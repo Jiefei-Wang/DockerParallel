@@ -4,12 +4,12 @@ setClassUnion("IntOrNULL",c("NULL","integer"))
 
 .Container <- setClass(
     "Container",
-    representation(
+    slots = list(
         name = "CharOrNULL",
         environment = "list",
         image = "character",
         command = "CharOrNULL",
-        maxWorkers = "numeric"
+        maxWorkers = "integer"
     )
 )
 
@@ -35,7 +35,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 #' @export
 .CloudHardware <- setClass(
     "CloudHardware",
-    representation(
+    slots = list(
         cpu = "numeric",
         memory = "numeric",
         id = "CharOrNULL"
@@ -48,7 +48,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 #' The cloud configuration
 #'
 #' @slot clusterName The name of the cluster
-#' @slot workerNum The required number of workers that should be
+#' @slot workerNumber The required number of workers that should be
 #' run on the cloud
 #' @slot serverContainer The container definition for the server.
 #' If the value is NULL, the server must be provided from the other source.
@@ -61,13 +61,15 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
     "CloudConfig",
     fields = list(
         clusterName = "character",
-        workerNum = "integer",
+        workerNumber = "integer",
         serverContainer = "ContainerOrNULL",
         workerContainer = "Container",
         serverHardware = "CloudHardware",
         workerHardware = "CloudHardware",
         serverPort = "IntOrNULL",
-        serverPassword = "CharOrNULL"
+        serverPassword = "CharOrNULL",
+        serverWorkerSameNAT = "logical",
+        serverClientSameNAT = "logical"
     )
 )
 
@@ -77,18 +79,19 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
         serverHandle = "ANY",
         workerHandles = "list",
         workerPerHandle = "integer",
-        clusterIp = "CharOrNULL"
+        serverPublicIp = "CharOrNULL",
+        serverPrivateIp = "CharOrNULL"
     )
 )
 
 
 .DockerCluster <- setClass(
     "DockerCluster",
-    representation(
+    slots = list(
         cloudProvider = "CloudProvider",
         cloudConfig = "CloudConfig",
         cloudRuntime = "CloudRuntime",
-        verbose = "integer"
+        settings = "environment"
     )
 )
 

@@ -105,9 +105,9 @@ getTaskDetails<-function(clusterName, taskIds, getIP = FALSE){
         if(length(idx)!=0){
             publicIPs[idx] <- getInstanceIP(ENIs[idx])
         }
-        data.frame(taskId = taskIds, status = status, privateIP = privateIPs, publicIP = publicIPs)
+        data.frame(taskId = taskIds, status = status, privateIp = privateIPs, publicIp = publicIPs)
     }else{
-        data.frame(taskId = taskIds, status = status, privateIP = privateIPs)
+        data.frame(taskId = taskIds, status = status, privateIp = privateIPs)
     }
 }
 
