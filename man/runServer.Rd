@@ -7,15 +7,15 @@
 runServer(provider, cluster, container, hardware, verbose)
 }
 \arguments{
-\item{provider}{S4 CloudProvider object. The service provider}
+\item{provider}{S4 CloudProvider object. The service provider.}
 
-\item{cluster}{S4 DockerCluster object}
+\item{cluster}{S4 DockerCluster object.}
 
-\item{container}{S4 Container Object}
+\item{container}{S4 Container Object. The server container.}
 
-\item{hardware}{S4 CloudHardware Object}
+\item{hardware}{S4 CloudHardware Object. The server hardware.}
 
-\item{verbose}{Integer. The verbose level, default 1}
+\item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{
 Any object that can be used by the cluster to identify the server instance.

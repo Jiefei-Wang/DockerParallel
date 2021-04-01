@@ -22,6 +22,8 @@ clusterOptions <- c(
 dockerCluster <- function(cloudProvider = ECSCloudProvider(),
                           cloudConfig = CloudConfig(),
                           cloudRuntime = CloudRuntime(),
+                          serverContainer = getBiocServerContainer(),
+                          workerContainer = getBiocWorkerContainer(),
                           verbose = 1,
                           stopClusterOnExit = TRUE){
     settings <- new.env(parent = emptyenv())
@@ -29,29 +31,22 @@ dockerCluster <- function(cloudProvider = ECSCloudProvider(),
     settings$stopClusterOnExit <- stopClusterOnExit
     settings$parallelBackendRegistered <- FALSE
 
-    publicIpNULL <- is.null(cloudRuntime$serverPublicIp)
-    privateIpNULL <- is.null(cloudRuntime$serverPrivateIp)
-    if(!all(publicIpNULL,privateIpNULL)){
-        cloudConfig$serverContainer = NULL
-    }
-    if(publicIpNULL&&!privateIpNULL){
-        cloudConfig$serverClientSameNAT <- FALSE
-        cloudConfig$serverWorkerSameNAT <- FALSE
-    }
-    if(!publicIpNULL&&privateIpNULL){
-        cloudConfig$serverClientSameNAT <- TRUE
-        cloudConfig$serverWorkerSameNAT <- TRUE
-    }
-
     cluster <- .DockerCluster(cloudProvider = cloudProvider,
                               cloudConfig = cloudConfig,
                               cloudRuntime = cloudRuntime,
+                              serverContainer = serverContainer,
+                              workerContainer = workerContainer,
                               settings = settings
     )
+    cluster <- configNATStatus(cluster)
     settings$cluster <- cluster
     reg.finalizer(settings, DockerCluster.finalizer, onexit = TRUE)
     cluster
 }
+
+
+
+
 
 #' @export
 setMethod(f = "names",signature = "DockerCluster",

@@ -1,8 +1,8 @@
 setMethod("initializeProvider", "ECSCloudProvider", function(provider, cluster, verbose){
     if(!provider$initialized){
-        # if(!is.null(cluster@cloudConfig$serverContainer)){
-        #     cluster@cloudConfig$serverWorkerSameNAT <- TRUE
-        # }
+        if(!is.null(cluster@serverContainer)){
+            cluster@cloudConfig$serverWorkerSameNAT <- TRUE
+        }
         verbosePrint(verbose, "Initializing the ECS provider")
         ## Cluster name
         verbosePrint(verbose>1, "\tSetting up cluster")
@@ -39,7 +39,7 @@ setMethod("initializeProvider", "ECSCloudProvider", function(provider, cluster, 
         verbosePrint(verbose>1, "\tInbound permission finished")
         # Task definition
         verbosePrint(verbose>1, "\tSetting up task defintion")
-        configTaskDefinition(provider, cluster@cloudConfig)
+        configTaskDefinition(provider, cluster)
         verbosePrint(verbose>1, "\tTask defintion finished")
         provider$initialized <- TRUE
     }
@@ -75,7 +75,7 @@ setMethod("runWorkers", "ECSCloudProvider",
 
               instanceIds <- c()
               maxWorkers <- getMaxWorkerPerContainer(hardware)
-              maxWorkers <- min(container@maxWorkers, maxWorkers)
+              maxWorkers <- min(container@maxWorkerNum, maxWorkers)
               ## run the containers which have the maximum worker number
               containerWithMaxWorker <- floor(workerNumber/maxWorkers)
               if(containerWithMaxWorker>0){

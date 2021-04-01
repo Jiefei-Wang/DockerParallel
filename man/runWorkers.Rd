@@ -7,15 +7,17 @@
 runWorkers(provider, cluster, container, hardware, workerNumber, verbose)
 }
 \arguments{
-\item{provider}{S4 CloudProvider object. The service provider}
+\item{provider}{S4 CloudProvider object. The service provider.}
 
-\item{cluster}{S4 DockerCluster object}
+\item{cluster}{S4 DockerCluster object.}
 
-\item{container}{S4 Container Object}
+\item{container}{S4 Container Object. The worker container.}
 
-\item{hardware}{S4 CloudHardware Object}
+\item{hardware}{S4 CloudHardware Object. The worker hardware.}
 
-\item{verbose}{Integer. The verbose level, default 1}
+\item{workerNumber}{Integer. The number of workers need to be run.}
+
+\item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{
 A list of object that can be used by the cluster to identify the worker instances.

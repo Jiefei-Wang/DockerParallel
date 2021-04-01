@@ -7,11 +7,11 @@
 initializeProvider(provider, cluster, verbose)
 }
 \arguments{
-\item{provider}{S4 CloudProvider object. The service provider}
+\item{provider}{S4 CloudProvider object. The service provider.}
 
-\item{cluster}{S4 DockerCluster object}
+\item{cluster}{S4 DockerCluster object.}
 
-\item{verbose}{Integer. The verbose level, default 1}
+\item{verbose}{Integer. The verbose level, default 1.}
 }
 \description{
 Initialize the service provider. This function will be called prior

@@ -29,3 +29,23 @@ createTempFunction <- function(name, func){
     formals(newFunc) <- funcFormals
     newFunc
 }
+
+configNATStatus <- function(cluster){
+    cloudRuntime <- cluster@cloudRuntime
+    cloudConfig <- cluster@cloudConfig
+
+    publicIpNULL <- is.null(cloudRuntime$serverPublicIp)
+    privateIpNULL <- is.null(cloudRuntime$serverPrivateIp)
+    if(!all(publicIpNULL,privateIpNULL)){
+        cluster@serverContainer <- NULL
+    }
+    if(publicIpNULL&&!privateIpNULL){
+        cloudConfig$serverClientSameNAT <- FALSE
+        cloudConfig$serverWorkerSameNAT <- FALSE
+    }
+    if(!publicIpNULL&&privateIpNULL){
+        cloudConfig$serverClientSameNAT <- TRUE
+        cloudConfig$serverWorkerSameNAT <- TRUE
+    }
+    cluster
+}

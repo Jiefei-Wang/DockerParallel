@@ -39,14 +39,15 @@ listTaskDefinitions<-function(taskName = NULL){
     data.frame(name = defNames, version = defVersions)
 }
 
-configTaskDefinition <- function(x, cloudConfig){
-
-    configTaskDefinitionInternal(x,
-                                 "serverTaskDefName",
-                                 cloudConfig$serverContainer)
+configTaskDefinition <- function(x, cluster){
+    if(!is.null(cluster@serverContainer)){
+        configTaskDefinitionInternal(x,
+                                     "serverTaskDefName",
+                                     cluster@serverContainer)
+    }
     configTaskDefinitionInternal(x,
                                  "workerTaskDefName",
-                                 cloudConfig$workerContainer)
+                                 cluster@workerContainer)
 
 }
 

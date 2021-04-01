@@ -43,7 +43,7 @@ addWorkersInternal <- function(cluster, workerNumber){
     if(isServerRunning(cluster)){
         ## By default, we have 1 worker per container
         workerContainer <- configWorkerContainerEnv(
-            container = cloudConfig$workerContainer,
+            container = cluster@workerContainer,
             cluster = cluster,
             workerNumber = 1,
             verbose = verbose

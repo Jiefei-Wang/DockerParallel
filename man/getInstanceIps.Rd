@@ -2,18 +2,23 @@
 % Please edit documentation in R/all-generics.R
 \name{getInstanceIps}
 \alias{getInstanceIps}
-\title{Get the cluster IP}
+\title{Get the instance public/private IPs}
 \usage{
 getInstanceIps(provider, instanceHandles, verbose)
 }
 \arguments{
-\item{serverHandle}{the server handles}
+\item{provider}{S4 CloudProvider object. The service provider.}
+
+\item{instanceHandles}{List. A list of instance handles.}
+
+\item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{
 A data.frame with \code{publicIp} and \code{privateIp} columns
 }
 \description{
-Get the cluster IP, the IP can be used for the worker to connect with
-the server. The IP can be anything and does not have to have any meaning
-to the cluster.
+Get the instance public/private IPs. The IPs will be used by the cluster to
+make connections between server and worker, server and client. If the instance
+does not have the public or private IP, the return value can be the character
+"".
 }

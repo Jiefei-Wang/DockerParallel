@@ -39,13 +39,13 @@ startServer <- function(cluster){
         if(!is.null(cloudRuntime$serverHandle)){
             stop("Server handle exists but the cluster IP does not")
         }
-        if(is.null(cloudConfig$serverContainer)){
+        if(is.null(cluster@serverContainer)){
             stop("No server container can be found")
         }
         verbosePrint(verbose, "Launching server")
         serverContainer <-
             configServerContainerEnv(
-                cloudConfig$serverContainer,
+                cluster@serverContainer,
                 cluster = cluster,
                 verbose = verbose
             )
@@ -177,7 +177,7 @@ registerBackend <- function(cluster, ...){
             stop("The server is not running!")
         }
     }
-    registerParallelBackend(container = cluster@cloudConfig$workerContainer,
+    registerParallelBackend(container = cluster@workerContainer,
                             cluster = cluster,
                             verbose = cluster$verbose, ...)
     cluster@settings$parallelBackendRegistered <- TRUE
@@ -187,7 +187,7 @@ registerBackend <- function(cluster, ...){
 
 deregisterBackend <- function(cluster){
     if(cluster@settings$parallelBackendRegistered){
-        deregisterParallelBackend(container = cluster@cloudConfig$workerContainer,
+        deregisterParallelBackend(container = cluster@workerContainer,
                                   cluster = cluster,
                                   verbose = cluster$verbose)
         cluster@settings$parallelBackendRegistered <- FALSE

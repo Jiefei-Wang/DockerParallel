@@ -9,7 +9,7 @@ setClassUnion("IntOrNULL",c("NULL","integer"))
         environment = "list",
         image = "character",
         command = "CharOrNULL",
-        maxWorkers = "integer"
+        maxWorkerNum = "integer"
     )
 )
 
@@ -62,8 +62,6 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
     fields = list(
         jobQueueName = "character",
         workerNumber = "integer",
-        serverContainer = "ContainerOrNULL",
-        workerContainer = "Container",
         serverHardware = "CloudHardware",
         workerHardware = "CloudHardware",
         serverPort = "IntOrNULL",
@@ -90,6 +88,8 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
     slots = list(
         cloudProvider = "CloudProvider",
         cloudConfig = "CloudConfig",
+        serverContainer = "ContainerOrNULL",
+        workerContainer = "Container",
         cloudRuntime = "CloudRuntime",
         settings = "environment"
     )
@@ -97,10 +97,16 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 
 
 ###########################
-## ECS provider
+## container provider
 ###########################
+.BiocContainerProvider <- setClass(
+    "BiocContainerProvider",
+    contains = "Container"
+)
 
-
+###########################
+## cloud provider
+###########################
 .ECSCloudProvider <- setRefClass(
     "ECSCloudProvider",
     fields = list(

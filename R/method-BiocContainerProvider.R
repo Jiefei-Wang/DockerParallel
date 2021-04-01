@@ -1,4 +1,4 @@
-setMethod("configServerContainerEnv", "Container",
+setMethod("configServerContainerEnv", "BiocContainerProvider",
           function(container, cluster, verbose = FALSE){
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
@@ -12,7 +12,7 @@ setMethod("configServerContainerEnv", "Container",
     container
 })
 
-setMethod("configWorkerContainerEnv", "Container",
+setMethod("configWorkerContainerEnv", "BiocContainerProvider",
           function(container, cluster, workerNumber, verbose = FALSE){
               cloudConfig <- cluster@cloudConfig
               cloudRuntime <- cluster@cloudRuntime
@@ -41,7 +41,7 @@ setMethod("configWorkerContainerEnv", "Container",
 
 
 
-setMethod("registerParallelBackend", "Container",
+setMethod("registerParallelBackend", "BiocContainerProvider",
           function(container, cluster, verbose = FALSE, ...){
               cloudConfig <- cluster@cloudConfig
               cloudRuntime <- cluster@cloudRuntime
