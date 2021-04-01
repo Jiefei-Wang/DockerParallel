@@ -1,4 +1,4 @@
-ECSProvider <- function(clusterName = "R-worker-cluster",
+ECSCloudProvider <- function(clusterName = "R-worker-cluster",
                         serverTaskDefName = "R-server-task-definition",
                         workerTaskDefName = "R-worker-task-definition",
                         securityGroupName = "R-parallel-security-group",
@@ -8,7 +8,7 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
                         internetGatewayId = NULL,
                         routeTableId = NULL,
                         workerPublicIpEnable = TRUE){
-    .ECSProvider$new(
+    .ECSCloudProvider$new(
         clusterName = clusterName,
         serverTaskDefName = serverTaskDefName,
         workerTaskDefName = workerTaskDefName,
@@ -33,7 +33,7 @@ ECSProvider <- function(clusterName = "R-worker-cluster",
     )
 }
 
-.ECSProvider$methods(
+.ECSCloudProvider$methods(
     show = function(){
         cat("Cluster name:        ", .self$clusterName, "\n")
         cat("Server task definition:     ", .self$serverTaskDefName, "\n")

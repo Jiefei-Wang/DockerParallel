@@ -15,3 +15,16 @@ verbosePrint<-function(verbose, ...){
 is.empty <- function(x){
     is.null(x) || length(x)==0
 }
+myknapsack <- function (workerPerHandle, killedWorkerNum)
+{
+  idx <- which(workerPerHandle<=killedWorkerNum)
+  if(length(idx)==0){
+    return(list(capacity=0, indices = c()))
+  }
+  KnapsackSolution <-
+    adagio::knapsack(workerPerHandle[idx],
+                     workerPerHandle[idx],
+                     killedWorkerNum)
+  KnapsackSolution$indices <- idx[KnapsackSolution$indices]
+  KnapsackSolution
+}

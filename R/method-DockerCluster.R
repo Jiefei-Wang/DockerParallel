@@ -31,7 +31,7 @@ startServer <- function(cluster){
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
 
-    initialProvider(provider = provider, cluster=cluster, verbose = verbose)
+    initializeProvider(provider = provider, cluster=cluster, verbose = verbose)
 
     removeDiedServer(cluster)
     if(!isServerRunning(cluster)){
@@ -84,7 +84,7 @@ setWorkerNumber <- function(cluster, workerNumber){
         addWorkersInternal(cluster, workerOffset)
     }
     if(workerOffset < 0){
-        removeWorkersInternal(cluster, workerOffset)
+        removeWorkersInternal(cluster, abs(workerOffset))
     }
     invisible(NULL)
 }
@@ -98,7 +98,7 @@ addWorkers <- function(cluster, workerNumber){
     cloudConfig <- cluster@cloudConfig
     cloudRuntime <- cluster@cloudRuntime
 
-    initialProvider(provider = provider, cluster=cluster, verbose = verbose)
+    initializeProvider(provider = provider, cluster=cluster, verbose = verbose)
     ## get the expected worker number
     cloudConfig$workerNumber <- cloudConfig$workerNumber + workerNumber
 
@@ -163,24 +163,24 @@ getWorkerNumber <- function(cluster){
 getExpectedWorkerNumber <- function(cluster){
     cluster@cloudConfig$workerNumber
 }
-registerBackend <- function(cluster){
+
+## TODO: add ... to customize foreach
+registerBackend <- function(cluster, ...){
     verbose <- cluster$verbose
-    if(!cluster@settings$parallelBackendRegistered){
-        verbosePrint(verbose, "Registering foreach redis backend, it might take a few minutes")
-        if(!is.null(cluster@cloudRuntime$serverHandle)){
-            success <- waitInstanceUntilRunning(
-                cluster@cloudProvider,
-                list(cluster@cloudRuntime$serverHandle)
-            )
-            if(!success){
-                stop("The server is not running!")
-            }
+    verbosePrint(verbose, "Registering foreach redis backend, it might take a few minutes")
+    if(!is.null(cluster@cloudRuntime$serverHandle)){
+        success <- waitInstanceUntilRunning(
+            cluster@cloudProvider,
+            list(cluster@cloudRuntime$serverHandle)
+        )
+        if(!success){
+            stop("The server is not running!")
         }
-        registerParallelBackend(container = cluster@cloudConfig$workerContainer,
-                                cluster = cluster,
-                                verbose = cluster$verbose)
-        cluster@settings$parallelBackendRegistered <- TRUE
     }
+    registerParallelBackend(container = cluster@cloudConfig$workerContainer,
+                            cluster = cluster,
+                            verbose = cluster$verbose, ...)
+    cluster@settings$parallelBackendRegistered <- TRUE
     invisible(NULL)
 }
 

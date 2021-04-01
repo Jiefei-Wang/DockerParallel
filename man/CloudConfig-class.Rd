@@ -11,9 +11,9 @@ The cloud configuration
 \section{Slots}{
 
 \describe{
-\item{\code{clusterName}}{The name of the cluster}
+\item{\code{jobQueueName}}{The name of the job queue}
 
-\item{\code{workerNum}}{The required number of workers that should be
+\item{\code{workerNumber}}{The required number of workers that should be
 run on the cloud}
 
 \item{\code{serverContainer}}{The container definition for the server.

@@ -1,4 +1,4 @@
-setMethod("initialProvider", "ECSProvider", function(provider, cluster, verbose, ...){
+setMethod("initializeProvider", "ECSCloudProvider", function(provider, cluster, verbose){
     if(!provider$initialized){
         # if(!is.null(cluster@cloudConfig$serverContainer)){
         #     cluster@cloudConfig$serverWorkerSameNAT <- TRUE
@@ -48,8 +48,8 @@ setMethod("initialProvider", "ECSProvider", function(provider, cluster, verbose,
 
 
 
-setMethod("runServer", "ECSProvider",
-          function(provider, cluster, container, hardware, verbose = FALSE, ...){
+setMethod("runServer", "ECSCloudProvider",
+          function(provider, cluster, container, hardware, verbose = FALSE){
               verbosePrint(verbose>0, "Deploying server container")
               fargateHardware <- getValidFargateHardware(hardware)
               if(verbose){
@@ -69,8 +69,8 @@ setMethod("runServer", "ECSProvider",
               }
               instanceId
           })
-setMethod("runWorkers", "ECSProvider",
-          function(provider, cluster, container, hardware, workerNumber, verbose = FALSE, ...){
+setMethod("runWorkers", "ECSCloudProvider",
+          function(provider, cluster, container, hardware, workerNumber, verbose = FALSE){
               verbosePrint(verbose>0, "Deploying worker container")
 
               instanceIds <- c()
@@ -133,8 +133,8 @@ setMethod("runWorkers", "ECSProvider",
           }
 )
 
-setMethod("getInstanceIps", "ECSProvider",
-          function(provider, instanceHandles, verbose = FALSE, ...){
+setMethod("getInstanceIps", "ECSCloudProvider",
+          function(provider, instanceHandles, verbose = FALSE){
               while(TRUE){
                   taskInfo <- getTaskDetails(provider$clusterName,
                                              taskIds = instanceHandles,
@@ -151,25 +151,29 @@ setMethod("getInstanceIps", "ECSProvider",
 )
 
 
-setMethod("getInstanceStatus", "ECSProvider", function(provider, instanceHandles, verbose = FALSE, ...){
-    uniqueHandles <- unique(instanceHandles)
-    taskInfo <- getTaskDetails(provider$clusterName, taskIds = uniqueHandles)
-    instanceStatus <- rep("initializing", length(uniqueHandles))
-    instanceStatus[taskInfo$status == "RUNNING"] <- "running"
-    instanceStatus[taskInfo$status == "STOPPED"] <- "stopped"
-    result <- rep("", length(instanceHandles))
-    for(i in seq_along(uniqueHandles)){
-        idx <- vapply(instanceHandles, function(x) identical(x, uniqueHandles[[i]]),logical(1))
-        result[idx] <- instanceStatus[i]
-    }
-    result
-})
+setMethod("getInstanceStatus", "ECSCloudProvider",
+          function(provider, instanceHandles, verbose = FALSE){
+              uniqueHandles <- unique(instanceHandles)
+              taskInfo <- getTaskDetails(provider$clusterName, taskIds = uniqueHandles)
+              instanceStatus <- rep("initializing", length(uniqueHandles))
+              instanceStatus[taskInfo$status == "RUNNING"] <- "running"
+              instanceStatus[taskInfo$status == "STOPPED"] <- "stopped"
+              result <- rep("", length(instanceHandles))
+              for(i in seq_along(uniqueHandles)){
+                  idx <- vapply(instanceHandles, function(x) identical(x, uniqueHandles[[i]]),logical(1))
+                  result[idx] <- instanceStatus[i]
+              }
+              result
+          }
+)
 
 
-setMethod("killInstances", "ECSProvider", function(provider, instanceHandles, verbose = FALSE, ...){
-    stopTasks(provider$clusterName, taskIds = unique(instanceHandles))
-    rep(TRUE, length(instanceHandles))
-})
+setMethod("killInstances", "ECSCloudProvider",
+          function(provider, instanceHandles, verbose = FALSE){
+              stopTasks(provider$clusterName, taskIds = unique(instanceHandles))
+              rep(TRUE, length(instanceHandles))
+          }
+)
 
 
 

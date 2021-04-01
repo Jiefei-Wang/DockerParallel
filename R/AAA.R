@@ -47,7 +47,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 #'
 #' The cloud configuration
 #'
-#' @slot clusterName The name of the cluster
+#' @slot jobQueueName The name of the job queue
 #' @slot workerNumber The required number of workers that should be
 #' run on the cloud
 #' @slot serverContainer The container definition for the server.
@@ -60,7 +60,7 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 .CloudConfig <- setRefClass(
     "CloudConfig",
     fields = list(
-        clusterName = "character",
+        jobQueueName = "character",
         workerNumber = "integer",
         serverContainer = "ContainerOrNULL",
         workerContainer = "Container",
@@ -101,8 +101,8 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 ###########################
 
 
-.ECSProvider <- setRefClass(
-    "ECSProvider",
+.ECSCloudProvider <- setRefClass(
+    "ECSCloudProvider",
     fields = list(
         clusterName = "CharOrNULL",
         serverTaskDefName = "CharOrNULL",
@@ -128,3 +128,6 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
     ),
     contains = "CloudProvider"
 )
+
+
+

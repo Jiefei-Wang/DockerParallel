@@ -8,7 +8,7 @@ clusterMethods <- c(
     "getExpectedWorkerNumber",
     "addWorkers",
     "removeWorkers",
-    "status",
+    "update",
     "registerBackend",
     "deregisterBackend",
     "isServerRunning"
@@ -19,7 +19,7 @@ clusterOptions <- c(
     "stopClusterOnExit"
 )
 
-dockerCluster <- function(cloudProvider = ECSProvider(),
+dockerCluster <- function(cloudProvider = ECSCloudProvider(),
                           cloudConfig = CloudConfig(),
                           cloudRuntime = CloudRuntime(),
                           verbose = 1,

@@ -1,4 +1,4 @@
-CloudConfig <- function(clusterName = "dockerCluster",
+CloudConfig <- function(jobQueueName = "DockerParallelQueue",
                         workerNumber = 1L,
                         serverContainer = getServerContainer(),
                         workerContainer = getWorkerContainer(),
@@ -8,7 +8,7 @@ CloudConfig <- function(clusterName = "dockerCluster",
                         serverPassword = generateRandomPassword(),
                         serverWorkerSameNAT = TRUE,
                         serverClientSameNAT = FALSE){
-    .CloudConfig$new(clusterName = clusterName,
+    .CloudConfig$new(jobQueueName = jobQueueName,
                      workerNumber = as.integer(workerNumber),
                      serverContainer = serverContainer,
                      workerContainer = workerContainer,
@@ -26,7 +26,7 @@ CloudConfig <- function(clusterName = "dockerCluster",
     show = function(){
         serverPasswordTmp <- ifelse(is.null(.self$serverPassword), "FALSE", "TRUE")
 
-        cat("Cluster name:    ", .self$clusterName, "\n")
+        cat("Job queue name:  ", .self$jobQueueName, "\n")
         cat("Worker number:   ", .self$workerNumber, "\n")
         if(!is.null(.self$serverContainer)){
             cat("Server container:", .self$serverContainer@image, "\n")

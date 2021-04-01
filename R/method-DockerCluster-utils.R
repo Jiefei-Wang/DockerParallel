@@ -79,8 +79,7 @@ removeWorkersInternal <- function(cluster, workerNumber){
     ## Find which instances will be killed while satisfying
     ## that the killed workers is less than or equal to workerNumber
     KnapsackSolution <-
-        adagio::knapsack(cloudRuntime$workerPerHandle,
-                         cloudRuntime$workerPerHandle,
+        myknapsack(cloudRuntime$workerPerHandle,
                          workerNumber)
     killedWorkerNumber <- KnapsackSolution$capacity
     killedInstanceIndex <- KnapsackSolution$indices
@@ -90,13 +89,15 @@ removeWorkersInternal <- function(cluster, workerNumber){
                     workerNumber,
                     " workers")
         }else{
-            message(killedWorkerNumber,
+            message("Only ", killedWorkerNumber,
                     " workers will be killed as multiple workers share the same instance")
         }
     }
-    killInstances(provider,
-                  instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
-                  verbose = verbose)
-    removeRuntimeWorkers(cloudRuntime, killedInstanceIndex)
+    if(killedWorkerNumber!=0){
+        killInstances(provider,
+                      instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
+                      verbose = verbose)
+        removeRuntimeWorkers(cloudRuntime, killedInstanceIndex)
+    }
     invisible(NULL)
 }
