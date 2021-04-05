@@ -1,3 +1,4 @@
+#' @export
 ECSCloudProvider <- function(clusterName = "R-worker-cluster",
                         serverTaskDefName = "R-server-task-definition",
                         workerTaskDefName = "R-worker-task-definition",

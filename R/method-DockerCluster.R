@@ -6,7 +6,7 @@
 # cluster$stopWorkers(workerNum)
 # cluster$getWorkerNumber()
 # cluster$status()
-startCluster <- function(cluster){
+startCluster <- function(cluster, ...){
     verbose <- cluster$verbose
 
     ## Start the server
@@ -18,7 +18,7 @@ startCluster <- function(cluster){
     setWorkerNumber(cluster, workerNumber)
 
     ## Register backend
-    registerBackend(cluster)
+    registerBackend(cluster, ...)
     invisible(NULL)
 }
 
@@ -160,11 +160,11 @@ getWorkerNumber <- function(cluster){
     removeDiedWorkers(cluster)
     sum(cluster@cloudRuntime$workerPerHandle)
 }
+
 getExpectedWorkerNumber <- function(cluster){
     cluster@cloudConfig$workerNumber
 }
 
-## TODO: add ... to customize foreach
 registerBackend <- function(cluster, ...){
     verbose <- cluster$verbose
     verbosePrint(verbose, "Registering foreach redis backend, it might take a few minutes")

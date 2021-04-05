@@ -9,7 +9,7 @@ runTask <- function(clusterName, taskDefName, taskCount,
                     enablePublicIp = TRUE
 ){
     stopifnot(taskCount<=10)
-    envJson <- environmentToJSON(container@environment)
+    envJson <- environmentToJSON(container$environment)
 
     assignPublicIp <- ifelse(enablePublicIp, "ENABLED", "DISABLED")
 
@@ -21,11 +21,11 @@ runTask <- function(clusterName, taskDefName, taskCount,
         )
     overrides <- list(
         containerOverrides = list(list(
-            name = container@name, environment = envJson)),
+            name = container$name, environment = envJson)),
         cpu = as.character(cpu), memory = as.character(memory)
     )
-    if(!is.null(container@command)){
-        overrides$containerOverrides[[1]]$command <- list(container@command)
+    if(!is.null(container$command)){
+        overrides$containerOverrides[[1]]$command <- list(container$command)
     }
     ## handling the network error and prevent
     ## the container from duplicating.

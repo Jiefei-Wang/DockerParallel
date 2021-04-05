@@ -7,7 +7,7 @@
 configWorkerContainerEnv(container, cluster, workerNumber, verbose)
 }
 \arguments{
-\item{container}{S4 Container Object. The worker container.}
+\item{container}{Reference Container Object. The worker container.}
 
 \item{cluster}{S4 DockerCluster object.}
 

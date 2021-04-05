@@ -7,7 +7,7 @@
 configServerContainerEnv(container, cluster, verbose)
 }
 \arguments{
-\item{container}{S4 Container Object. The server container.}
+\item{container}{Reference Container Object. The server container.}
 
 \item{cluster}{S4 DockerCluster object.}
 

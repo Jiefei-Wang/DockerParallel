@@ -64,11 +64,11 @@ configTaskDefinitionInternal <- function(x, taskNameSlot, container){
 
             nameCheck <- identical(
                 taskInfo$containerDefinitions[[1]]$name,
-                container@name
+                container$name
                 )
             imageCheck <- identical(
                 taskInfo$containerDefinitions[[1]]$image,
-                container@image)
+                container$image)
 
             needDef <- !all(nameCheck, imageCheck)
         }
@@ -76,8 +76,8 @@ configTaskDefinitionInternal <- function(x, taskNameSlot, container){
         if(needDef){
             CreateTaskDefinition(
                 taskName = taskDefName,
-                name = container@name,
-                image =  container@image
+                name = container$name,
+                image =  container$image
             )
         }
         x$field(verifySlot, TRUE)

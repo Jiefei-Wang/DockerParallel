@@ -2,14 +2,14 @@ setClassUnion("CharOrNULL",c("NULL","character"))
 setClassUnion("IntOrNULL",c("NULL","integer"))
 
 
-.Container <- setClass(
+.Container <- setRefClass(
     "Container",
-    slots = list(
+    fields = list(
         name = "CharOrNULL",
+        maxWorkerNum = "integer",
         environment = "list",
         image = "character",
-        command = "CharOrNULL",
-        maxWorkerNum = "integer"
+        command = "CharOrNULL"
     )
 )
 
@@ -99,14 +99,19 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 ###########################
 ## container provider
 ###########################
-.BiocContainerProvider <- setClass(
-    "BiocContainerProvider",
+.BiocFERContainer <- setRefClass(
+    "BiocFERContainer",
+    fields = list(
+        sysPackages = "CharOrNULL",
+        RPackages = "CharOrNULL"
+    ),
     contains = "Container"
 )
 
 ###########################
 ## cloud provider
 ###########################
+## Add recovery function
 .ECSCloudProvider <- setRefClass(
     "ECSCloudProvider",
     fields = list(
@@ -135,5 +140,12 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
     contains = "CloudProvider"
 )
 
-
-
+##################################
+##          ClusterMethodGetter
+##################################
+.ClusterMethodGetter <- setClass("ClusterMethodGetter",
+                                 slots = list(
+                                     cluster = "DockerCluster",
+                                     object = "ANY"
+                                 )
+)

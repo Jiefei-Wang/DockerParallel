@@ -152,15 +152,7 @@ setGeneric("killInstances", function(provider, instanceHandles, verbose){
     standardGeneric("killInstances")
 })
 
-#' Validate the container
-#'
-#' Check if the current container provider is supported by the service provider
-#'
-#' @inheritParams commonParams
-#' @returns A logical value
-setGeneric("validateContainer", function(provider, container){
-    standardGeneric("validateContainer")
-})
+
 
 ###############container###############
 #' Configurate the server container environment
@@ -169,7 +161,7 @@ setGeneric("validateContainer", function(provider, container){
 #' to set the server password, port number and etc. via the container environment variable.
 #'
 #' @inheritParams commonParams
-#' @param container S4 Container Object. The server container.
+#' @param container Reference Container Object. The server container.
 #'
 #' @return A `container` object
 #' @export
@@ -183,7 +175,7 @@ setGeneric("configServerContainerEnv", function(container, cluster, verbose){
 #' to set the server Ip, password and etc. via the container environment variable.
 #'
 #' @inheritParams commonParams
-#' @param container S4 Container Object. The worker container.
+#' @param container Reference Container Object. The worker container.
 #' @param workerNumber Integer. The number of workers in a container.
 #'
 #' @return A `container` object
@@ -210,4 +202,15 @@ setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ..
     standardGeneric("deregisterParallelBackend")
 })
 
+
+
+
+###############provider and container###############
+setGeneric("getExportedNames", function(x){
+    standardGeneric("getExportedNames")
+})
+
+setGeneric("getExportedObject", function(x, name){
+    standardGeneric("getExportedObject")
+})
 

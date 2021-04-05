@@ -75,7 +75,7 @@ setMethod("runWorkers", "ECSCloudProvider",
 
               instanceIds <- c()
               maxWorkers <- getMaxWorkerPerContainer(hardware)
-              maxWorkers <- min(container@maxWorkerNum, maxWorkers)
+              maxWorkers <- min(container$maxWorkerNum, maxWorkers)
               ## run the containers which have the maximum worker number
               containerWithMaxWorker <- floor(workerNumber/maxWorkers)
               if(containerWithMaxWorker>0){

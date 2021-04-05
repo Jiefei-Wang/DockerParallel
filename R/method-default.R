@@ -25,13 +25,6 @@ setMethod("IsInstanceStopped", "ANY", function(provider, instanceHandles, verbos
     status == "stopped"
 })
 
-setMethod("validateContainer", "ANY", function(provider, container){
-    TRUE
-})
-
-
-
-
 
 
 setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbose = FALSE){
@@ -39,3 +32,11 @@ setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbo
     foreach::registerDoSEQ()
 })
 
+
+setMethod("getExportedNames", "ANY", function(x){
+    NULL
+})
+
+setMethod("getExportedObject", "ANY", function(x, name){
+    stop("Unable to find the exported object.")
+})

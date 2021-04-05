@@ -14,6 +14,8 @@ clusterMethods <- c(
     "isServerRunning"
 )
 
+clusterObjects <- c("cloudProvider", "serverContainer", "workerContainer")
+
 clusterOptions <- c(
     "verbose",
     "stopClusterOnExit"
@@ -22,8 +24,8 @@ clusterOptions <- c(
 dockerCluster <- function(cloudProvider = ECSCloudProvider(),
                           cloudConfig = CloudConfig(),
                           cloudRuntime = CloudRuntime(),
-                          serverContainer = getBiocServerContainer(),
-                          workerContainer = getBiocWorkerContainer(),
+                          serverContainer = getBiocFERServerContainer(),
+                          workerContainer = getBiocFERWorkerContainer(),
                           verbose = 1,
                           stopClusterOnExit = TRUE){
     settings <- new.env(parent = emptyenv())
@@ -46,39 +48,49 @@ dockerCluster <- function(cloudProvider = ECSCloudProvider(),
 
 
 
-
-
 #' @export
 setMethod(f = "names",signature = "DockerCluster",
           definition = function(x){
-              c(clusterMethods, clusterOptions)
+              c(clusterMethods,
+                clusterObjects,
+                clusterOptions
+              )
           })
 #' @export
 setMethod(f = "$",signature = "DockerCluster",
           definition = function(x, name){
+              stopifnot(name %in% names(x))
               if(name%in%clusterOptions){
-                  return(x@settings[[name]])
+                  object <- x@settings[[name]]
+              }
+              if(name%in%clusterObjects){
+                  object <- .ClusterMethodGetter(cluster = x,
+                                                 object = slot(x, name))
               }
               if(name%in%clusterMethods){
-                  func <- get(name)
-                  newFunc <- createTempFunction(name, func)
+                  object <- get(name)
+                  object <- createTempFunction(object, x)
               }
-              environment(newFunc) <- environment()
-              newFunc
-          })
+              object
+          }
+)
 
 #' @export
 setMethod(f = "$<-",signature = "DockerCluster",
           definition = function(x, name, value){
+              stopifnot(
+                  name%in% clusterObjects||
+                      name%in% clusterOptions
+              )
               if(name%in%clusterOptions){
                   x@settings[[name]] <- value
-              }else{
-                  stop("Unable to assign the parameter <", name,">")
+              }
+              if(name%in%clusterObjects){
+                  slot(x, name) <- value
               }
               x
           }
 )
-
 
 
 #' @export
@@ -99,4 +111,5 @@ setMethod(f = "show",signature = "DockerCluster",
               }
               cat("Worker Number:     ", getWorkerNumber(object), "/",
                   getExpectedWorkerNumber(object), " (running/expected)\n")
+              invisible(NULL)
           })

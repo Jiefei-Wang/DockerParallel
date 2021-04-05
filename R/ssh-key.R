@@ -19,10 +19,11 @@ setSSHPubKey<-function(publicKey=NULL){
   }
   packageSetting$publicKey
 }
-
+#' @export
 getSSHPubKey <- function(){
   packageSetting$publicKey
 }
+#' @export
 getSSHPubKeyValue <- function(){
   fileName <- getSSHPubKey()
   if(!is.empty(fileName)){
