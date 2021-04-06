@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2021-04-05"
+date: "2021-04-06"
 output:
     BiocStyle::html_document:
         toc: true
@@ -65,7 +65,7 @@ provider
 We would not discuss the details of the cloud provider in this vignette as it is off-topic for using the package, users only need to know that the cloud provider is changeable and different providers provide different cloud service.
 
 ## Credentials
-For communicating with the cloud, you need to authenticate with the cloud provider. Amazon cloud uses `access key id` and `secret access key` to verify your identity. You can find the instruction on how to download your credentials from [AWS Documentation]. Once you have the credentials, you can specify them by
+For communicating with the cloud, you need to authenticate with the cloud provider. Amazon cloud uses `access key id` and `secret access key` to verify your identity. You can find the instruction on how to download your credentials from [AWS Documentation]. The ECS fargate provider uses `aws_set_credentials` from the package `aws.ecx` to find your credentials
 
 ```r
 aws.ecx::aws_set_credentials()
@@ -78,7 +78,7 @@ aws.ecx::aws_set_credentials()
 #> $region
 #> [1] "ap-southeast-1"
 ```
-`ecs_set_credentials` will determine your credentials as well as the region of the cloud service. The region is the physical location of the cloud servers that will run your worker nodes. The function uses a variety of ways to find such information. The most important methods are as follow(sorted by the search order):
+`aws_set_credentials` determines your credentials as well as the region of the cloud service. The region is the physical location of the cloud servers that will run your worker nodes. The function uses a variety of ways to find such information. The most important methods are as follow(sorted by the search order):
 
 1. user-supplied values passed to the function
 
@@ -97,7 +97,7 @@ workerContainer <- getBiocFERWorkerContainer()
 serverContainer
 #> Bioconductor foreach redis container reference object
 #>   Image:      dockerparallel/parallel-redis-server 
-#>   maxWorkers: 4 
+#>   maxWorkers: 1 
 #>   Environment variables:
 workerContainer
 #> Bioconductor foreach redis container reference object
@@ -126,8 +126,7 @@ Until now, the cluster has not been started and nothing is running on the cloud,
 cluster$startCluster()
 #> Initializing the ECS provider
 #> Launching server
-#> Deploying server container
-#> Error in aws_request(method = "POST", service = "ecs", headers = headers, : Fail to connect to the server
+#> Error in getSSHPubKey(): could not find function "getSSHPubKey"
 ```
 Once the cluster has been started, you can use the `foreach` function to do the parallel computing as usual
 
@@ -175,18 +174,24 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] DockerParallel_0.99.0 foreach_1.5.1        
+#> [1] readr_1.4.0           DockerParallel_0.99.0 foreach_1.5.1        
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] BiocManager_1.30.10 compiler_4.0.4      base64enc_0.1-3     iterators_1.0.13   
-#>  [5] doRedis_2.0.1       tools_4.0.4         testthat_3.0.2      digest_0.6.27      
-#>  [9] pkgload_1.1.0       jsonlite_1.7.2      evaluate_0.14       rlang_0.4.10       
-#> [13] cli_2.3.1           rstudioapi_0.13     curl_4.3            yaml_2.2.1         
-#> [17] parallel_4.0.4      xfun_0.19           withr_2.3.0         httr_1.4.2         
-#> [21] stringr_1.4.0       xml2_1.3.2          knitr_1.31          desc_1.2.0         
-#> [25] rprojroot_2.0.2     glue_1.4.2          R6_2.5.0            redux_1.1.0        
-#> [29] aws.ecx_1.0.4       rmarkdown_2.7       adagio_0.7.1        magrittr_1.5       
-#> [33] codetools_0.2-18    htmltools_0.5.0     assertthat_0.2.1    aws.signature_0.6.0
-#> [37] stringi_1.5.3       crayon_1.3.4        rjson_0.2.20
+#>  [1] xfun_0.19           remotes_2.2.0       purrr_0.3.4         vctrs_0.3.4        
+#>  [5] testthat_3.0.2      usethis_1.6.3       htmltools_0.5.0     yaml_2.2.1         
+#>  [9] base64enc_0.1-3     rlang_0.4.10        pkgbuild_1.1.0      pillar_1.4.6       
+#> [13] glue_1.4.2          withr_2.3.0         doRedis_2.0.1       sessioninfo_1.1.1  
+#> [17] lifecycle_0.2.0     stringr_1.4.0       commonmark_1.7      devtools_2.3.2     
+#> [21] codetools_0.2-18    memoise_1.1.0       evaluate_0.14       knitr_1.31         
+#> [25] callr_3.5.1         ps_1.4.0            parallel_4.0.4      curl_4.3           
+#> [29] Rcpp_1.0.5          BiocManager_1.30.10 desc_1.2.0          pkgload_1.1.0      
+#> [33] jsonlite_1.7.2      adagio_0.7.1        fs_1.5.0            rjson_0.2.20       
+#> [37] hms_0.5.3           digest_0.6.27       stringi_1.5.3       processx_3.4.4     
+#> [41] rprojroot_2.0.2     cli_2.3.1           tools_4.0.4         magrittr_1.5       
+#> [45] tibble_3.0.4        aws.ecx_1.0.4       cluster_2.1.0       crayon_1.3.4       
+#> [49] aws.signature_0.6.0 pkgconfig_2.0.3     ellipsis_0.3.1      redux_1.1.0        
+#> [53] xml2_1.3.2          prettyunits_1.1.1   assertthat_0.2.1    rmarkdown_2.7      
+#> [57] httr_1.4.2          roxygen2_7.1.1      rstudioapi_0.13     iterators_1.0.13   
+#> [61] R6_2.5.0            compiler_4.0.4
 ```
 

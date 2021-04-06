@@ -21,8 +21,18 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 if(FALSE){
+  
+makeReadMe <- function(){
+  library(readr)
+  fileName <- "vignettes/vignette.md"
+  content <- readChar(fileName, file.info(fileName)$size)
+  content <- gsub("---.+?---","",content)
+  content <- gsub("^(\r\n)+","",content)
+  content <- gsub("([a-zA-Z]+)\\.jpg","vignettes/\\1.jpg",content)
+  write_file(content, file="README.md")
+}
   knitr::knit("inst/vignette.Rmd", output = "vignettes/vignette.md")
-  DockerParallel:::makeReadMe()
+  makeReadMe()
 }
 library(DockerParallel)
 aws.ecx:::aws_set_retry_time(10)
@@ -73,11 +83,11 @@ provider
 We would not discuss the details of the cloud provider in this vignette as it is off-topic for using the package, users only need to know that the cloud provider is changeable and different providers provide different cloud service.
 
 ## Credentials
-For communicating with the cloud, you need to authenticate with the cloud provider. Amazon cloud uses `access key id` and `secret access key` to verify your identity. You can find the instruction on how to download your credentials from [AWS Documentation]. Once you have the credentials, you can specify them by
+For communicating with the cloud, you need to authenticate with the cloud provider. Amazon cloud uses `access key id` and `secret access key` to verify your identity. You can find the instruction on how to download your credentials from [AWS Documentation]. The ECS fargate provider uses `aws_set_credentials` from the package `aws.ecx` to find your credentials
 ```{r}
 aws.ecx::aws_set_credentials()
 ```
-`ecs_set_credentials` will determine your credentials as well as the region of the cloud service. The region is the physical location of the cloud servers that will run your worker nodes. The function uses a variety of ways to find such information. The most important methods are as follow(sorted by the search order):
+`aws_set_credentials` determines your credentials as well as the region of the cloud service. The region is the physical location of the cloud servers that will run your worker nodes. The function uses a variety of ways to find such information. The most important methods are as follow(sorted by the search order):
 
 1. user-supplied values passed to the function
 

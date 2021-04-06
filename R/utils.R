@@ -29,15 +29,5 @@ myknapsack <- function (workerPerHandle, killedWorkerNum)
   KnapsackSolution
 }
 
-makeReadMe <- function(){
-  fileName <- "vignettes/vignette.md"
-  content <- readChar(fileName, file.info(fileName)$size)
-  content <- gsub("---.+?---","",content)
-  content <- gsub("^(\r\n)+","",content)
-  content <- gsub("([a-zA-Z]+)\\.jpg","vignettes/\\1.jpg",content)
-  readme <- file("README.md")
-  writeLines(content, readme)
-  close(readme)
-}
 
 
