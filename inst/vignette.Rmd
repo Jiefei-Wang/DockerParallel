@@ -75,7 +75,7 @@ We would not discuss the details of the cloud provider in this vignette as it is
 ## Credentials
 For communicating with the cloud, you need to authenticate with the cloud provider. Amazon cloud uses `access key id` and `secret access key` to verify your identity. You can find the instruction on how to download your credentials from [AWS Documentation]. Once you have the credentials, you can specify them by
 ```{r}
-aws.ecx::ecs_set_credentials()
+aws.ecx::aws_set_credentials()
 ```
 `ecs_set_credentials` will determine your credentials as well as the region of the cloud service. The region is the physical location of the cloud servers that will run your worker nodes. The function uses a variety of ways to find such information. The most important methods are as follow(sorted by the search order):
 

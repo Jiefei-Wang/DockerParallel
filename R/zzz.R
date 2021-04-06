@@ -8,5 +8,5 @@ packageSetting$publicKey <- NULL
 
 
 .onLoad <- function(libname, pkgname){
-    setSSHPubKey()
+    setSSHPubKeyPath()
 }

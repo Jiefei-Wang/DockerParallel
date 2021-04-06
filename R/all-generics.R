@@ -102,7 +102,8 @@ setGeneric("getInstanceIps", function(provider, instanceHandles, verbose){
 #' Get the instance status
 #'
 #' Get the instance status. Unless you have a special requirement, you only need to
-#' define `getInstanceStatus`.
+#' define `getInstanceStatus`. The default `getInstanceStatus` do nothing but return
+#' a vector of "running" with the same lenght of the input instance handles.
 #'
 #' @inheritParams getInstanceIps
 #'
@@ -206,10 +207,34 @@ setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ..
 
 
 ###############provider and container###############
+#' Get the exported method and variable from the provider or container
+#'
+#' Get the exported method and variable from the provider or container. These
+#' methods should be used by the developer to export their APIs to the user. The
+#' `DockerCluster` object will call `getExportedNames` and `getExportedObject` to
+#' export them to the user.
+#'
+#' @param x A cloud provider or container object
+#'
+#' @details
+#' If the exported object is a function, the function can find the `DockerCluster` cluster
+#' which contains the cloud provider or the container by the variable `cluster`. This
+#' can be useful if the developer needs to change anything in the cluster besides the provider
+#' or container itself. If the argument `cluster` is provided as a function argument,
+#' it will be removed when it is exported to the user. Therefore, you can explicitly
+#' define the argument `cluster` and use it in your function. Users would not be bothered
+#' with the redundant `cluster` argument.
+#'
+#' @returns
+#' getExportedNames: The names of the exported methods or variables
+#' getExportedObject: The exported method or variable
+#' @rdname exported-apis
+#' @export
 setGeneric("getExportedNames", function(x){
     standardGeneric("getExportedNames")
 })
-
+#' @rdname exported-apis
+#' @export
 setGeneric("getExportedObject", function(x, name){
     standardGeneric("getExportedObject")
 })

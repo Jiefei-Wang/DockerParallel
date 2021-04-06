@@ -68,8 +68,15 @@ We would not discuss the details of the cloud provider in this vignette as it is
 For communicating with the cloud, you need to authenticate with the cloud provider. Amazon cloud uses `access key id` and `secret access key` to verify your identity. You can find the instruction on how to download your credentials from [AWS Documentation]. Once you have the credentials, you can specify them by
 
 ```r
-aws.ecx::ecs_set_credentials()
-#> Error: 'ecs_set_credentials' is not an exported object from 'namespace:aws.ecx'
+aws.ecx::aws_set_credentials()
+#> $access_key_id
+#> [1] "AK**************OYX3"
+#> 
+#> $secret_access_key
+#> [1] "mL**********************************XGGH"
+#> 
+#> $region
+#> [1] "ap-southeast-1"
 ```
 `ecs_set_credentials` will determine your credentials as well as the region of the cloud service. The region is the physical location of the cloud servers that will run your worker nodes. The function uses a variety of ways to find such information. The most important methods are as follow(sorted by the search order):
 
@@ -120,9 +127,7 @@ cluster$startCluster()
 #> Initializing the ECS provider
 #> Launching server
 #> Deploying server container
-#> The cluster has 2 workers
-#> Deploying worker container
-#> Registering foreach redis backend, it might take a few minutes
+#> Error in aws_request(method = "POST", service = "ecs", headers = headers, : Fail to connect to the server
 ```
 Once the cluster has been started, you can use the `foreach` function to do the parallel computing as usual
 
@@ -132,31 +137,22 @@ foreach(i = 1:2)%dopar%{
    Sys.info()
 }
 #> [[1]]
-#>                                           sysname                                           release 
-#>                                           "Linux"                   "4.14.209-160.339.amzn2.x86_64" 
-#>                                           version                                          nodename 
-#>             "#1 SMP Wed Dec 16 22:44:04 UTC 2020" "ip-10-0-184-230.ap-southeast-1.compute.internal" 
-#>                                           machine                                             login 
-#>                                          "x86_64"                                         "unknown" 
-#>                                              user                                    effective_user 
-#>                                            "root"                                            "root" 
+#>           sysname           release           version          nodename           machine 
+#>         "Windows"          "10 x64"     "build 19042" "DESKTOP-FDNSBFE"          "x86-64" 
+#>             login              user    effective_user 
+#>        "Zhou Jin"        "Zhou Jin"        "Zhou Jin" 
 #> 
 #> [[2]]
-#>                                           sysname                                           release 
-#>                                           "Linux"                   "4.14.209-160.339.amzn2.x86_64" 
-#>                                           version                                          nodename 
-#>             "#1 SMP Wed Dec 16 22:44:04 UTC 2020" "ip-10-0-184-230.ap-southeast-1.compute.internal" 
-#>                                           machine                                             login 
-#>                                          "x86_64"                                         "unknown" 
-#>                                              user                                    effective_user 
-#>                                            "root"                                            "root"
+#>           sysname           release           version          nodename           machine 
+#>         "Windows"          "10 x64"     "build 19042" "DESKTOP-FDNSBFE"          "x86-64" 
+#>             login              user    effective_user 
+#>        "Zhou Jin"        "Zhou Jin"        "Zhou Jin"
 ```
 After finishing the computation, you can stop the cluster via
 
 ```r
 cluster$stopCluster()
 #> Stopping cluster
-#> deregistering foreach backend
 ```
 By default, the cluster will step itself if it has been removed from the R session, but we recommended to explicitly stop it after use.
 
@@ -182,14 +178,15 @@ sessionInfo()
 #> [1] DockerParallel_0.99.0 foreach_1.5.1        
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] rstudioapi_0.13     magrittr_1.5        knitr_1.31          xml2_1.3.2         
-#>  [5] pkgload_1.1.0       aws.signature_0.6.0 rjson_0.2.20        R6_2.5.0           
-#>  [9] rlang_0.4.10        aws.ecx_1.0.4       stringr_1.4.0       httr_1.4.2         
-#> [13] tools_4.0.4         parallel_4.0.4      xfun_0.19           cli_2.3.1          
-#> [17] withr_2.3.0         htmltools_0.5.0     doRedis_2.0.1       iterators_1.0.13   
-#> [21] rprojroot_2.0.2     assertthat_0.2.1    digest_0.6.27       crayon_1.3.4       
-#> [25] adagio_0.7.1        base64enc_0.1-3     codetools_0.2-18    curl_4.3           
-#> [29] testthat_3.0.2      evaluate_0.14       glue_1.4.2          redux_1.1.0        
-#> [33] stringi_1.5.3       compiler_4.0.4      desc_1.2.0          jsonlite_1.7.2
+#>  [1] BiocManager_1.30.10 compiler_4.0.4      base64enc_0.1-3     iterators_1.0.13   
+#>  [5] doRedis_2.0.1       tools_4.0.4         testthat_3.0.2      digest_0.6.27      
+#>  [9] pkgload_1.1.0       jsonlite_1.7.2      evaluate_0.14       rlang_0.4.10       
+#> [13] cli_2.3.1           rstudioapi_0.13     curl_4.3            yaml_2.2.1         
+#> [17] parallel_4.0.4      xfun_0.19           withr_2.3.0         httr_1.4.2         
+#> [21] stringr_1.4.0       xml2_1.3.2          knitr_1.31          desc_1.2.0         
+#> [25] rprojroot_2.0.2     glue_1.4.2          R6_2.5.0            redux_1.1.0        
+#> [29] aws.ecx_1.0.4       rmarkdown_2.7       adagio_0.7.1        magrittr_1.5       
+#> [33] codetools_0.2-18    htmltools_0.5.0     assertthat_0.2.1    aws.signature_0.6.0
+#> [37] stringi_1.5.3       crayon_1.3.4        rjson_0.2.20
 ```
 

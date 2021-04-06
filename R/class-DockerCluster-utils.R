@@ -11,7 +11,7 @@ createTempFunction <- function(func, cluster){
     funcEnv <- new.env(parent = environment(func))
     funcEnv$cluster <- cluster
     funcFormals <- formals(func)
-    funcFormals$cluster<-NULL
+    funcFormals[["cluster"]]<-NULL
     formals(func) <- funcFormals
     environment(func) <- funcEnv
     func

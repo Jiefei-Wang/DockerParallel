@@ -1,3 +1,14 @@
+combineList <- function(x, newX){
+    for(i in seq_along(newX)){
+        x[[names(newX)[i]]] <- newX[[i]]
+    }
+    x
+}
+
+#' @describeIn configServerContainerEnv configure the server container
+#' environment, only the environment `serverPort`, `serverPassword` and `sshPubKey`
+#' will be set in this method
+#' @export
 setMethod("configServerContainerEnv", "BiocFERContainer",
           function(container, cluster, verbose = FALSE){
               container <- container$copy()
@@ -5,10 +16,13 @@ setMethod("configServerContainerEnv", "BiocFERContainer",
               cloudRuntime <- cluster@cloudRuntime
               pubKeyValue <- getSSHPubKeyValue()
               stopifnot(!is.empty(cloudConfig$serverPort))
-              container$environment <- list(
-                  serverPort = cloudConfig$serverPort,
-                  serverPassword = cloudConfig$serverPassword,
-                  sshPubKey = getSSHPubKeyValue()
+              container$environment <- combineList(
+                  container$environment,
+                  list(
+                      serverPort = cloudConfig$serverPort,
+                      serverPassword = cloudConfig$serverPassword,
+                      sshPubKey = getSSHPubKeyValue()
+                  )
               )
               container
           })
@@ -29,16 +43,18 @@ setMethod("configWorkerContainerEnv", "BiocFERContainer",
               }
               stopifnot(!is.empty(cloudConfig$serverPort))
 
-              container$environment <- list(
-                  queueName = cloudConfig$jobQueueName,
-                  serverIp = serverIp,
-                  serverPort = cloudConfig$serverPort,
-                  serverPassword = cloudConfig$serverPassword,
-                  sshPubKey = getSSHPubKeyValue(),
-                  workerNum = workerNumber,
-                  RPackages = paste0(container$RPackages,collapse = ","),
-                  sysPackages = paste0(container$sysPackages,collapse = ",")
-
+              container$environment <- combineList(
+                  container$environment,
+                  list(
+                      queueName = cloudConfig$jobQueueName,
+                      serverIp = serverIp,
+                      serverPort = cloudConfig$serverPort,
+                      serverPassword = cloudConfig$serverPassword,
+                      sshPubKey = getSSHPubKeyValue(),
+                      workerNum = workerNumber,
+                      RPackages = paste0(container$RPackages,collapse = ","),
+                      sysPackages = paste0(container$sysPackages,collapse = ",")
+                  )
               )
               container
           })
@@ -69,8 +85,8 @@ setMethod("registerParallelBackend", "BiocFERContainer",
 
 setMethod("getExportedNames", "BiocFERContainer",
           function(x){
-                c("getSysPackages", "setSysPackages", "addSysPackages",
-                  "getRPackages", "setRPackages", "addRPackages")
+              c("getSysPackages", "setSysPackages", "addSysPackages",
+                "getRPackages", "setRPackages", "addRPackages")
           }
 )
 

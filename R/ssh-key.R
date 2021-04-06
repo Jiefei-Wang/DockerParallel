@@ -6,7 +6,7 @@
 #'
 #' @param publicKey path to the public key
 #' @export
-setSSHPubKey<-function(publicKey=NULL){
+setSSHPubKeyPath<-function(publicKey=NULL){
   if(!is.null(publicKey)){
     packageSetting$publicKey <- publicKey
   }
@@ -20,7 +20,7 @@ setSSHPubKey<-function(publicKey=NULL){
   packageSetting$publicKey
 }
 #' @export
-getSSHPubKey <- function(){
+getSSHPubKeyPath <- function(){
   packageSetting$publicKey
 }
 #' @export
