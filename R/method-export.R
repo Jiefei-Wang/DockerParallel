@@ -35,40 +35,16 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
 }
 
 
-#' @export
-getCloudProvider <- function(cluster){
-    cluster@cloudProvider
-}
-#' @export
-getServerContainer <- function(cluster){
-    cluster@serverContainer
-}
 
 #' @export
-getWorkerContainer <- function(cluster){
-    cluster@workerContainer
-}
-
-#' @export
-getCloudRuntime <- function(cluster){
-    cluster@cloudRuntime
-}
-
-#' @export
-getCloudConfig <- function(cluster){
-    cluster@cloudConfig
-}
-
-
-#' @export
-makeDockerCluster <- function(workerNumber = 1,
+makeDockerCluster <- function(cloudProvider,
+                              workerContainer,
+                              workerNumber = 1,
                               workerCpu = 1024, workerMemory = 2048, workerHardwareId = NULL,
                               serverCpu = 256, serverMemory = 2048, serverHardwareId = NULL,
-                              cloudProvider = NULL,
                               cloudConfig = NULL,
                               cloudRuntime = NULL,
                               serverContainer = NULL,
-                              workerContainer = NULL,
                               stopClusterOnExit = TRUE,
                               verbose = 1){
     if(is.null(cloudConfig)){
@@ -85,13 +61,7 @@ makeDockerCluster <- function(workerNumber = 1,
         cloudRuntime <- CloudRuntime()
     }
     if(is.null(serverContainer)){
-        serverContainer <- getBiocFERServerContainer()
-    }
-    if(is.null(workerContainer)){
-        workerContainer <- getBiocFERWorkerContainer()
-    }
-    if(is.null(cloudProvider)){
-        cloudProvider <- ECSCloudProvider()
+        serverContainer <- getServerContainer(workerContainer)
     }
 
     cluster <- dockerCluster(

@@ -1,4 +1,5 @@
-setMethod("initializeProvider", "ECSCloudProvider", function(provider, cluster, verbose){
+#' @export
+setMethod("initializeProvider", "ECSFargateProvider", function(provider, cluster, verbose){
     if(!provider$initialized){
         if(!is.null(cluster@serverContainer)){
             cluster@cloudConfig$serverWorkerSameNAT <- TRUE
@@ -47,8 +48,8 @@ setMethod("initializeProvider", "ECSCloudProvider", function(provider, cluster, 
 
 
 
-
-setMethod("runServer", "ECSCloudProvider",
+#' @export
+setMethod("runServer", "ECSFargateProvider",
           function(provider, cluster, container, hardware, verbose = FALSE){
               verbosePrint(verbose>0, "Deploying server container")
               fargateHardware <- getValidFargateHardware(hardware)
@@ -69,7 +70,8 @@ setMethod("runServer", "ECSCloudProvider",
               }
               instanceId
           })
-setMethod("runWorkers", "ECSCloudProvider",
+#' @export
+setMethod("runWorkers", "ECSFargateProvider",
           function(provider, cluster, container, hardware, workerNumber, verbose = FALSE){
               verbosePrint(verbose>0, "Deploying worker container")
 
@@ -132,8 +134,8 @@ setMethod("runWorkers", "ECSCloudProvider",
               repeatVector(instanceIds, workerNumberPerContainer)
           }
 )
-
-setMethod("getInstanceIps", "ECSCloudProvider",
+#' @export
+setMethod("getInstanceIps", "ECSFargateProvider",
           function(provider, instanceHandles, verbose = FALSE){
               while(TRUE){
                   taskInfo <- getTaskDetails(provider$clusterName,
@@ -150,8 +152,8 @@ setMethod("getInstanceIps", "ECSCloudProvider",
           }
 )
 
-
-setMethod("getInstanceStatus", "ECSCloudProvider",
+#' @export
+setMethod("getInstanceStatus", "ECSFargateProvider",
           function(provider, instanceHandles, verbose = FALSE){
               uniqueHandles <- unique(instanceHandles)
               taskInfo <- getTaskDetails(provider$clusterName, taskIds = uniqueHandles)
@@ -167,8 +169,8 @@ setMethod("getInstanceStatus", "ECSCloudProvider",
           }
 )
 
-
-setMethod("killInstances", "ECSCloudProvider",
+#' @export
+setMethod("killInstances", "ECSFargateProvider",
           function(provider, instanceHandles, verbose = FALSE){
               stopTasks(provider$clusterName, taskIds = unique(instanceHandles))
               rep(TRUE, length(instanceHandles))

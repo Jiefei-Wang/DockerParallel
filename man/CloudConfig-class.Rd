@@ -16,11 +16,6 @@ The cloud configuration
 \item{\code{workerNumber}}{The required number of workers that should be
 run on the cloud}
 
-\item{\code{serverContainer}}{The container definition for the server.
-If the value is NULL, the server must be provided from the other source.}
-
-\item{\code{workerContainer}}{The container definition for the worker}
-
 \item{\code{serverHardware}}{The server hardware}
 
 \item{\code{workerHardware}}{The worker hardware}

@@ -1,19 +1,22 @@
 setClassUnion("CharOrNULL",c("NULL","character"))
 setClassUnion("IntOrNULL",c("NULL","integer"))
 
-
-.Container <- setRefClass(
-    "Container",
+#' The root class of the container
+#' @export
+.DockerContainer <- setRefClass(
+    "DockerContainer",
     fields = list(
         name = "CharOrNULL",
         maxWorkerNum = "integer",
         environment = "list",
         image = "character",
-        command = "CharOrNULL"
+        command = "CharOrNULL",
+        sysPackages = "CharOrNULL",
+        RPackages = "CharOrNULL"
     )
 )
 
-setClassUnion("ContainerOrNULL",c("NULL","Container"))
+setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
 
 #' The root class of the cloud provider
 #'
@@ -50,9 +53,6 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 #' @slot jobQueueName The name of the job queue
 #' @slot workerNumber The required number of workers that should be
 #' run on the cloud
-#' @slot serverContainer The container definition for the server.
-#' If the value is NULL, the server must be provided from the other source.
-#' @slot workerContainer The container definition for the worker
 #' @slot serverHardware The server hardware
 #' @slot workerHardware The worker hardware
 #'
@@ -83,13 +83,16 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 )
 
 
+#' @slot serverContainer The container definition for the server.
+#' If the value is NULL, the server must be provided from the other source.
+#' @slot workerContainer The container definition for the worker
 .DockerCluster <- setClass(
     "DockerCluster",
     slots = list(
         cloudProvider = "CloudProvider",
         cloudConfig = "CloudConfig",
-        serverContainer = "ContainerOrNULL",
-        workerContainer = "Container",
+        serverContainer = "DockerContainerOrNULL",
+        workerContainer = "DockerContainer",
         cloudRuntime = "CloudRuntime",
         settings = "environment"
     )
@@ -102,18 +105,16 @@ setClassUnion("ContainerOrNULL",c("NULL","Container"))
 .BiocFERContainer <- setRefClass(
     "BiocFERContainer",
     fields = list(
-        sysPackages = "CharOrNULL",
-        RPackages = "CharOrNULL"
     ),
-    contains = "Container"
+    contains = "DockerContainer"
 )
 
 ###########################
 ## cloud provider
 ###########################
 ## Add recovery function
-.ECSCloudProvider <- setRefClass(
-    "ECSCloudProvider",
+.ECSFargateProvider <- setRefClass(
+    "ECSFargateProvider",
     fields = list(
         clusterName = "CharOrNULL",
         serverTaskDefName = "CharOrNULL",

@@ -7,9 +7,9 @@
 runServer(provider, cluster, container, hardware, verbose)
 }
 \arguments{
-\item{provider}{S4 CloudProvider object. The service provider.}
+\item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
-\item{cluster}{S4 DockerCluster object.}
+\item{cluster}{S4 \code{DockerCluster} object.}
 
 \item{container}{S4 Container Object. The server container.}
 

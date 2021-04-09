@@ -28,7 +28,7 @@ IsInstanceStopped(provider, instanceHandles, verbose)
 \S4method{IsInstanceStopped}{ANY}(provider, instanceHandles, verbose = FALSE)
 }
 \arguments{
-\item{provider}{S4 CloudProvider object. The service provider.}
+\item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
 \item{instanceHandles}{List. A list of instance handles.}
 

@@ -1,16 +1,15 @@
-combineList <- function(x, newX){
-    for(i in seq_along(newX)){
-        x[[names(newX)[i]]] <- newX[[i]]
-    }
-    x
-}
-
 #' @describeIn configServerContainerEnv configure the server container
 #' environment, only the environment `serverPort`, `serverPassword` and `sshPubKey`
 #' will be set in this method
 #' @export
 setMethod("configServerContainerEnv", "BiocFERContainer",
           function(container, cluster, verbose = FALSE){
+              if(length(container$RPackages)!=0){
+                  warning("The server containder does not support installing R packages")
+              }
+              if(length(container$sysPackages)!=0){
+                  warning("The server containder does not support installing system packages")
+              }
               container <- container$copy()
               cloudConfig <- cluster@cloudConfig
               cloudRuntime <- cluster@cloudRuntime
@@ -27,6 +26,8 @@ setMethod("configServerContainerEnv", "BiocFERContainer",
               container
           })
 
+#' @describeIn configWorkerContainerEnv configure the worker container
+#' @export
 setMethod("configWorkerContainerEnv", "BiocFERContainer",
           function(container, cluster, workerNumber, verbose = FALSE){
               container <- container$copy()
@@ -52,7 +53,7 @@ setMethod("configWorkerContainerEnv", "BiocFERContainer",
                       serverPassword = cloudConfig$serverPassword,
                       sshPubKey = getSSHPubKeyValue(),
                       workerNum = workerNumber,
-                      RPackages = paste0(container$RPackages,collapse = ","),
+                      RPackages = packPackages(container$RPackages),
                       sysPackages = paste0(container$sysPackages,collapse = ",")
                   )
               )
@@ -61,7 +62,8 @@ setMethod("configWorkerContainerEnv", "BiocFERContainer",
 
 
 
-
+#' @rdname containerParallelBackend
+#' @export
 setMethod("registerParallelBackend", "BiocFERContainer",
           function(container, cluster, verbose = FALSE, ...){
               cloudConfig <- cluster@cloudConfig
@@ -82,47 +84,10 @@ setMethod("registerParallelBackend", "BiocFERContainer",
                                        port = cloudConfig$serverPort, ...)
           })
 
-
-setMethod("getExportedNames", "BiocFERContainer",
-          function(x){
-              c("getSysPackages", "setSysPackages", "addSysPackages",
-                "getRPackages", "setRPackages", "addRPackages")
-          }
-)
-
-
-setMethod("getExportedObject", "BiocFERContainer",
-          function(x, name){
-              get(name)
-          }
-)
-
-getSysPackages <- function(cluster){
-    workerContainer <- getWorkerContainer(cluster)
-    workerContainer$sysPackages
-}
-setSysPackages <- function(cluster, packages){
-    workerContainer <- getWorkerContainer(cluster)
-    workerContainer$sysPackages <- packages
-}
-addSysPackages  <- function(cluster, packages){
-    workerContainer <- getWorkerContainer(cluster)
-    workerContainer$sysPackages <- c(packages,workerContainer$sysPackages)
-}
-
-getRPackages <- function(cluster){
-    workerContainer <- getWorkerContainer(cluster)
-    workerContainer$RPackages
-}
-setRPackages <- function(cluster, packages){
-    workerContainer <- getWorkerContainer(cluster)
-    workerContainer$RPackages <- packages
-}
-addRPackages  <- function(cluster, packages){
-    workerContainer <- getWorkerContainer(cluster)
-    workerContainer$RPackages <- c(packages,workerContainer$RPackages)
-}
-
-
+#' @describeIn getServerContainer Get the Bioconductor foreach Redis container
+#' @export
+setMethod("getServerContainer", "BiocFERContainer",function(container, ...){
+    BiocFERServerContainer(...)
+})
 
 

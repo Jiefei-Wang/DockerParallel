@@ -12,12 +12,12 @@ configServerContainerEnv(container, cluster, verbose)
 \arguments{
 \item{container}{Reference Container Object. The server container.}
 
-\item{cluster}{S4 DockerCluster object.}
+\item{cluster}{S4 \code{DockerCluster} object.}
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{
-A \code{container} object
+An object which has the same class as \code{container}
 }
 \description{
 Configurate the server container environment. Developers can use this function

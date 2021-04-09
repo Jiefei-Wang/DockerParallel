@@ -6,13 +6,13 @@
 \arguments{
 \item{verbose}{Integer. The verbose level, default 1.}
 
-\item{provider}{S4 CloudProvider object. The service provider.}
+\item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
-\item{cluster}{S4 DockerCluster object.}
+\item{cluster}{S4 \code{DockerCluster} object.}
 
-\item{container}{S4 Container Object.}
+\item{container}{S4 \code{DockerContainer} Object.}
 
-\item{hardware}{S4 CloudHardware Object.}
+\item{hardware}{S4 \code{CloudHardware} Object.}
 }
 \description{
 commom params

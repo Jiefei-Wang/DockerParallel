@@ -75,9 +75,9 @@ In the rest of the vignette we will introduce them step by step
 
 
 # Select a cloud provider
-Even though the topic says "select", currently the only available cloud provider is the before-mentioned ECS fargate provider. You can call `ECSProvider` to create an ECS fargate provider 
+Even though the topic says "select", currently the only available cloud provider is the before-mentioned ECS fargate provider. You can call `ECSFargateProvider` to create an ECS fargate provider 
 ```{r}
-provider <- ECSCloudProvider()
+provider <- ECSFargateProvider()
 provider
 ```
 We would not discuss the details of the cloud provider in this vignette as it is off-topic for using the package, users only need to know that the cloud provider is changeable and different providers provide different cloud service.
@@ -98,30 +98,38 @@ You can either explicitly specify them or provide them as environment variables.
 [AWS Documentation]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey
 
 # Select a container
-Similar to the cloud provider, the container is also changeable and provide different running environment and parallel backend. Currently the only available container is `BiocFERContainer`(stands for `Bioconductor ForEach Redis Container`). Since the parallel framework requires both server and worker nodes, users can create the server and worker container via
+Similar to the cloud provider, the container is also changeable and provide different running environment and parallel backend. Currently the only available container is `BiocFERContainer`(stands for `Bioconductor ForEach Redis Container`). Users can create a `BiocFERContainer` worker container by
 ```{r}
-serverContainer <- getBiocFERServerContainer()
-workerContainer <- getBiocFERWorkerContainer()
-serverContainer
+workerContainer <- BiocFERWorkerContainer()
 workerContainer
+```
+This should be enough for creating the cluster object. However, if you want to have more control over the container object, the server can be created separately via
+```{r}
+serverContainer <- BiocFERServerContainer()
+serverContainer
 ```
 
 
 # Create the cluster and run your parallel task
-Once you have selected the provider and containers, you can create the cluster via
+Once you have selected the provider and containers, the cluster can be created by
 ```{r}
-cluster <- makeDockerCluster(workerCpu = 1024, workerMemory = 2048, cloudProvider = provider, serverContainer = serverContainer, workerContainer = workerContainer)
+cluster <- makeDockerCluster(
+  cloudProvider = provider,
+  workerContainer = workerContainer,
+  workerNumber = 1,
+  workerCpu = 1024, workerMemory = 2048)
 ```
-where `workerCpu` defines the CPU unit used by the worker container, 1024 CPU unit corresponds to a single CPU core. `workerMemory` defines the worker memory and the unit is `MB`. Note that `makeDockerCluster` will use the ECS fargate provider and Bioconductor foreach redis container by default, we explicitly provide these arguments here just for reminding you that these are changeable.
+where `workerCpu` defines the CPU unit used by the worker container, 1024 CPU unit corresponds to a single CPU core. `workerMemory` defines the worker memory and the unit is `MB`. The server and worker containers will be implicitly generated from the container object you passed to the function. 
 
-You may wonder how to set the worker number for a cluster, this can be done after you have create the cluster
-```{r}
-cluster$setWorkerNumber(2)
-```
 Until now, the cluster has not been started and nothing is running on the cloud, you need to start the cluster by
 ```{r}
 cluster$startCluster()
 ```
+Depending on the parallel backend, some clusters may supports adjusting the worker number after the cluster has been running
+```{r}
+cluster$setWorkerNumber(2)
+```
+
 Once the cluster has been started, you can use the `foreach` function to do the parallel computing as usual
 ```{r}
 library(foreach)
@@ -134,6 +142,41 @@ After finishing the computation, you can stop the cluster via
 cluster$stopCluster()
 ```
 By default, the cluster will step itself if it has been removed from the R session, but we recommended to explicitly stop it after use.
+
+# Advanced topic
+In this document, we will introduce some advanced topics related to the package. Please note that the some features described in this section may not be available for all cloud providers and containers, they are only tested at the ECS fargate provider and Bioconductor foreach Redis container.
+
+## Installing the system packages
+Some R packages require the system dependence before they can be installed. The system packages can be added via `addSysPackages` in the container object. For example
+```{r}
+cluster$workerContainer$addSysPackages(c("package1", "package2"))
+cluster$workerContainer$getSysPackages()
+```
+When the contain is deployed, the system packages will be installed via `apt-get install` before the start of the R workers. Note that this function only work with the incoming worker container. It has no effect on the current running container. The Bioconductor foreach Redis server container does not support this operation. You can also set the system packages using
+```{r}
+cluster$workerContainer$setSysPackages(c("package1", "package2"))
+```
+The difference between `addSysPackages` and `setSysPackages` is that the latter one will overwrite the existing package setting.
+
+## Installing the R packages
+Users can ask the workers to install the R packages before connecting with the server via `addRPackages` in the container object. The workers will install the packages through `AnVIL::install`, which provides the fast binary installation. If the binary is not available, it will call `BiocManager::install` to install the package. This makes it possible to install both the binary package and GitHub package. For example, the package `S4Vectors` can be installed via
+```{r}
+cluster$workerContainer$addRPackages("S4Vectors")
+cluster$workerContainer$getRPackages()
+```
+Similar to `addSysPackages`, this feature does not work with the existing container. The Bioconductor foreach Redis server container does not support this operation. The `setRPackages` is also available if preserving the previous package setting is not required.
+
+## SSH to the container
+Sometimes it might be helpful to ssh into the container and look at the debug information. The package can search for your public key file through the environment variable `DockerParallelSSHPublicKey`. If the public key file is available, it can be used by the container object and allow you to access the container using your private key. If you want to explicitly provide a public key, this can be done via
+```
+setSSHPubKeyPath(publicKey = "Path-to-your-key")
+```
+If you want to see the current key file
+```
+getSSHPubKeyPath()
+```
+Note that the availability of the SSH service depends on the implementation of both the cloud provider and container. The formal one needs to allow the ssh access to the container and the latter one needs to run the SSH server inside the container. The ECS fargate provider and the Bioconductor foreach Redis container support the SSH access. If the Bioconductor foreach Redis container is used, users can find the worker's log file from `/workspace/log`
+
 
 # Session info
 ```{r}

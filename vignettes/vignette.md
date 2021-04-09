@@ -3,7 +3,7 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "2021-04-06"
+date: "2021-04-09"
 output:
     BiocStyle::html_document:
         toc: true
@@ -52,10 +52,10 @@ In the rest of the vignette we will introduce them step by step
 
 
 # Select a cloud provider
-Even though the topic says "select", currently the only available cloud provider is the before-mentioned ECS fargate provider. You can call `ECSProvider` to create an ECS fargate provider 
+Even though the topic says "select", currently the only available cloud provider is the before-mentioned ECS fargate provider. You can call `ECSFargateProvider` to create an ECS fargate provider 
 
 ```r
-provider <- ECSCloudProvider()
+provider <- ECSFargateProvider()
 provider
 #> Cluster name:         R-worker-cluster 
 #> Server task definition:      R-server-task-definition 
@@ -89,45 +89,58 @@ You can either explicitly specify them or provide them as environment variables.
 [AWS Documentation]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey
 
 # Select a container
-Similar to the cloud provider, the container is also changeable and provide different running environment and parallel backend. Currently the only available container is `BiocFERContainer`(stands for `Bioconductor ForEach Redis Container`). Since the parallel framework requires both server and worker nodes, users can create the server and worker container via
+Similar to the cloud provider, the container is also changeable and provide different running environment and parallel backend. Currently the only available container is `BiocFERContainer`(stands for `Bioconductor ForEach Redis Container`). Users can create a `BiocFERContainer` worker container by
 
 ```r
-serverContainer <- getBiocFERServerContainer()
-workerContainer <- getBiocFERWorkerContainer()
-serverContainer
-#> Bioconductor foreach redis container reference object
-#>   Image:      dockerparallel/parallel-redis-server 
-#>   maxWorkers: 1 
-#>   Environment variables:
+workerContainer <- BiocFERWorkerContainer()
 workerContainer
 #> Bioconductor foreach redis container reference object
 #>   Image:      dockerparallel/parallel-redis-worker 
 #>   maxWorkers: 4 
 #>   Environment variables:
 ```
+This should be enough for creating the cluster object. However, if you want to have more control over the container object, the server can be created separately via
+
+```r
+serverContainer <- BiocFERServerContainer()
+serverContainer
+#> Bioconductor foreach redis container reference object
+#>   Image:      dockerparallel/parallel-redis-server 
+#>   maxWorkers: 1 
+#>   Environment variables:
+```
 
 
 # Create the cluster and run your parallel task
-Once you have selected the provider and containers, you can create the cluster via
+Once you have selected the provider and containers, the cluster can be created by
 
 ```r
-cluster <- makeDockerCluster(workerCpu = 1024, workerMemory = 2048, cloudProvider = provider, serverContainer = serverContainer, workerContainer = workerContainer)
+cluster <- makeDockerCluster(
+  cloudProvider = provider,
+  workerContainer = workerContainer,
+  workerNumber = 1,
+  workerCpu = 1024, workerMemory = 2048)
 ```
-where `workerCpu` defines the CPU unit used by the worker container, 1024 CPU unit corresponds to a single CPU core. `workerMemory` defines the worker memory and the unit is `MB`. Note that `makeDockerCluster` will use the ECS fargate provider and Bioconductor foreach redis container by default, we explicitly provide these arguments here just for reminding you that these are changeable.
+where `workerCpu` defines the CPU unit used by the worker container, 1024 CPU unit corresponds to a single CPU core. `workerMemory` defines the worker memory and the unit is `MB`. The server and worker containers will be implicitly generated from the container object you passed to the function. 
 
-You may wonder how to set the worker number for a cluster, this can be done after you have create the cluster
-
-```r
-cluster$setWorkerNumber(2)
-```
 Until now, the cluster has not been started and nothing is running on the cloud, you need to start the cluster by
 
 ```r
 cluster$startCluster()
 #> Initializing the ECS provider
 #> Launching server
-#> Error in getSSHPubKey(): could not find function "getSSHPubKey"
+#> Deploying server container
+#> The cluster has 1 workers
+#> Deploying worker container
+#> Registering foreach redis backend, it might take a few minutes
 ```
+Depending on the parallel backend, some clusters may supports adjusting the worker number after the cluster has been running
+
+```r
+cluster$setWorkerNumber(2)
+#> Deploying worker container
+```
+
 Once the cluster has been started, you can use the `foreach` function to do the parallel computing as usual
 
 ```r
@@ -136,24 +149,73 @@ foreach(i = 1:2)%dopar%{
    Sys.info()
 }
 #> [[1]]
-#>           sysname           release           version          nodename           machine 
-#>         "Windows"          "10 x64"     "build 19042" "DESKTOP-FDNSBFE"          "x86-64" 
-#>             login              user    effective_user 
-#>        "Zhou Jin"        "Zhou Jin"        "Zhou Jin" 
+#>                                          sysname                                          release 
+#>                                          "Linux"                  "4.14.225-168.357.amzn2.x86_64" 
+#>                                          version                                         nodename 
+#>            "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-83-172.ap-southeast-1.compute.internal" 
+#>                                          machine                                            login 
+#>                                         "x86_64"                                        "unknown" 
+#>                                             user                                   effective_user 
+#>                                           "root"                                           "root" 
 #> 
 #> [[2]]
-#>           sysname           release           version          nodename           machine 
-#>         "Windows"          "10 x64"     "build 19042" "DESKTOP-FDNSBFE"          "x86-64" 
-#>             login              user    effective_user 
-#>        "Zhou Jin"        "Zhou Jin"        "Zhou Jin"
+#>                                          sysname                                          release 
+#>                                          "Linux"                  "4.14.225-168.357.amzn2.x86_64" 
+#>                                          version                                         nodename 
+#>            "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-83-172.ap-southeast-1.compute.internal" 
+#>                                          machine                                            login 
+#>                                         "x86_64"                                        "unknown" 
+#>                                             user                                   effective_user 
+#>                                           "root"                                           "root"
 ```
 After finishing the computation, you can stop the cluster via
 
 ```r
 cluster$stopCluster()
 #> Stopping cluster
+#> deregistering foreach backend
 ```
 By default, the cluster will step itself if it has been removed from the R session, but we recommended to explicitly stop it after use.
+
+# Advanced topic
+In this document, we will introduce some advanced topics related to the package. Please note that the some features described in this section may not be available for all cloud providers and containers, they are only tested at the ECS fargate provider and Bioconductor foreach Redis container.
+
+## Installing the system packages
+Some R packages require the system dependence before they can be installed. The system packages can be added via `addSysPackages` in the container object. For example
+
+```r
+cluster$workerContainer$addSysPackages(c("package1", "package2"))
+cluster$workerContainer$getSysPackages()
+#> [1] "package1" "package2"
+```
+When the contain is deployed, the system packages will be installed via `apt-get install` before the start of the R workers. Note that this function only work with the incoming worker container. It has no effect on the current running container. The Bioconductor foreach Redis server container does not support this operation. You can also set the system packages using
+
+```r
+cluster$workerContainer$setSysPackages(c("package1", "package2"))
+```
+The difference between `addSysPackages` and `setSysPackages` is that the latter one will overwrite the existing package setting.
+
+## Installing the R packages
+Users can ask the workers to install the R packages before connecting with the server via `addRPackages` in the container object. The workers will install the packages through `AnVIL::install`, which provides the fast binary installation. If the binary is not available, it will call `BiocManager::install` to install the package. This makes it possible to install both the binary package and GitHub package. For example, the package `S4Vectors` can be installed via
+
+```r
+cluster$workerContainer$addRPackages("S4Vectors")
+cluster$workerContainer$getRPackages()
+#> [1] "S4Vectors"
+```
+Similar to `addSysPackages`, this feature does not work with the existing container. The Bioconductor foreach Redis server container does not support this operation. The `setRPackages` is also available if preserving the previous package setting is not required.
+
+## SSH to the container
+Sometimes it might be helpful to ssh into the container and look at the debug information. The package can search for your public key file through the environment variable `DockerParallelSSHPublicKey`. If the public key file is available, it can be used by the container object and allow you to access the container using your private key. If you want to explicitly provide a public key, this can be done via
+```
+setSSHPubKeyPath(publicKey = "Path-to-your-key")
+```
+If you want to see the current key file
+```
+getSSHPubKeyPath()
+```
+Note that the availability of the SSH service depends on the implementation of both the cloud provider and container. The formal one needs to allow the ssh access to the container and the latter one needs to run the SSH server inside the container. The ECS fargate provider and the Bioconductor foreach Redis container support the SSH access. If the Bioconductor foreach Redis container is used, users can find the worker's log file from `/workspace/log`
+
 
 # Session info
 
@@ -174,24 +236,19 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] readr_1.4.0           DockerParallel_0.99.0 foreach_1.5.1        
+#> [1] DockerParallel_0.99.0 readr_1.4.0           foreach_1.5.1        
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] xfun_0.19           remotes_2.2.0       purrr_0.3.4         vctrs_0.3.4        
-#>  [5] testthat_3.0.2      usethis_1.6.3       htmltools_0.5.0     yaml_2.2.1         
-#>  [9] base64enc_0.1-3     rlang_0.4.10        pkgbuild_1.1.0      pillar_1.4.6       
-#> [13] glue_1.4.2          withr_2.3.0         doRedis_2.0.1       sessioninfo_1.1.1  
-#> [17] lifecycle_0.2.0     stringr_1.4.0       commonmark_1.7      devtools_2.3.2     
-#> [21] codetools_0.2-18    memoise_1.1.0       evaluate_0.14       knitr_1.31         
-#> [25] callr_3.5.1         ps_1.4.0            parallel_4.0.4      curl_4.3           
-#> [29] Rcpp_1.0.5          BiocManager_1.30.10 desc_1.2.0          pkgload_1.1.0      
-#> [33] jsonlite_1.7.2      adagio_0.7.1        fs_1.5.0            rjson_0.2.20       
-#> [37] hms_0.5.3           digest_0.6.27       stringi_1.5.3       processx_3.4.4     
-#> [41] rprojroot_2.0.2     cli_2.3.1           tools_4.0.4         magrittr_1.5       
-#> [45] tibble_3.0.4        aws.ecx_1.0.4       cluster_2.1.0       crayon_1.3.4       
-#> [49] aws.signature_0.6.0 pkgconfig_2.0.3     ellipsis_0.3.1      redux_1.1.0        
-#> [53] xml2_1.3.2          prettyunits_1.1.1   assertthat_0.2.1    rmarkdown_2.7      
-#> [57] httr_1.4.2          roxygen2_7.1.1      rstudioapi_0.13     iterators_1.0.13   
-#> [61] R6_2.5.0            compiler_4.0.4
+#>  [1] pillar_1.4.6        compiler_4.0.4      base64enc_0.1-3     iterators_1.0.13   
+#>  [5] doRedis_2.0.1       tools_4.0.4         testthat_3.0.2      digest_0.6.27      
+#>  [9] pkgload_1.1.0       jsonlite_1.7.2      evaluate_0.14       lifecycle_0.2.0    
+#> [13] tibble_3.0.4        pkgconfig_2.0.3     rlang_0.4.10        cli_2.3.1          
+#> [17] rstudioapi_0.13     curl_4.3            parallel_4.0.4      xfun_0.19          
+#> [21] withr_2.3.0         httr_1.4.2          stringr_1.4.0       xml2_1.3.2         
+#> [25] knitr_1.31          desc_1.2.0          vctrs_0.3.4         hms_0.5.3          
+#> [29] rprojroot_2.0.2     glue_1.4.2          R6_2.5.0            redux_1.1.0        
+#> [33] aws.ecx_1.0.4       adagio_0.7.1        magrittr_1.5        codetools_0.2-18   
+#> [37] ellipsis_0.3.1      assertthat_0.2.1    aws.signature_0.6.0 stringi_1.5.3      
+#> [41] crayon_1.3.4        rjson_0.2.20
 ```
 

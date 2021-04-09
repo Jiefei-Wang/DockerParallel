@@ -21,11 +21,11 @@ clusterOptions <- c(
     "stopClusterOnExit"
 )
 
-dockerCluster <- function(cloudProvider = ECSCloudProvider(),
+dockerCluster <- function(cloudProvider,
+                          serverContainer,
+                          workerContainer,
                           cloudConfig = CloudConfig(),
                           cloudRuntime = CloudRuntime(),
-                          serverContainer = getBiocFERServerContainer(),
-                          workerContainer = getBiocFERWorkerContainer(),
                           verbose = 1,
                           stopClusterOnExit = TRUE){
     settings <- new.env(parent = emptyenv())

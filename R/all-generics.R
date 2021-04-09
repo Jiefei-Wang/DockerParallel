@@ -2,10 +2,10 @@
 #'
 #'
 #' @param verbose Integer. The verbose level, default 1.
-#' @param provider S4 CloudProvider object. The service provider.
-#' @param cluster S4 DockerCluster object.
-#' @param container S4 Container Object.
-#' @param hardware S4 CloudHardware Object.
+#' @param provider S4 `CloudProvider` object. The service provider.
+#' @param cluster S4 `DockerCluster` object.
+#' @param container S4 `DockerContainer` Object.
+#' @param hardware S4 `CloudHardware` Object.
 #' @rdname commonParams
 #' @name commonParams
 NULL
@@ -164,7 +164,7 @@ setGeneric("killInstances", function(provider, instanceHandles, verbose){
 #' @inheritParams commonParams
 #' @param container Reference Container Object. The server container.
 #'
-#' @return A `container` object
+#' @return An object which has the same class as `container`
 #' @export
 setGeneric("configServerContainerEnv", function(container, cluster, verbose){
     standardGeneric("configServerContainerEnv")
@@ -179,7 +179,7 @@ setGeneric("configServerContainerEnv", function(container, cluster, verbose){
 #' @param container Reference Container Object. The worker container.
 #' @param workerNumber Integer. The number of workers in a container.
 #'
-#' @return A `container` object
+#' @return An object which has the same class as `container`
 #' @export
 setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber, verbose){
     standardGeneric("configWorkerContainerEnv")
@@ -193,6 +193,9 @@ setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber
 #' to define `deregisterParallelBackend` as its default method will deregister the
 #' foreach backend.
 #'
+#' @inheritParams commonParams
+#' @param container The worker container.
+#'
 #' @rdname containerParallelBackend
 #' @return NULL
 setGeneric("registerParallelBackend", function(container, cluster, verbose, ...){
@@ -203,7 +206,15 @@ setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ..
     standardGeneric("deregisterParallelBackend")
 })
 
-
+#' Get the server container from the worker container
+#'
+#' Get the server container from the worker container
+#'
+#' @param container The worker container.
+#' @export
+setGeneric("getServerContainer", function(container, ...){
+    standardGeneric("getServerContainer")
+})
 
 
 ###############provider and container###############

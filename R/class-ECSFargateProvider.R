@@ -1,5 +1,5 @@
 #' @export
-ECSCloudProvider <- function(clusterName = "R-worker-cluster",
+ECSFargateProvider <- function(clusterName = "R-worker-cluster",
                         serverTaskDefName = "R-server-task-definition",
                         workerTaskDefName = "R-worker-task-definition",
                         securityGroupName = "R-parallel-security-group",
@@ -9,7 +9,7 @@ ECSCloudProvider <- function(clusterName = "R-worker-cluster",
                         internetGatewayId = NULL,
                         routeTableId = NULL,
                         workerPublicIpEnable = TRUE){
-    .ECSCloudProvider$new(
+    .ECSFargateProvider$new(
         clusterName = clusterName,
         serverTaskDefName = serverTaskDefName,
         workerTaskDefName = workerTaskDefName,
@@ -34,7 +34,7 @@ ECSCloudProvider <- function(clusterName = "R-worker-cluster",
     )
 }
 
-.ECSCloudProvider$methods(
+.ECSFargateProvider$methods(
     show = function(){
         cat("Cluster name:        ", .self$clusterName, "\n")
         cat("Server task definition:     ", .self$serverTaskDefName, "\n")

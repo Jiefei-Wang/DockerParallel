@@ -45,6 +45,17 @@ setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbo
 })
 
 
+
+#' @describeIn getServerContainer The default method, return `NULL` value
+#' @export
+setMethod("getServerContainer", "ANY",function(container, ...){
+    NULL
+})
+
+
+
+
+
 #' @rdname exported-apis
 #' @export
 setMethod("getExportedNames", "ANY", function(x){

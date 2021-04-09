@@ -1,4 +1,5 @@
-BiocFERContainer <- function(image, name = NULL,  environment = list(),
+#' @export
+BiocFERContainer <- function(image = "", name = NULL,  environment = list(),
                              command = NULL, maxWorkerNum = 4L,
                              RPackages = NULL,
                              sysPackages = NULL){
@@ -12,7 +13,7 @@ BiocFERContainer <- function(image, name = NULL,  environment = list(),
 }
 
 #' @export
-getBiocFERServerContainer <- function(image = "dockerparallel/parallel-redis-server",
+BiocFERServerContainer <- function(image = "dockerparallel/parallel-redis-server",
                                    name = "redisRServerContainer",
                                    environment = list(),
                                    command = NULL){
@@ -22,7 +23,7 @@ getBiocFERServerContainer <- function(image = "dockerparallel/parallel-redis-ser
                    maxWorkerNum=1L)
 }
 #' @export
-getBiocFERWorkerContainer <- function(image = "dockerparallel/parallel-redis-worker",
+BiocFERWorkerContainer <- function(image = "dockerparallel/parallel-redis-worker",
                                    name = "redisRWorkerContainer",
                                    RPackages = NULL,
                                    sysPackages = NULL,

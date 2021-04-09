@@ -7,7 +7,7 @@
 getInstanceIps(provider, instanceHandles, verbose)
 }
 \arguments{
-\item{provider}{S4 CloudProvider object. The service provider.}
+\item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
 \item{instanceHandles}{List. A list of instance handles.}
 

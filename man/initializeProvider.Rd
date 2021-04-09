@@ -10,9 +10,9 @@ initializeProvider(provider, cluster, verbose)
 \S4method{initializeProvider}{ANY}(provider, cluster, verbose = FALSE)
 }
 \arguments{
-\item{provider}{S4 CloudProvider object. The service provider.}
+\item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
-\item{cluster}{S4 DockerCluster object.}
+\item{cluster}{S4 \code{DockerCluster} object.}
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }
