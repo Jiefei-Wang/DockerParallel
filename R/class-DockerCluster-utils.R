@@ -23,15 +23,15 @@ configNATStatus <- function(cluster){
 
     publicIpNULL <- is.null(cloudRuntime$serverPublicIp)
     privateIpNULL <- is.null(cloudRuntime$serverPrivateIp)
-    if(!all(publicIpNULL,privateIpNULL)){
-        cluster@serverContainer <- NULL
-    }
+    # if(!all(publicIpNULL,privateIpNULL)){
+    #     cluster@serverContainer <- NULL
+    # }
     if(publicIpNULL&&!privateIpNULL){
-        cloudConfig$serverClientSameNAT <- FALSE
+        cloudConfig$serverWorkerSameLAN <- FALSE
         cloudConfig$serverWorkerSameNAT <- FALSE
     }
     if(!publicIpNULL&&privateIpNULL){
-        cloudConfig$serverClientSameNAT <- TRUE
+        cloudConfig$serverWorkerSameLAN <- TRUE
         cloudConfig$serverWorkerSameNAT <- TRUE
     }
     cluster

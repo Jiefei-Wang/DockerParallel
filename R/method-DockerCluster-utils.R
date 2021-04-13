@@ -14,7 +14,7 @@ removeDiedServer <- function(cluster){
     cloudRuntime <- cluster@cloudRuntime
     if(!is.null(cloudRuntime$serverHandle)){
         stoppedServer <-
-            IsInstanceStopped(provider, list(cloudRuntime$serverHandle), verbose=verbose)
+            IsDockerInstanceStopped(provider, list(cloudRuntime$serverHandle), verbose=verbose)
         if(stoppedServer){
             resetRuntimeServer(cloudRuntime)
         }
@@ -26,7 +26,7 @@ removeDiedWorkers <- function(cluster){
     provider <- cluster@cloudProvider
     cloudRuntime <- cluster@cloudRuntime
     if(length(cloudRuntime$workerHandles)!=0){
-        stoppedWorkers <- IsInstanceStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
+        stoppedWorkers <- IsDockerInstanceStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
         if(any(stoppedWorkers)){
             removeRuntimeWorkers(cloudRuntime, which(stoppedWorkers))
         }
@@ -36,44 +36,32 @@ removeDiedWorkers <- function(cluster){
 
 addWorkersInternal <- function(cluster, workerNumber){
     verbose <- cluster$verbose
-    provider <- cluster@cloudProvider
-    cloudConfig <- cluster@cloudConfig
-    cloudRuntime <- cluster@cloudRuntime
+    provider <- .getCloudProvider(cluster)
 
     if(isServerRunning(cluster)){
         ## By default, we have 1 worker per container
         workerContainer <- configWorkerContainerEnv(
-            container = cluster@workerContainer,
+            container = .getWorkerContainer(cluster),
             cluster = cluster,
             workerNumber = 1,
             verbose = verbose
         )
-        instanceHandles <- runWorkers(provider,
+        instanceHandles <- runDockerWorkers(provider,
                                       cluster = cluster,
                                       container = workerContainer,
-                                      hardware = cloudConfig$workerHardware,
+                                      hardware = .getWorkerHardware(cluster),
                                       workerNumber = workerNumber,
                                       verbose = verbose)
-        ## Count the number of workers per handle
-        uniqueHandles <- unique(instanceHandles)
-        workerPerHandle <- rep(0, length(uniqueHandles))
-        for(i in seq_along(uniqueHandles)){
-            workerPerHandle[i] <- sum(
-                vapply(instanceHandles,
-                       function(x)identical(x,uniqueHandles[[i]]), logical(1))
-            )
-        }
-        cloudRuntime$workerHandles <- c(cloudRuntime$workerHandles, uniqueHandles)
-        cloudRuntime$workerPerHandle <- c(cloudRuntime$workerPerHandle,
-                                          as.integer(workerPerHandle))
+        .addWorkerHandles(cluster, instanceHandles)
     }
     invisible(NULL)
 }
 
 
 removeWorkersInternal <- function(cluster, workerNumber){
-    cloudRuntime <- cluster@cloudRuntime
-    provider <- cluster@cloudProvider
+    provider <- .getCloudProvider(cluster)
+    cloudRuntime <- .getCloudRuntime(cluster)
+
     verbose <- cluster$verbose
 
     ## Find which instances will be killed while satisfying
@@ -94,10 +82,42 @@ removeWorkersInternal <- function(cluster, workerNumber){
         }
     }
     if(killedWorkerNumber!=0){
-        killInstances(provider,
+        killDockerInstances(provider,
                       instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
                       verbose = verbose)
         removeRuntimeWorkers(cloudRuntime, killedInstanceIndex)
     }
     invisible(NULL)
+}
+
+## Check if the cluster exists on the cloud
+## and ask the user if reuse the same cluster
+## return `TRUE` to indicate the caller should proceed
+## `FALSE` means the caller should directly return
+checkIfClusterExist <- function(cluster){
+    provider <- .getCloudProvider(cluster)
+    verbose <- cluster$verbose
+    verbosePrint(verbose>0, "Checking if the cluster exist")
+
+    exist <- dockerClusterExists(provider=provider, cluster=cluster, verbose=verbose)
+    if(exist){
+        jobName <- .getJobQueueName(cluster)
+        msg <- paste0(
+            "The cluster with the job queue name <",
+            jobName,
+            "> exists on the cloud, do you want to reuse the same cluster?"
+        )
+        answer <- menu(c("Yes", "No", "Cancle"), title=msg)
+        if(answer == 1){
+            reconnectDockerCluster(provider=provider, cluster=cluster, verbose=verbose)
+            return(FALSE)
+        }
+        if(answer == 2){
+            return(TRUE)
+        }
+        if(answer == 0||answer== 3){
+            return(FALSE)
+        }
+    }
+    TRUE
 }

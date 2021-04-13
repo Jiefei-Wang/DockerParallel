@@ -2,9 +2,6 @@
     show = function(){
         cat("Container reference object\n")
         cat("  Image:     ", .self$image, "\n")
-        if(!is.null(.self$command)){
-            cat("  Command:   ", .self$command, "\n")
-        }
         cat("  maxWorkers:", .self$maxWorkerNum, "\n")
         cat("  Environment variables:\n")
         for(i in names(.self$environment)){
@@ -32,27 +29,27 @@ setMethod("getExportedObject", "DockerContainer",
 )
 
 getSysPackages <- function(cluster){
-    workerContainer <- cluster@workerContainer
+    workerContainer <- .getWorkerContainer(cluster)
     workerContainer$sysPackages
 }
 setSysPackages <- function(cluster, packages){
-    workerContainer <- cluster@workerContainer
+    workerContainer <- .getWorkerContainer(cluster)
     workerContainer$sysPackages <- packages
 }
 addSysPackages  <- function(cluster, packages){
-    workerContainer <- cluster@workerContainer
+    workerContainer <- .getWorkerContainer(cluster)
     workerContainer$sysPackages <- c(packages,workerContainer$sysPackages)
 }
 
 getRPackages <- function(cluster){
-    workerContainer <- cluster@workerContainer
+    workerContainer <- .getWorkerContainer(cluster)
     workerContainer$RPackages
 }
 setRPackages <- function(cluster, packages){
-    workerContainer <- cluster@workerContainer
+    workerContainer <- .getWorkerContainer(cluster)
     workerContainer$RPackages <- packages
 }
 addRPackages  <- function(cluster, packages){
-    workerContainer <- cluster@workerContainer
+    workerContainer <- .getWorkerContainer(cluster)
     workerContainer$RPackages <- c(packages,workerContainer$RPackages)
 }

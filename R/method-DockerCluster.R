@@ -6,8 +6,16 @@
 # cluster$stopWorkers(workerNum)
 # cluster$getWorkerNumber()
 # cluster$status()
+
+
+
 startCluster <- function(cluster, ...){
     verbose <- cluster$verbose
+
+    ## Check if the cluster exists on the cloud
+    answer <- checkIfClusterExist(cluster)
+    if(!answer)
+        return(invisible(NULL))
 
     ## Start the server
     startServer(cluster)
@@ -49,12 +57,13 @@ startServer <- function(cluster){
                 cluster = cluster,
                 verbose = verbose
             )
-        instanceHandle <- runServer(provider,
+        instanceHandle <- runDockerServer(provider = provider,
+                                    cluster = cluster,
                                     container=serverContainer,
                                     hardware=cloudConfig$serverHardware,
                                     verbose = verbose)
         cloudRuntime$serverHandle <- instanceHandle
-        serverIp <- getInstanceIps(
+        serverIp <- getDockerInstanceIps(
             provider,
             instanceHandles = list(instanceHandle),
             verbose = verbose
@@ -107,7 +116,7 @@ addWorkers <- function(cluster, workerNumber){
     if(requiredAddedNumber<=0){
         return(invisible(NULL))
     }
-    addWorkersInternl(cluster, requiredAddedNumber)
+    addWorkersInternal(cluster, requiredAddedNumber)
     invisible(NULL)
 }
 
@@ -146,7 +155,7 @@ stopServer<- function(cluster){
     provider <- cluster@cloudProvider
     cloudRuntime <- cluster@cloudRuntime
     if(!is.null(cloudRuntime$serverHandle)){
-        result <- killInstances(provider,
+        result <- killDockerInstances(provider,
                                 instanceHandles = list(cloudRuntime$serverHandle),
                                 verbose = verbose)
         if(result){
@@ -155,6 +164,18 @@ stopServer<- function(cluster){
     }
     invisible(NULL)
 }
+
+reconnect <- function(cluster, ...){
+    verbose <- cluster$verbose
+    provider <- cluster@cloudProvider
+    initializeProvider(provider = provider, cluster=cluster, verbose = verbose)
+    cluster$stopClusterOnExit <- FALSE
+    reconnectDockerCluster(provider = provider,
+                           cluster = cluster,
+                           verbose = verbose)
+    cluster$registerBackend(...)
+}
+
 
 getWorkerNumber <- function(cluster){
     removeDiedWorkers(cluster)
@@ -196,10 +217,19 @@ deregisterBackend <- function(cluster){
 }
 
 isServerRunning <- function(cluster){
-    !all(
+    ipExist <- !all(
         is.null(cluster@cloudRuntime$serverPrivateIp),
         is.null(cluster@cloudRuntime$serverPublicIp)
     )
+    if(!ipExist){
+        if(is.null(.getServerHandle(cluster))){
+            FALSE
+        }else{
+            TRUE
+        }
+    }else{
+        TRUE
+    }
 }
 
 update <- function(cluster){

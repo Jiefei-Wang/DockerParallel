@@ -1,12 +1,11 @@
 #' @export
 BiocFERContainer <- function(image = "", name = NULL,  environment = list(),
-                             command = NULL, maxWorkerNum = 4L,
+                             maxWorkerNum = 4L,
                              RPackages = NULL,
                              sysPackages = NULL){
   .BiocFERContainer$new(
     name=name, image = image,
     environment = environment,
-    command = command,
     maxWorkerNum = as.integer(maxWorkerNum),
     RPackages=RPackages,
     sysPackages=sysPackages)
@@ -15,11 +14,9 @@ BiocFERContainer <- function(image = "", name = NULL,  environment = list(),
 #' @export
 BiocFERServerContainer <- function(image = "dockerparallel/parallel-redis-server",
                                    name = "redisRServerContainer",
-                                   environment = list(),
-                                   command = NULL){
+                                   environment = list()){
   BiocFERContainer(image = image, name=name,
                    environment=environment,
-                   command=command,
                    maxWorkerNum=1L)
 }
 #' @export
@@ -28,11 +25,9 @@ BiocFERWorkerContainer <- function(image = "dockerparallel/parallel-redis-worker
                                    RPackages = NULL,
                                    sysPackages = NULL,
                                    environment = list(),
-                                   command = NULL,
                                    maxWorkerNum = 4L){
   BiocFERContainer(image = image, name=name, RPackages=RPackages, sysPackages=sysPackages,
                    environment=environment,
-                   command=command,
                    maxWorkerNum=maxWorkerNum)
 }
 
@@ -41,9 +36,6 @@ BiocFERWorkerContainer <- function(image = "dockerparallel/parallel-redis-worker
     cat("Bioconductor foreach redis container reference object\n")
     cat("  Image:     ", .self$image, "\n")
     cat("  maxWorkers:", .self$maxWorkerNum, "\n")
-    if(!is.null(.self$command)){
-      cat("  Command:   ", .self$command, "\n")
-    }
     if(!is.null(.self$RPackages)){
       cat("  R packages:", paste0(.self$RPackages, collapse = ", "), "\n")
     }

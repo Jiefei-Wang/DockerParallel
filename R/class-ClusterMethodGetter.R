@@ -1,4 +1,3 @@
-
 #' @export
 setMethod(f = "names",signature = "ClusterMethodGetter",
           definition = function(x){

@@ -16,7 +16,7 @@ NULL
 #' Initialize the service provider
 #'
 #' Initialize the service provider. This function will be called prior
-#' to `runServer` and `runWorkers`. It is used to initialize the cloud-specific
+#' to `runDockerServer` and `runDockerWorkers`. It is used to initialize the cloud-specific
 #' settings(e.g. Initialize the cloud network). The function might be called many
 #' times so developers can cache the service status and speed up the initialization
 #' process.
@@ -30,15 +30,15 @@ NULL
 #'
 #' Besides initializing the cloud settings, if the parallel server is provided
 #' by the cloud. The function might needs to change the value in
-#' `cluster@cloudConfig$serverWorkerSameNAT` to inform `DockerCluster` whether the
+#' `cluster@cloudConfig$serverWorkerSameLAN` to inform `DockerCluster` whether the
 #' server and the workers behind the same router. If
-#' `cluster@cloudConfig$serverWorkerSameNAT` is `TRUE`(default), the worker will
+#' `cluster@cloudConfig$serverWorkerSameLAN` is `TRUE`(default), the worker will
 #' connect with the server using the server's private IP. Otherwise, the server's
 #' public IP will be used.
 #'
 #' Although it is possible to change any settings in `cluster` in this fuction,
 #' the best practice is to only initialize `provider` and
-#' the slot `cluster@cloudConfig$serverWorkerSameNAT`.
+#' the slot `cluster@cloudConfig$serverWorkerSameLAN`.
 #' @return NULL
 setGeneric("initializeProvider", function(provider, cluster, verbose){
     standardGeneric("initializeProvider")
@@ -49,37 +49,40 @@ setGeneric("initializeProvider", function(provider, cluster, verbose){
 #' Run the server and return the server's instance handle.
 #'
 #' @inheritParams commonParams
-#' @param container S4 Container Object. The server container.
-#' @param hardware S4 CloudHardware Object. The server hardware.
+#' @param container S4 `DockerContainer` Object. The server container.
+#' @param hardware S4 `CloudHardware` Object. The server hardware.
 #'
 #' @section Instance Handle:
-#' Any data type can be used as the instance handle as long as it supports
-#' `identical` and `unique` functions. The `DockerParallel` object will use the
-#' handle to check the instance status or kill the instance. It is recommended
-#' to use `numeric` or `character` as the instance handle.
+#' The instance handle is nothing but any data type that can be used by the
+#' cloud provider to identify the running container. The data type should
+#' supports `identical` and `unique` functions. The `DockerParallel` object will use the
+#' handle to check the instance status or kill the instance. Though it is not required,
+#' but we recommend to use `character` as the instance handle.
 #'
 #' @returns
 #' Any object that can be used by the cluster to identify the server instance.
-setGeneric("runServer", function(provider, cluster, container, hardware, verbose){
-    standardGeneric("runServer")
+setGeneric("runDockerServer", function(provider, cluster, container, hardware, verbose){
+    standardGeneric("runDockerServer")
 })
 
 #' Run the workers
 #'
-#' Run the workers and return a list of worker's instance handles.
+#' Run the workers and return a list of worker's instance handles. The instance handles
+#' can be duplicated if multiple workers share the same instance.
+#'
 #'
 #' @inheritParams commonParams
 #' @param workerNumber Integer. The number of workers need to be run.
-#' @param container S4 Container Object. The worker container.
-#' @param hardware S4 CloudHardware Object. The worker hardware.
+#' @param container S4 `DockerContainer` Object. The worker container.
+#' @param hardware S4 `CloudHardware` Object. The worker hardware.
 #'
 #'
-#' @inheritSection runServer Instance Handle
+#' @inheritSection runDockerServer Instance Handle
 #' @returns
 #' A list of object that can be used by the cluster to identify the worker instances.
-setGeneric("runWorkers",
+setGeneric("runDockerWorkers",
            function(provider, cluster, container, hardware, workerNumber, verbose){
-    standardGeneric("runWorkers")
+    standardGeneric("runDockerWorkers")
 })
 
 
@@ -87,72 +90,98 @@ setGeneric("runWorkers",
 #'
 #' Get the instance public/private IPs. The IPs will be used by the cluster to
 #' make connections between server and worker, server and client. If the instance
-#' does not have the public or private IP, the return value can be the character
+#' does not have the public or private IP, its value can be set to the character
 #' "".
 #'
 #' @inheritParams commonParams
 #' @param instanceHandles List. A list of instance handles.
 #'
 #' @return A data.frame with `publicIp` and `privateIp` columns
-setGeneric("getInstanceIps", function(provider, instanceHandles, verbose){
-    standardGeneric("getInstanceIps")
+setGeneric("getDockerInstanceIps", function(provider, instanceHandles, verbose){
+    standardGeneric("getDockerInstanceIps")
 })
 
 
 #' Get the instance status
 #'
 #' Get the instance status. Unless you have a special requirement, you only need to
-#' define `getInstanceStatus`. The default `getInstanceStatus` do nothing but return
+#' define `getDockerInstanceStatus`. The default `getDockerInstanceStatus` do nothing but return
 #' a vector of "running" with the same lenght of the input instance handles.
 #'
-#' @inheritParams getInstanceIps
+#' @inheritParams getDockerInstanceIps
 #'
 #' @rdname instanceStatus
 #' @returns
-#' `getInstanceStatus` : A character vector with each element corresponding
+#' `getDockerInstanceStatus` : A character vector with each element corresponding
 #' to an instance in `instanceHandles`. Each element must be one of three possible characters
 #' `"initializing"`, `"running"` or `"stopped"`
 #'
-#' `IsInstanceInitializing`, `IsInstanceRunning`, `IsInstanceStopped`:
+#' `IsDockerInstanceInitializing`, `IsDockerInstanceRunning`, `IsDockerInstanceStopped`:
 #' A logical vector with each element corresponding to the status of each instance
 #' @export
-setGeneric("getInstanceStatus", function(provider, instanceHandles, verbose){
-    standardGeneric("getInstanceStatus")
+setGeneric("getDockerInstanceStatus", function(provider, instanceHandles, verbose){
+    standardGeneric("getDockerInstanceStatus")
 })
 
 
 #' @rdname instanceStatus
 #' @export
-setGeneric("IsInstanceInitializing", function(provider, instanceHandles, verbose){
-    standardGeneric("IsInstanceInitializing")
+setGeneric("IsDockerInstanceInitializing", function(provider, instanceHandles, verbose){
+    standardGeneric("IsDockerInstanceInitializing")
 })
 
 
 #' @rdname instanceStatus
 #' @export
-setGeneric("IsInstanceRunning", function(provider, instanceHandles, verbose){
-    standardGeneric("IsInstanceRunning")
+setGeneric("IsDockerInstanceRunning", function(provider, instanceHandles, verbose){
+    standardGeneric("IsDockerInstanceRunning")
 })
 
 
 #' @rdname instanceStatus
 #' @export
-setGeneric("IsInstanceStopped", function(provider, instanceHandles, verbose){
-    standardGeneric("IsInstanceStopped")
+setGeneric("IsDockerInstanceStopped", function(provider, instanceHandles, verbose){
+    standardGeneric("IsDockerInstanceStopped")
 })
 
 #' Kill the instances
 #'
-#' Kill the instances.
+#' Kill the instances. Multiple workers may share the same instance, in this case, all
+#' workers in the same instance should be killed.
 #'
-#' @inheritParams getInstanceIps
+#' @inheritParams getDockerInstanceIps
 #'
 #' @returns
 #' A logical vector indicating whether the killing operation is success for each instance
-setGeneric("killInstances", function(provider, instanceHandles, verbose){
-    standardGeneric("killInstances")
+setGeneric("killDockerInstances", function(provider, instanceHandles, verbose){
+    standardGeneric("killDockerInstances")
 })
 
+
+
+#' Whether the cluster is running on the cloud?
+#'
+#' The function checks whether the cluster is running on the cloud. It returns
+#' true if the cluster specific to the `jobQueueName` exists.
+#'
+#' @inheritParams commonParams
+#' @export
+setGeneric("dockerClusterExists", function(provider, cluster, verbose){
+    standardGeneric("dockerClusterExists")
+})
+
+
+#' Reconnect the cluster
+#'
+#' Reconnect the cluster if the cluster has been running. It is provider's
+#' responsibility to recover every information in the cluster, especially the the
+#' slots in `cloudConfg` and `cloudRuntime`.
+#'
+#' @inheritParams commonParams
+#' @export
+setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
+    standardGeneric("reconnectDockerCluster")
+})
 
 
 ###############container###############

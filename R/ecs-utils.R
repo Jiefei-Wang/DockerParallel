@@ -7,12 +7,23 @@ validFargateSettings$"2048" <- 1024*(4:16)
 validFargateSettings$"4096" <- 1024*(8:30)
 
 
-ecsRunWorkers <- function(provider, container, hardware,
+ecsRunWorkers <- function(provider, cluster, container, hardware,
                           containerNumber, workerPerContainer, verbose){
+  container <- container$copy()
   verbosePrint(verbose>1,
                "Deploying ", containerNumber," container with ",
                workerPerContainer," workers per container.")
+
   taskDefName <- provider$workerTaskDefName
+  ## Set the worker container environment
+  workerContainer <- configWorkerContainerEnv(
+    container = container,
+    cluster = cluster,
+    workerNumber = workerPerContainer,
+    verbose = verbose
+  )
+
+  ## Config the hardware for the container
   requiredHardware <- hardware
   requiredHardware@cpu <- hardware@cpu*workerPerContainer
   requiredHardware@memory <- hardware@memory*workerPerContainer
@@ -20,9 +31,15 @@ ecsRunWorkers <- function(provider, container, hardware,
   if(verbose){
     informUpgradedHardware(fargateHardware, requiredHardware, workerPerContainer)
   }
+  ## save the cluster info to the container environment
+  serverIp <- packServerIp(cluster)
+  workerContainer$environment[["ECSFargateCloudJobQueueName"]] <- .getJobQueueName(cluster)
+  workerContainer$environment[["ECSFargateCloudServerIP"]] <- serverIp
+  workerContainer$environment[["ECSFargateCloudWorkerNumber"]] <- workerPerContainer
+
   instances <- ecsTaskScheduler(provider=provider,
                                 taskDefName=taskDefName,
-                                container=container,
+                                container=workerContainer,
                                 hardware=fargateHardware,
                                 containerNum=containerNumber,
                                 publicIpEnable=TRUE)
@@ -53,7 +70,8 @@ getAvailableLaunchNumber <- function(){
   ecsLaunchThrottle$launchNumber - length(ecsLaunchHistory)
 }
 
-ecsTaskScheduler <- function(provider, taskDefName , container, hardware, containerNum, publicIpEnable){
+ecsTaskScheduler <- function(provider, taskDefName , container, hardware,
+                             containerNum, publicIpEnable){
   instanceIds <- c()
   while(length(instanceIds) < containerNum){
     requiredNum <- containerNum - length(instanceIds)
@@ -168,11 +186,21 @@ ListToArray <- function(x, name = "name", value = "value"){
   }
   result
 }
-
+ArrayToList <- function(x, name = "name", value = "value"){
+  resultName <- c()
+  result <- list()
+  for(i in seq_along(x)){
+    result[[i]] <- x[[i]][["value"]]
+    resultName[i] <- x[[i]][["name"]]
+  }
+  names(result) <- resultName
+  result
+}
 verbosePrint<-function(verbose, ...){
   if(verbose)
     message(...)
 }
-repeatVector <- function(x, n){
-  unlist(lapply(seq_along(x), function(i) rep(x[[i]],n[i])))
+
+generateRandomPassword <- function(len = 26){
+  paste0(letters[sample(26, len, replace = TRUE)],collapse = "")
 }

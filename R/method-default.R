@@ -1,19 +1,19 @@
 #' @describeIn initializeProvider The default cloud initialization method, do nothing.
 #' @export
-setMethod("initializeProvider", "ANY", function(provider, cluster, verbose = FALSE){
+setMethod("initializeProvider", "ANY", function(provider, cluster, verbose = 0L){
 
 })
 
 #' @rdname instanceStatus
 #' @export
-setMethod("getInstanceStatus", "ANY", function(provider, instanceHandles, verbose = FALSE){
+setMethod("getDockerInstanceStatus", "ANY", function(provider, instanceHandles, verbose = 0L){
     rep("running", length(instanceHandles))
 })
 
 #' @rdname instanceStatus
 #' @export
-setMethod("IsInstanceInitializing", "ANY", function(provider, instanceHandles, verbose = FALSE){
-    status <- getInstanceStatus(provider=provider,
+setMethod("IsDockerInstanceInitializing", "ANY", function(provider, instanceHandles, verbose = 0L){
+    status <- getDockerInstanceStatus(provider=provider,
                                 instanceHandles=instanceHandles,
                                 verbose = verbose)
     status == "initializing"
@@ -21,8 +21,8 @@ setMethod("IsInstanceInitializing", "ANY", function(provider, instanceHandles, v
 
 #' @rdname instanceStatus
 #' @export
-setMethod("IsInstanceRunning", "ANY", function(provider, instanceHandles, verbose = FALSE){
-    status <- getInstanceStatus(provider=provider,
+setMethod("IsDockerInstanceRunning", "ANY", function(provider, instanceHandles, verbose = 0L){
+    status <- getDockerInstanceStatus(provider=provider,
                                 instanceHandles=instanceHandles,
                                 verbose = verbose)
     status == "running"
@@ -30,16 +30,34 @@ setMethod("IsInstanceRunning", "ANY", function(provider, instanceHandles, verbos
 
 #' @rdname instanceStatus
 #' @export
-setMethod("IsInstanceStopped", "ANY", function(provider, instanceHandles, verbose = FALSE){
-    status <- getInstanceStatus(provider=provider,
+setMethod("IsDockerInstanceStopped", "ANY", function(provider, instanceHandles, verbose = 0L){
+    status <- getDockerInstanceStatus(provider=provider,
                                 instanceHandles=instanceHandles,
                                 verbose = verbose)
     status == "stopped"
 })
 
+
+#' @describeIn dockerClusterExists The default method, it always returns `FALSE`.
+#' @export
+setMethod("dockerClusterExists", "ANY",function(provider, cluster, verbose){
+    FALSE
+})
+
+
+#' @describeIn reconnectDockerCluster The default method, do nothing.
+#' @export
+setMethod("reconnectDockerCluster", "ANY",function(provider, cluster, verbose){
+    message("No reconnect method has been defined in the provider")
+})
+
+
+
+
+
 #' @rdname containerParallelBackend
 #' @export
-setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbose = FALSE){
+setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbose = 0L){
     verbosePrint(verbose, "deregistering foreach backend")
     foreach::registerDoSEQ()
 })
@@ -51,8 +69,6 @@ setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbo
 setMethod("getServerContainer", "ANY",function(container, ...){
     NULL
 })
-
-
 
 
 
