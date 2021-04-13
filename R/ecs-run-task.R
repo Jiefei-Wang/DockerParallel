@@ -24,13 +24,10 @@ runTask <- function(clusterName, taskDefName, taskCount,
             name = container$name, environment = envJson)),
         cpu = as.character(cpu), memory = as.character(memory)
     )
-    if(!is.null(container$command)){
-        overrides$containerOverrides[[1]]$command <- list(container$command)
-    }
     ## handling the network error and prevent
     ## the container from duplicating.
     tryNum <- 5
-    startedBy <- paste0(sample(letters, 30, TRUE),collapse = "")
+    startedBy <- generateRandomPassword(30)
     response <- NULL
     ids <- NULL
     for(i in seq_along(tryNum)){
@@ -44,8 +41,7 @@ runTask <- function(clusterName, taskDefName, taskCount,
                              networkConfiguration=networkConfiguration,
                              overrides=overrides,
                              startedBy = startedBy,
-                             retry_time = 0,
-                             network_timeout = 2
+                             retry_time = 0
                 ),
                 error = function(e) {message(e);NULL}
             )
@@ -64,7 +60,7 @@ runTask <- function(clusterName, taskDefName, taskCount,
 
 
 listTasks<-function(clusterName,
-                    status = c("RUNNING", "PENDING","STOPPED"),
+                    status = c("RUNNING", "STOPPED"),
                     taskFamily = NULL,
                     startedBy = NULL){
     if(!is.null(status)){

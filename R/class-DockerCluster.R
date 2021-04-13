@@ -8,6 +8,7 @@ clusterMethods <- c(
     "getExpectedWorkerNumber",
     "addWorkers",
     "removeWorkers",
+    "reconnect",
     "update",
     "registerBackend",
     "deregisterBackend",

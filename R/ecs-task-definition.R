@@ -1,4 +1,7 @@
 CreateTaskDefinition <- function(taskName, name, image, cpu = 256, memory = 512){
+    if(is.null(name)){
+        name <- "container"
+    }
     containerDefinitions <- list(list(
         name = name,
         image=image,
@@ -40,14 +43,14 @@ listTaskDefinitions<-function(taskName = NULL){
 }
 
 configTaskDefinition <- function(x, cluster){
-    if(!is.null(cluster@serverContainer)){
+    if(!is.null(.getServerContainer(cluster))){
         configTaskDefinitionInternal(x,
                                      "serverTaskDefName",
-                                     cluster@serverContainer)
+                                     .getServerContainer(cluster))
     }
     configTaskDefinitionInternal(x,
                                  "workerTaskDefName",
-                                 cluster@workerContainer)
+                                 .getWorkerContainer(cluster))
 
 }
 

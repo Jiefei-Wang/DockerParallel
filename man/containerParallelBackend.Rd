@@ -14,7 +14,7 @@ deregisterParallelBackend(container, cluster, verbose, ...)
 
 \S4method{registerParallelBackend}{BiocFERContainer}(container, cluster, verbose = FALSE, ...)
 
-\S4method{deregisterParallelBackend}{ANY}(container, cluster, verbose = FALSE)
+\S4method{deregisterParallelBackend}{ANY}(container, cluster, verbose = 0L)
 }
 \arguments{
 \item{container}{The worker container.}

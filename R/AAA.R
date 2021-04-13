@@ -10,7 +10,6 @@ setClassUnion("IntOrNULL",c("NULL","integer"))
         maxWorkerNum = "integer",
         environment = "list",
         image = "character",
-        command = "CharOrNULL",
         sysPackages = "CharOrNULL",
         RPackages = "CharOrNULL"
     )
@@ -66,8 +65,8 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
         workerHardware = "CloudHardware",
         serverPort = "IntOrNULL",
         serverPassword = "CharOrNULL",
-        serverWorkerSameNAT = "logical",
-        serverClientSameNAT = "logical"
+        serverWorkerSameLAN = "logical",
+        serverClientSameLAN = "logical"
     )
 )
 

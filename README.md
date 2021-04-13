@@ -108,18 +108,24 @@ Until now, the cluster has not been started and nothing is running on the cloud,
 
 ```r
 cluster$startCluster()
+#> Checking if the cluster exist
 #> Initializing the ECS provider
 #> Launching server
+#> Warning in readChar(fileName, file.info(fileName)$size): 鍦╪on-UTF-8 MBCS璇█鐜閲屽彧鑳借鍙栧瓧鑺㠼㸲
 #> Deploying server container
 #> The cluster has 1 workers
+#> Warning in readChar(fileName, file.info(fileName)$size): 鍦╪on-UTF-8 MBCS璇█鐜閲屽彧鑳借鍙栧瓧鑺㠼㸲
 #> Deploying worker container
+#> Warning in readChar(fileName, file.info(fileName)$size): 鍦╪on-UTF-8 MBCS璇█鐜閲屽彧鑳借鍙栧瓧鑺㠼㸲
 #> Registering foreach redis backend, it might take a few minutes
 ```
 Depending on the parallel backend, some clusters may supports adjusting the worker number after the cluster has been running
 
 ```r
 cluster$setWorkerNumber(2)
+#> Warning in readChar(fileName, file.info(fileName)$size): 鍦╪on-UTF-8 MBCS璇█鐜閲屽彧鑳借鍙栧瓧鑺㠼㸲
 #> Deploying worker container
+#> Warning in readChar(fileName, file.info(fileName)$size): 鍦╪on-UTF-8 MBCS璇█鐜閲屽彧鑳借鍙栧瓧鑺㠼㸲
 ```
 
 Once the cluster has been started, you can use the `foreach` function to do the parallel computing as usual
@@ -133,7 +139,7 @@ foreach(i = 1:2)%dopar%{
 #>                                          sysname                                          release 
 #>                                          "Linux"                  "4.14.225-168.357.amzn2.x86_64" 
 #>                                          version                                         nodename 
-#>            "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-83-172.ap-southeast-1.compute.internal" 
+#>            "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-227-95.ap-southeast-1.compute.internal" 
 #>                                          machine                                            login 
 #>                                         "x86_64"                                        "unknown" 
 #>                                             user                                   effective_user 
@@ -143,7 +149,7 @@ foreach(i = 1:2)%dopar%{
 #>                                          sysname                                          release 
 #>                                          "Linux"                  "4.14.225-168.357.amzn2.x86_64" 
 #>                                          version                                         nodename 
-#>            "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-83-172.ap-southeast-1.compute.internal" 
+#>            "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-227-95.ap-southeast-1.compute.internal" 
 #>                                          machine                                            login 
 #>                                         "x86_64"                                        "unknown" 
 #>                                             user                                   effective_user 
@@ -209,27 +215,26 @@ sessionInfo()
 #> Matrix products: default
 #> 
 #> locale:
-#> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252   
-#> [3] LC_MONETARY=English_United States.1252 LC_NUMERIC=C                          
-#> [5] LC_TIME=English_United States.1252    
+#> [1] LC_COLLATE=Chinese (Simplified)_China.936  LC_CTYPE=Chinese (Simplified)_China.936   
+#> [3] LC_MONETARY=Chinese (Simplified)_China.936 LC_NUMERIC=C                              
+#> [5] LC_TIME=Chinese (Simplified)_China.936    
 #> 
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] DockerParallel_0.99.0 readr_1.4.0           foreach_1.5.1        
+#> [1] foreach_1.5.1         DockerParallel_0.99.0
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] pillar_1.4.6        compiler_4.0.4      base64enc_0.1-3     iterators_1.0.13   
-#>  [5] doRedis_2.0.1       tools_4.0.4         testthat_3.0.2      digest_0.6.27      
-#>  [9] pkgload_1.1.0       jsonlite_1.7.2      evaluate_0.14       lifecycle_0.2.0    
-#> [13] tibble_3.0.4        pkgconfig_2.0.3     rlang_0.4.10        cli_2.3.1          
-#> [17] rstudioapi_0.13     curl_4.3            parallel_4.0.4      xfun_0.19          
-#> [21] withr_2.3.0         httr_1.4.2          stringr_1.4.0       xml2_1.3.2         
-#> [25] knitr_1.31          desc_1.2.0          vctrs_0.3.4         hms_0.5.3          
-#> [29] rprojroot_2.0.2     glue_1.4.2          R6_2.5.0            redux_1.1.0        
-#> [33] aws.ecx_1.0.4       adagio_0.7.1        magrittr_1.5        codetools_0.2-18   
-#> [37] ellipsis_0.3.1      assertthat_0.2.1    aws.signature_0.6.0 stringi_1.5.3      
-#> [41] crayon_1.3.4        rjson_0.2.20
+#>  [1] rstudioapi_0.13     knitr_1.31          xml2_1.3.2          magrittr_1.5       
+#>  [5] pkgload_1.1.0       aws.signature_0.6.0 rjson_0.2.20        R6_2.5.0           
+#>  [9] rlang_0.4.10        aws.ecx_1.0.4       stringr_1.4.0       httr_1.4.2         
+#> [13] tools_4.0.4         parallel_4.0.4      xfun_0.19           cli_2.3.1          
+#> [17] withr_2.3.0         htmltools_0.5.0     doRedis_2.0.1       iterators_1.0.13   
+#> [21] yaml_2.2.1          assertthat_0.2.1    rprojroot_2.0.2     digest_0.6.27      
+#> [25] crayon_1.3.4        adagio_0.7.1        base64enc_0.1-3     codetools_0.2-18   
+#> [29] curl_4.3            testthat_3.0.2      evaluate_0.14       glue_1.4.2         
+#> [33] rmarkdown_2.7       redux_1.1.0         stringi_1.5.3       compiler_4.0.4     
+#> [37] desc_1.2.0          jsonlite_1.7.2
 ```
 

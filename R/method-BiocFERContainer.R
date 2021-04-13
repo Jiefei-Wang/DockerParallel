@@ -11,16 +11,21 @@ setMethod("configServerContainerEnv", "BiocFERContainer",
                   warning("The server containder does not support installing system packages")
               }
               container <- container$copy()
-              cloudConfig <- cluster@cloudConfig
-              cloudRuntime <- cluster@cloudRuntime
-              pubKeyValue <- getSSHPubKeyValue()
-              stopifnot(!is.empty(cloudConfig$serverPort))
+
+              serverPort <- .getServerPort(cluster)
+              serverPassword <- .getServerPassword(cluster)
+              sshPubKey <- getSSHPubKeyValue()
+
+              stopifnot(!is.empty(serverPort))
+              if(is.empty(serverPassword)){
+                    stop("The server must be password protected!")
+              }
               container$environment <- combineList(
                   container$environment,
                   list(
-                      serverPort = cloudConfig$serverPort,
-                      serverPassword = cloudConfig$serverPassword,
-                      sshPubKey = getSSHPubKeyValue()
+                      serverPort = serverPort,
+                      serverPassword = serverPassword,
+                      sshPubKey = sshPubKey
                   )
               )
               container
@@ -31,57 +36,63 @@ setMethod("configServerContainerEnv", "BiocFERContainer",
 setMethod("configWorkerContainerEnv", "BiocFERContainer",
           function(container, cluster, workerNumber, verbose = FALSE){
               container <- container$copy()
-              cloudConfig <- cluster@cloudConfig
-              cloudRuntime <- cluster@cloudRuntime
 
-              if(cloudConfig$serverWorkerSameNAT){
-                  serverIp <- cloudRuntime$serverPrivateIp
+              queueName <- .getJobQueueName(cluster)
+              serverPort <- .getServerPort(cluster)
+              serverPassword <- .getServerPassword(cluster)
+              sshPubKey <- getSSHPubKeyValue()
+              RPackages <- packPackages(container$RPackages)
+              sysPackages <- paste0(container$sysPackages,collapse = ",")
+              if(.getServerWorkerSameLAN(cluster)){
+                  serverIp <- .getServerPrivateIp(cluster)
               }else{
-                  serverIp <- cloudRuntime$serverPublicIp
+                  serverIp <- .getServerPublicIp(cluster)
               }
+
               if(is.null(serverIp)){
                   stop("Fail to find the server Ip")
               }
-              stopifnot(!is.empty(cloudConfig$serverPort))
+              stopifnot(!is.empty(serverPort))
 
               container$environment <- combineList(
                   container$environment,
                   list(
-                      queueName = cloudConfig$jobQueueName,
+                      queueName = queueName,
                       serverIp = serverIp,
-                      serverPort = cloudConfig$serverPort,
-                      serverPassword = cloudConfig$serverPassword,
-                      sshPubKey = getSSHPubKeyValue(),
+                      serverPort = serverPort,
+                      serverPassword = serverPassword,
+                      sshPubKey = sshPubKey,
                       workerNum = workerNumber,
-                      RPackages = packPackages(container$RPackages),
-                      sysPackages = paste0(container$sysPackages,collapse = ",")
+                      RPackages = RPackages,
+                      sysPackages = sysPackages
                   )
               )
               container
           })
 
 
-
 #' @rdname containerParallelBackend
 #' @export
 setMethod("registerParallelBackend", "BiocFERContainer",
           function(container, cluster, verbose = FALSE, ...){
-              cloudConfig <- cluster@cloudConfig
-              cloudRuntime <- cluster@cloudRuntime
-
-              queue <- cloudConfig$jobQueueName
-              if(cloudConfig$serverClientSameNAT){
-                  serverClientIP <- cloudRuntime$serverPrivateIp
+              queue <- .getJobQueueName(cluster)
+              password <- .getServerPassword(cluster)
+              serverPort <- .getServerPort(cluster)
+              if(.getServerClientSameLAN(cluster)){
+                  serverClientIP <- .getServerPrivateIp(cluster)
               }else{
-                  serverClientIP <- cloudRuntime$serverPublicIp
+                  serverClientIP <- .getServerPublicIp(cluster)
               }
-              stopifnot(!is.null(serverClientIP))
-              password <- cloudConfig$serverPassword
+
+              if(is.null(serverClientIP)){
+                  stop("Fail to find the server Ip")
+              }
+              stopifnot(!is.empty(serverPort))
 
               doRedis::registerDoRedis(queue=queue,
                                        host = serverClientIP,
                                        password = password,
-                                       port = cloudConfig$serverPort, ...)
+                                       port = serverPort, ...)
           })
 
 #' @describeIn getServerContainer Get the Bioconductor foreach Redis container

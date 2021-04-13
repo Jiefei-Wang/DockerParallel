@@ -4,16 +4,16 @@ CloudConfig <- function(jobQueueName = "DockerParallelQueue",
                         workerHardware = CloudHardware(),
                         serverPort = 6379L,
                         serverPassword = generateRandomPassword(),
-                        serverWorkerSameNAT = TRUE,
-                        serverClientSameNAT = FALSE){
+                        serverWorkerSameLAN = TRUE,
+                        serverClientSameLAN = FALSE){
     .CloudConfig$new(jobQueueName = jobQueueName,
                      workerNumber = as.integer(workerNumber),
                      serverHardware = serverHardware,
                      workerHardware = workerHardware,
                      serverPort = as.integer(serverPort),
                      serverPassword=serverPassword,
-                     serverWorkerSameNAT=serverWorkerSameNAT,
-                     serverClientSameNAT=serverClientSameNAT)
+                     serverWorkerSameLAN=serverWorkerSameLAN,
+                     serverClientSameLAN=serverClientSameLAN)
 }
 
 
@@ -24,14 +24,12 @@ CloudConfig <- function(jobQueueName = "DockerParallelQueue",
 
         cat("Job queue name:  ", .self$jobQueueName, "\n")
         cat("Worker number:   ", .self$workerNumber, "\n")
-        if(!is.null(.self$serverContainer)){
-            cat("server CPU:      ", .self$serverHardware@cpu, " unit\n")
-            cat("server memory:   ", .self$serverHardware@memory, " MB\n")
-            cat("Server port:     ", .self$serverPort, "\n")
-            cat("Server password: ", serverPasswordTmp, "\n")
-        }
-        cat("Worker CPU:      ", .self$serverHardware@cpu, " unit\n")
-        cat("Worker memory:   ", .self$serverHardware@memory, " MB\n")
+        cat("Worker CPU:      ", .self$workerHardware@cpu, " unit\n")
+        cat("Worker memory:   ", .self$workerHardware@memory, " MB\n")
+        cat("server CPU:      ", .self$serverHardware@cpu, " unit\n")
+        cat("server memory:   ", .self$serverHardware@memory, " MB\n")
+        cat("Server port:     ", .self$serverPort, "\n")
+        cat("Server password: ", serverPasswordTmp, "\n")
         invisible(NULL)
     }
 )

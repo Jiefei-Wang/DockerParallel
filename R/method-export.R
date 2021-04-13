@@ -18,7 +18,7 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
         pb <- txtProgressBar(min=0,max = length(instanceHandles), style=3)
     }
     while(TRUE){
-        instanceStatus <- getInstanceStatus(provider=provider,
+        instanceStatus <- getDockerInstanceStatus(provider=provider,
                                             instanceHandles = instanceHandles,
                                             verbose = FALSE)
         if(all(instanceStatus=="running")){

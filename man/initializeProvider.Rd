@@ -7,7 +7,7 @@
 \usage{
 initializeProvider(provider, cluster, verbose)
 
-\S4method{initializeProvider}{ANY}(provider, cluster, verbose = FALSE)
+\S4method{initializeProvider}{ANY}(provider, cluster, verbose = 0L)
 }
 \arguments{
 \item{provider}{S4 \code{CloudProvider} object. The service provider.}
@@ -18,7 +18,7 @@ initializeProvider(provider, cluster, verbose)
 }
 \description{
 Initialize the service provider. This function will be called prior
-to \code{runServer} and \code{runWorkers}. It is used to initialize the cloud-specific
+to \code{runDockerServer} and \code{runDockerWorkers}. It is used to initialize the cloud-specific
 settings(e.g. Initialize the cloud network). The function might be called many
 times so developers can cache the service status and speed up the initialization
 process.
@@ -30,15 +30,15 @@ the \code{DockerCluster} object before running the server and workers.
 
 Besides initializing the cloud settings, if the parallel server is provided
 by the cloud. The function might needs to change the value in
-\code{cluster@cloudConfig$serverWorkerSameNAT} to inform \code{DockerCluster} whether the
+\code{cluster@cloudConfig$serverWorkerSameLAN} to inform \code{DockerCluster} whether the
 server and the workers behind the same router. If
-\code{cluster@cloudConfig$serverWorkerSameNAT} is \code{TRUE}(default), the worker will
+\code{cluster@cloudConfig$serverWorkerSameLAN} is \code{TRUE}(default), the worker will
 connect with the server using the server's private IP. Otherwise, the server's
 public IP will be used.
 
 Although it is possible to change any settings in \code{cluster} in this fuction,
 the best practice is to only initialize \code{provider} and
-the slot \code{cluster@cloudConfig$serverWorkerSameNAT}.
+the slot \code{cluster@cloudConfig$serverWorkerSameLAN}.
 }
 \section{Functions}{
 \itemize{
