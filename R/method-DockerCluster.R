@@ -13,7 +13,8 @@ startCluster <- function(cluster, ...){
     verbose <- cluster$verbose
 
     ## Check if the cluster exists on the cloud
-    answer <- checkIfClusterExist(cluster)
+    ## and ask user what to do
+    answer <- checkIfClusterExistAndAsk(cluster)
     if(!answer)
         return(invisible(NULL))
 
@@ -137,7 +138,7 @@ removeWorkers<- function(cluster, workerNumber){
     if(requiredKilledNumber <= 0){
         return(invisible(NULL))
     }
-    removeWorkersInternl(cluster, requiredKilledNumber)
+    removeWorkersInternal(cluster, requiredKilledNumber)
 }
 
 
@@ -168,8 +169,16 @@ stopServer<- function(cluster){
 reconnect <- function(cluster, ...){
     verbose <- cluster$verbose
     provider <- cluster@cloudProvider
-    initializeProvider(provider = provider, cluster=cluster, verbose = verbose)
-    cluster$stopClusterOnExit <- FALSE
+    exist <- dockerClusterExists(provider=provider, cluster=cluster, verbose=verbose)
+    if(!exist)
+        stop("The cluster with the job queue name <",
+             .getJobQueueName(cluster),
+             "> is not running!")
+
+    if(cluster$stopClusterOnExit){
+        verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")
+        cluster$stopClusterOnExit <- FALSE
+    }
     reconnectDockerCluster(provider = provider,
                            cluster = cluster,
                            verbose = verbose)

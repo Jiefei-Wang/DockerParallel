@@ -24,7 +24,7 @@ NULL
 #' @inheritParams commonParams
 #'
 #' @details
-#' Basic on the cloud nature, certain initialization process might be required
+#' Basic on the cloud nature, an initialization process might be required
 #' before deploying the container on the cloud. This function will be called by
 #' the `DockerCluster` object before running the server and workers.
 #'

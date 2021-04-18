@@ -20,6 +20,9 @@ setMethod(f = "$",signature = "ClusterMethodGetter",
 setMethod(f = "show",signature = "ClusterMethodGetter",
           definition = function(object){
               show(object@object)
+              cat("The available methods/variables:\n",
+                  paste0(getExportedNames(object@object), sep = ",")
+                  )
               invisible(NULL)
           }
 )

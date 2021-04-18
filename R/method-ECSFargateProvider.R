@@ -198,9 +198,6 @@ setMethod("reconnectDockerCluster", "ECSFargateProvider",
           function(provider, cluster, verbose = 0L){
               cloudConfig <- .getCloudConfig(cluster)
               serverHandles <- listRunningServer(cluster)
-              if(length(serverHandles)==0){
-                  stop("No container is running in the <", provider$clusterName,"> cluster")
-              }
               serverInfo <- findServerInfo(cluster, serverHandles)
               if(!is.null(serverInfo)){
                   ## Set the cloud config

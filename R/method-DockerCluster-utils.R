@@ -94,7 +94,7 @@ removeWorkersInternal <- function(cluster, workerNumber){
 ## and ask the user if reuse the same cluster
 ## return `TRUE` to indicate the caller should proceed
 ## `FALSE` means the caller should directly return
-checkIfClusterExist <- function(cluster){
+checkIfClusterExistAndAsk <- function(cluster){
     provider <- .getCloudProvider(cluster)
     verbose <- cluster$verbose
     verbosePrint(verbose>0, "Checking if the cluster exist")
@@ -109,8 +109,12 @@ checkIfClusterExist <- function(cluster){
         )
         answer <- menu(c("Yes", "No", "Cancle"), title=msg)
         if(answer == 1){
+            if(cluster$stopClusterOnExit){
+                verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")
+                cluster$stopClusterOnExit <- FALSE
+            }
             reconnectDockerCluster(provider=provider, cluster=cluster, verbose=verbose)
-            return(FALSE)
+            return(TRUE)
         }
         if(answer == 2){
             return(TRUE)

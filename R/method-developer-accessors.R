@@ -155,7 +155,7 @@
     )
     result <- list()
     for(i in x){
-        result <- c(result, x)
+        result <- c(result, i)
     }
     result
 }

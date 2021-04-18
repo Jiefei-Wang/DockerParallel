@@ -17,9 +17,11 @@ CloudRuntime <- function(
 .CloudRuntime$methods(
     show = function(){
         publicIp <- ifelse(is.null(.self$serverPublicIp), "NULL", .self$serverPublicIp)
+        privateIp <- ifelse(is.null(.self$serverPrivateIp), "NULL", .self$serverPrivateIp)
         workerNumber <- sum(.self$workerPerHandle)
 
         cat("Server public Ip: ", publicIp, "\n")
+        cat("Server public Ip: ", privateIp, "\n")
         cat("Worker number:    ", workerNumber, "\n")
         invisible(NULL)
     }

@@ -94,7 +94,7 @@ The accessors for `CloudRuntime` are
 .setServerPrivateIp
 .setServerPublicIp
 ```
-In most cases, only the getters are required to be called in the `CloudProvider` or `DockerContainer` functions.
+In most cases, only the getter are required to be called in the `CloudProvider` or `DockerContainer` functions.
 
 
 # The docker container
@@ -184,13 +184,13 @@ setGeneric("runDockerWorkers",
 ```
 where `container` should be an object that has `DockerContainer` as its parent class. `hardware` is from the class `CloudHardware`. `workerNumber` indicates how many workers should be run on the cloud. The return value of the `runDockerServer` should be a server handle and `runDockerWorkers` should be a list of worker handles where each handle corresponds to a worker. The worker handles can be duplicated if multiple workers share the same container. The handle can be any object that is used by the cloud provider to identify the running container.
 
-The cloud provider should respect any settings in the argument `container`. The environment variables in the container has been configured before passing to the cloud provider as [The big picture](#The-big-picture)) shows. However, the worker number is set to 1 for each container. If the cloud provider have enough resources to support multiple workers in one container, the provider should call `configWorkerContainerEnv` with the new worker number again to overwrite the previous settings. It is providers responsibility to make sure the worker number does not exceed the number limitation specified in `DockerContainer$maxWorkerNum`
+Not all slots in the `container` object need to be used by the cloud provider. Only the slots `name`, `environment` and `image` should be handled. The others will be processed by the `container` object itself. The `environment` slot in the container has been configured before passing to the cloud provider as [The big picture](#The-big-picture)) shows. However, the worker number is set to 1 for each container. If the cloud provider have enough resources to support multiple workers in one container, the provider should call `configWorkerContainerEnv` with the new worker number again to overwrite the previous settings. This can be useful when deploying multiple containers with one worker in each container are slower than deploying one container with multiple workers. It is providers responsibility to make sure the worker number does not exceed the number limitation specified in `container$maxWorkerNum`
 
-The argument `hardware` specifies the hardware for each container. As the hardware is different for each cloud provider. The base class `CloudHardware` only contains the most import hardware parameters, that is, it only has the slots `cpu`, `memory` and `id`. Although the cluster does not have any hard restriction on how the provider should explain these three parameters, we recommend to explain them as follow
+The argument `hardware` specifies the hardware for each container. As the hardware is different for each cloud provider, the base class `CloudHardware` only contains the most import hardware parameters, that is, it only has the slots `cpu`, `memory` and `id`. Although the cluster does not have any hard restriction on how these three parameters will be explained by the cloud provider, we recommend to explain them as follow
 
 1. `cpu`: The CPU unit used by each worker, 1024 units corresponds to a physical CPU core.
 2. `memory`: The memory used by each worker, the unit is MB.
-3. `id`: The id of the hardware. This can be missing if the cloud provider do not need this slot.
+3. `id`: The id of the hardware. It is a character that is meaningful for the provider. This can be missing if the cloud provider do not need this slot.
 
 ## Get the IPs of the running container
 `getDockerInstanceIps` needs to return the public/private IP of the container. Its generic is

@@ -39,7 +39,7 @@ findServerInfo <- function(cluster, serverHandles){
         for(i in seq_along(info$tasks)){
             cloudConfigValue <- getCloudConfigInfo(info$tasks[[i]])
             if(identical(cloudConfigValue$jobQueueName,jobQueue)){
-                arns <- c(arns, i$taskArn)
+                arns <- c(arns, info$tasks[[i]]$taskArn)
                 idx <- c(idx, i)
             }
         }

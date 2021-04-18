@@ -27,7 +27,7 @@ getSSHPubKeyPath <- function(){
 getSSHPubKeyValue <- function(){
   fileName <- getSSHPubKeyPath()
   if(!is.empty(fileName)){
-      pubkey <- readChar(fileName, file.info(fileName)$size)
+      pubkey <- readChar(fileName, file.info(fileName)$size, useBytes  = TRUE)
       pubkey <- gsub("[\r\n]", "", pubkey)
       pubkey
   }else{
