@@ -8,10 +8,10 @@ Authors@R:
            email = "szwjf08@gmail.com")
 Description: What the package does (one paragraph).
 Imports:
-  jsonlite,
   doRedis,
-  aws.ecx,
-  adagio
+  adagio,
+  methods,
+  utils
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

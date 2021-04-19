@@ -40,6 +40,7 @@ NULL
 #' the best practice is to only initialize `provider` and
 #' the value `serverWorkerSameLAN`.
 #' @return NULL
+#' @export
 setGeneric("initializeProvider", function(provider, cluster, verbose){
     standardGeneric("initializeProvider")
 })
@@ -62,6 +63,7 @@ setGeneric("initializeProvider", function(provider, cluster, verbose){
 #'
 #' @returns
 #' Any object that can be used by the cluster to identify the server instance.
+#' @export
 setGeneric("runDockerServer", function(provider, cluster, container, hardware, verbose){
     standardGeneric("runDockerServer")
 })
@@ -83,6 +85,7 @@ setGeneric("runDockerServer", function(provider, cluster, container, hardware, v
 #' @returns
 #' A list of object that can be used by the cluster to identify the worker instances.
 #' The lenght must be equal to `workerNumber`
+#' @export
 setGeneric("runDockerWorkers",
            function(provider, cluster, container, hardware, workerNumber, verbose){
     standardGeneric("runDockerWorkers")
@@ -101,6 +104,7 @@ setGeneric("runDockerWorkers",
 #'
 #' @return A data.frame with `publicIp` and `privateIp` columns and each row corresponds
 #' to an element in `instanceHandles`.
+#' @export
 setGeneric("getDockerInstanceIps", function(provider, instanceHandles, verbose){
     standardGeneric("getDockerInstanceIps")
 })
@@ -164,6 +168,7 @@ setGeneric("IsDockerInstanceStopped", function(provider, instanceHandles, verbos
 #'
 #' @returns
 #' A logical vector indicating whether the killing operation is success for each instance
+#' @export
 setGeneric("killDockerInstances", function(provider, instanceHandles, verbose){
     standardGeneric("killDockerInstances")
 })
@@ -256,10 +261,12 @@ setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber
 #'
 #' @rdname containerParallelBackend
 #' @return NULL
+#' @export
 setGeneric("registerParallelBackend", function(container, cluster, verbose, ...){
     standardGeneric("registerParallelBackend")
 })
 #' @rdname containerParallelBackend
+#' @export
 setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ...){
     standardGeneric("deregisterParallelBackend")
 })

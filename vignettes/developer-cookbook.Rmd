@@ -1,19 +1,16 @@
 ---
-title: "vignette"
+title: "Developer Cookbook"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "`r Sys.Date()`"
-output:
-    BiocStyle::html_document:
-        toc: true
-        toc_float: true
+output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{vignette}
+  %\VignetteIndexEntry{developer-cookbook}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 package: DockerParallel
 ---
+
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -31,12 +28,14 @@ This document is designed for the developer who want to create a cloud provider 
 ## Package structure
 The package assumes a server-worker-client structure, their relationship can be summarized as follow
 
-![](server-worker-client.jpg)
+![](server-worker-client.jpg){width=90%}
+
 When the user creates a `DockerCluster` object, the object serves as the client. The server will receive the computation jobs from the client and send them to the workers. The server and workers are defined by the `DockerContainer` objects. They can be dynamically created on the cloud using the functions provided by the corresponding `CloudProvider` object. However, it is possible to have the server and some workers running outside of the cloud as the user might have them in some other platforms.
 
 The design of the package is twofold. It contains two sets of APIs, user APIs and developer APIs. The user APIs are called by the user to start the cluster on the cloud. The developer APIs expose the internal functions that are used by the `DockerCluster` object to collect the container information and deploy the container on the cloud. Below shows the difference between the user and developer APIs
 
-![](package-structure.jpg)
+![](package-structure.jpg){width=90%}
+
 The user issues the high-level command to the `DockerCluster` object(e.g. `startCluster`). The `DockerCluster` object will call the downstream functions to supply what the user needs. `CloudConfig` stores the cluster static settings such as  `jobQueueName` and `workerNumber`.
 `CloudRuntime` keeps the runtime information of the server and workers. `CloudProvider` provides the functions to run the container on the cloud and `DockerContainer` defines which container should be used. As the cluster might need to deploy both the server and workers, the `DockerCluster` object defines both `serverContainer` and `workerContainer` as its slots. Since a `DockerCluster` object corresponds to a cluster on the cloud, all of the beforementioned components behave like the environment object in R. Therefore, it is possible to change the value in the `DockerCluster` object inside a function and broadcast the effect to the same object outside of the function.
 
@@ -45,11 +44,12 @@ The class `CloudProvider` and `DockerContainer` are generalizable, the developer
 ## The big picture
 In this section, we use the function `DockerCluster$startCluster` as an example to show how the components of the `DockerCluster` object work together to deploy a cluster on the cloud.
 
-![](start-cluster.png)
+![](start-cluster.png){width=90%}
+
 The gray color means the function is from `DockerCluster`, red means the `CloudProvider` and blue means the `DockerContainer`. Note that the flowchart only contains these three classes as `CloudConfig` and `CloudRuntime` are purely the class for storing the cluster information. In most cases, it is `DockerCluster`'s job to manage the data in the cluster, there is no need to change the value of `CloudConfig` and `CloudRuntime` in the function defined for `CloudProvider` or `DockerContainer`. The only exception is the function `reconnectDockerCluster` where the cloud provider is responsible for setting all the values in the cluster.
 
 ## Accessor functions
-The package provides getters/setters for the developer to access the values in the `DockerCluster` object. The high-level accessors are
+The package provides getters/setters for the developer to access the values in the `DockerCluster` object. The argument is always the `DockerCluster` object. The high-level accessors are
 ```{r eval=FALSE}
 .getCloudProvider
 .getCloudConfig
@@ -57,7 +57,7 @@ The package provides getters/setters for the developer to access the values in t
 .getWorkerContainer
 .getCloudRuntime
 ```
-Note that there are no setters for them as they are of the reference class. The accessors for the `CloudConfig` are
+Note that there are no setters for them as they are of the reference class. The accessors for the `CloudConfig` values are
 ```{r eval=FALSE}
 ## Getter
 .getJobQueueName
@@ -79,7 +79,7 @@ Note that there are no setters for them as they are of the reference class. The 
 .setServerPassword
 .setServerPort
 ```
-The accessors for `CloudRuntime` are
+The accessors for the `CloudRuntime` values are
 ```{r eval=FALSE}
 ## Getter
 .getWorkerHandles

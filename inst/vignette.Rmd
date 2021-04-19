@@ -3,17 +3,15 @@ title: "vignette"
 author: 
 - name: Jiefei Wang
   affiliation: Roswell Park Comprehensive Cancer Center, Buffalo, NY
-date: "`r Sys.Date()`"
-output:
-    BiocStyle::html_document:
-        toc: true
-        toc_float: true
+output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{vignette}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 package: DockerParallel
 ---
+
+
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -77,6 +75,8 @@ In the rest of the vignette we will introduce them step by step
 # Select a cloud provider
 Even though the topic says "select", currently the only available cloud provider is the before-mentioned ECS fargate provider. You can call `ECSFargateProvider` to create an ECS fargate provider 
 ```{r}
+## Load the ECS Fargate provider package
+library(ECSFargateProvider)
 provider <- ECSFargateProvider()
 provider
 ```
@@ -100,6 +100,8 @@ You can either explicitly specify them or provide them as environment variables.
 # Select a container
 Similar to the cloud provider, the container is also changeable and provide different running environment and parallel backend. Currently the only available container is `BiocFERContainer`(stands for `Bioconductor ForEach Redis Container`). Users can create a `BiocFERContainer` worker container by
 ```{r}
+## Load the Bioconductor Foreach Redis package
+library(BiocFERContainer)
 workerContainer <- BiocFERWorkerContainer()
 workerContainer
 ```

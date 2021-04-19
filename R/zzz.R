@@ -1,4 +1,7 @@
 #' @import aws.ecx
+#' @import methods
+#' @import utils
+#' @import testthat
 #' @importFrom doRedis registerDoRedis
 NULL
 
