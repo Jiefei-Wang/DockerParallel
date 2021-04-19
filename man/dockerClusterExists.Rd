@@ -16,9 +16,13 @@ dockerClusterExists(provider, cluster, verbose)
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }
+\value{
+A logical value
+}
 \description{
 The function checks whether the cluster is running on the cloud. It returns
-true if the cluster specific to the \code{jobQueueName} exists.
+\code{TRUE} if the cluster specific to the value from \code{.getJobQueueName(cluster)} exists.
+The default method always returns \code{FALSE}
 }
 \section{Functions}{
 \itemize{

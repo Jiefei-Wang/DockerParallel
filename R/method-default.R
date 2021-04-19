@@ -66,7 +66,7 @@ setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbo
 
 #' @describeIn getServerContainer The default method, return `NULL` value
 #' @export
-setMethod("getServerContainer", "ANY",function(container, ...){
+setMethod("getServerContainer", "ANY",function(workerContainer){
     NULL
 })
 

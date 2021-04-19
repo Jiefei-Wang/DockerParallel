@@ -20,25 +20,25 @@ initializeProvider(provider, cluster, verbose)
 Initialize the service provider. This function will be called prior
 to \code{runDockerServer} and \code{runDockerWorkers}. It is used to initialize the cloud-specific
 settings(e.g. Initialize the cloud network). The function might be called many
-times so developers can cache the service status and speed up the initialization
+times. Developers can cache the cloud status and speed up the initialization
 process.
 }
 \details{
-Basic on the cloud nature, certain initialization process might be required
+Based on the cloud nature, an initialization process might be required
 before deploying the container on the cloud. This function will be called by
-the \code{DockerCluster} object before running the server and workers.
+the \code{DockerCluster} object before running the server and workers. The default
+method will do nothing.
 
-Besides initializing the cloud settings, if the parallel server is provided
-by the cloud. The function might needs to change the value in
-\code{cluster@cloudConfig$serverWorkerSameLAN} to inform \code{DockerCluster} whether the
-server and the workers behind the same router. If
-\code{cluster@cloudConfig$serverWorkerSameLAN} is \code{TRUE}(default), the worker will
-connect with the server using the server's private IP. Otherwise, the server's
+Besides initializing the cloud settings, if the server container will be deployed
+by the cloud provider. The function should call \code{.setServerWorkerSameLAN()} to inform
+the \code{DockerCluster} object whether the server and the workers are under the same router.
+If \code{.getServerWorkerSameLAN()} is \code{TRUE}(default), the worker will connect to the
+server using the server's private IP. Otherwise, the server's
 public IP will be used.
 
-Although it is possible to change any settings in \code{cluster} in this fuction,
+Although it is possible to change any settings in \code{cluster} in this function,
 the best practice is to only initialize \code{provider} and
-the slot \code{cluster@cloudConfig$serverWorkerSameLAN}.
+the value \code{serverWorkerSameLAN}.
 }
 \section{Functions}{
 \itemize{

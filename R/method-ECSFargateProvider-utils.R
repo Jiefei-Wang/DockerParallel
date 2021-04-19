@@ -1,3 +1,46 @@
+ECSfilterList <- list(`tag:docker-parallel-tag`="docker-parallel-tag")
+ECSTagTemplate <- list(
+    list(ResourceType=NULL,
+         Tag = list(
+             list(Key= "docker-parallel-tag", Value = "docker-parallel-tag")
+         )
+    )
+)
+
+cleanupProvider <- function(x, verbose = TRUE){
+    if(x$clusterNameVerified && x$clusterName=="R-worker-cluster"){
+        verbosePrint(verbose, "Deleting worker cluster")
+        tryCatch({
+            deleteCluster(x$clusterName)
+            x$clusterNameVerified <- FALSE
+        },
+        error = function(e) message(e))
+    }
+
+    if(x$vpcVerified){
+        verbosePrint(verbose, "Deleting vpc")
+        tryCatch({
+            deleteVpc(x$vpcId)
+            x$vpcVerified <- FALSE
+            x$internetGatewayVerified <- FALSE
+            x$securityGroupVerified <- FALSE
+            x$subnetVerified <- FALSE
+            x$routeTableVerified <- FALSE
+        },
+        error = function(e) message(e))
+    }
+    if(x$internetGatewayVerified){
+        verbosePrint(verbose, "Deleting internet gateway")
+        tryCatch({
+            deleteInternetGateway(x$internetGatewayId)
+            x$internetGatewayVerified <- FALSE
+        },
+        error = function(e) message(e))
+    }
+    invisible()
+}
+
+
 ## Collect the server's public and private IP
 packServerIp <- function(cluster){
     paste0(.getServerPublicIp(cluster),"-", .getServerPrivateIp(cluster))
@@ -101,3 +144,4 @@ listRunningWorkers <- function(cluster){
 repeatVector <- function(x, n){
     unlist(lapply(seq_along(x), function(i) rep(x[[i]],n[i])))
 }
+

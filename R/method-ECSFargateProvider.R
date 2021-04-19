@@ -1,9 +1,91 @@
+#' Create an ECS Fargate cloud provider
+#'
+#' Create an ECS Fargate cloud provider. Note that the arguments for the function
+#' are the settings for ECS fargate. You can find them in the AWS ECS console.
+#'
+#' @param clusterName Character, the cluster name in ECS Fargate
+#' @param serverTaskDefName,workerTaskDefName Character, the task defintion name for
+#' the server and worker
+#' @param securityGroupName Character, the security group name
+#' @param vpcId,subnetId,securityGroupId,internetGatewayId,routeTableId The ID of
+#' the network settings for the container
+#' @param workerPublicIpEnable Logical, whether to enable the public IP for the worker.
+#' If this value is `FALSE`, the worker will not be able to pull the container image from the
+#' public network
+#' @export
+ECSFargateProvider <- function(clusterName = "R-worker-cluster",
+                               serverTaskDefName = "R-server-task-definition",
+                               workerTaskDefName = "R-worker-task-definition",
+                               securityGroupName = "R-parallel-security-group",
+                               vpcId = NULL,
+                               subnetId = NULL,
+                               securityGroupId = NULL,
+                               internetGatewayId = NULL,
+                               routeTableId = NULL,
+                               workerPublicIpEnable = TRUE){
+    .ECSFargateProvider$new(
+        clusterName = clusterName,
+        serverTaskDefName = serverTaskDefName,
+        workerTaskDefName = workerTaskDefName,
+        securityGroupName = securityGroupName,
+        vpcId = vpcId,
+        subnetId = subnetId,
+        securityGroupId = securityGroupId,
+        internetGatewayId = internetGatewayId,
+        routeTableId = routeTableId,
+        workerPublicIpEnable=workerPublicIpEnable,
+        clusterNameVerified = FALSE,
+        serverTaskDefNameVerified = FALSE,
+        workerTaskDefNameVerified = FALSE,
+        securityGroupVerified = FALSE,
+        vpcVerified = FALSE,
+        subnetVerified = FALSE,
+        internetGatewayVerified = FALSE,
+        routeTableVerified = FALSE,
+        routeVerified = FALSE,
+        inboundPermissionVerified = FALSE,
+        initialized = FALSE
+    )
+}
+
+.ECSFargateProvider$methods(
+    show = function(){
+        cat("Cluster name:        ", .self$clusterName, "\n")
+        cat("Server task definition:     ", .self$serverTaskDefName, "\n")
+        cat("Worker task definition:     ", .self$workerTaskDefName, "\n")
+        cat("Security group name: ", .self$securityGroupName, "\n")
+
+        if(!is.null(.self$vpcId)){
+            cat("VPC ID:              ", .self$vpcId, "\n")
+        }
+        if(!is.null(.self$subnetId)){
+            cat("Subnet ID:           ", .self$subnetId, "\n")
+        }
+        if(!is.null(.self$securityGroupId)){
+            cat("Security group ID:   ", .self$securityGroupId, "\n")
+        }
+        if(!is.null(.self$internetGatewayId)){
+            cat("Internet gateway ID: ", .self$internetGatewayId, "\n")
+        }
+        if(!is.null(.self$routeTableId)){
+            cat("Route table ID:      ", .self$routeTableId, "\n")
+        }
+        invisible(NULL)
+    }
+)
+
+
+
+
+#' Initialize the Fargate provider
+#'
+#' Initialize the Fargate provider
+#'
+#' @inheritParams initializeProvider
+#'
+#' @return No return value
 #' @export
 setMethod("initializeProvider", "ECSFargateProvider", function(provider, cluster, verbose){
-    .initializeECS(provider, cluster, verbose)
-})
-
-.initializeECS <- function(provider, cluster, verbose){
     if(!provider$initialized){
         if(!cluster$isServerRunning()){
             .setServerWorkerSameLAN(cluster, TRUE)
@@ -48,9 +130,19 @@ setMethod("initializeProvider", "ECSFargateProvider", function(provider, cluster
         verbosePrint(verbose>1, "\tTask defintion finished")
         provider$initialized <- TRUE
     }
-}
+    invisible(NULL)
+})
 
 
+
+#' Run the server container
+#'
+#' Run the server and return the server instance handle.
+#' The function will set the environment variable `ECSFargateCloudConfigInfo` to the container
+#'
+#' @inheritParams runDockerServer
+#'
+#' @return The server handle in character
 #' @export
 setMethod("runDockerServer", "ECSFargateProvider",
           function(provider, cluster, container, hardware, verbose = 0L){
@@ -82,12 +174,15 @@ setMethod("runDockerServer", "ECSFargateProvider",
           })
 
 
-## The worker container will set the environment variable:
-## ECSFargateCloudJobQueueName
-## ECSFargateCloudServerIP
-## ECSFargateCloudWorkerNumber
-##
-
+#' Run the worker container
+#'
+#' Run the workers and return a list of worker instance handles.
+#' The function will set the environment variable `ECSFargateCloudJobQueueName`,
+#' `ECSFargateCloudServerIP` and `ECSFargateCloudWorkerNumber` to the container
+#'
+#' @inheritParams runDockerWorkers
+#'
+#' @return A list of worker handle in character
 #' @export
 setMethod("runDockerWorkers", "ECSFargateProvider",
           function(provider, cluster, container, hardware, workerNumber, verbose = 0L){
@@ -139,6 +234,16 @@ setMethod("runDockerWorkers", "ECSFargateProvider",
               repeatVector(instanceIds, workerNumberPerContainer)
           }
 )
+
+#' Get the instance public/private IPs
+#'
+#' Get the instance public/private IPs
+#'
+#' @inheritParams getDockerInstanceIps
+#'
+#' @returns
+#' A data.frame with publicIp and privateIp columns and each row corresponds to
+#' an element in instanceHandles.
 #' @export
 setMethod("getDockerInstanceIps", "ECSFargateProvider",
           function(provider, instanceHandles, verbose = 0L){
@@ -157,6 +262,15 @@ setMethod("getDockerInstanceIps", "ECSFargateProvider",
           }
 )
 
+#' Get the instance status
+#'
+#' Get the instance status
+#'
+#' @inheritParams getDockerInstanceStatus
+#'
+#' @returns
+#' A character vector with each element corresponding to an instance in instanceHandles.
+#' Each element must be one of three possible characters "initializing", "running" or "stopped"
 #' @export
 setMethod("getDockerInstanceStatus", "ECSFargateProvider",
           function(provider, instanceHandles, verbose = 0L){
@@ -174,15 +288,31 @@ setMethod("getDockerInstanceStatus", "ECSFargateProvider",
           }
 )
 
+#' Kill the instances
+#'
+#' Kill the instances
+#'
+#' @inheritParams killDockerInstances
+#'
+#' @return A logical vector indicating whether the killing operation is success for each instance
 #' @export
 setMethod("killDockerInstances", "ECSFargateProvider",
           function(provider, instanceHandles, verbose = 0L){
               stopTasks(provider$clusterName, taskIds = unique(instanceHandles))
-              rep(TRUE, length(instanceHandles))
           }
 )
 
 
+#' Whether the cluster is running on the cloud?
+#'
+#' Whether the cluster is running on the cloud?
+#' This function will check the instances in the ECS cluster defined by
+#' `provider$clusterName` and find if there is any instance that has the same job queue
+#' name as `.getJobQueueName(cluster)`
+#'
+#' @inheritParams dockerClusterExists
+#'
+#' @return A logical value
 #' @export
 setMethod("dockerClusterExists", "ECSFargateProvider",
           function(provider, cluster, verbose = 0L){
@@ -193,6 +323,16 @@ setMethod("dockerClusterExists", "ECSFargateProvider",
 )
 
 
+#' Reconnect the cluster
+#'
+#' Reconnect the cluster. This function will check the instances in
+#' the ECS cluster defined by `provider$clusterName` and find if there is any
+#' instance that has the same job queue name as `.getJobQueueName(cluster)`. If
+#' so, the function can reconnect the cluster.
+#'
+#' @inheritParams reconnectDockerCluster
+#'
+#' @return No return value
 #' @export
 setMethod("reconnectDockerCluster", "ECSFargateProvider",
           function(provider, cluster, verbose = 0L){

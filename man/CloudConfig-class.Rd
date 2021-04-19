@@ -6,19 +6,33 @@
 \alias{.CloudConfig}
 \title{The cloud configuration}
 \description{
-The cloud configuration
+The cloud configuration. It is a class purely for storing the information
+for the cloud.
+The values in \code{CloudConfig} in a cluster can be accessed by the getter function
+which starts with the prefix \code{.get}(e.g. \code{.getJobQueueName(cluster)}).
 }
-\section{Slots}{
+\section{Fields}{
 
 \describe{
-\item{\code{jobQueueName}}{The name of the job queue}
+\item{\code{jobQueueName}}{Character, the name of the job queue}
 
-\item{\code{workerNumber}}{The required number of workers that should be
+\item{\code{workerNumber}}{Integer, the required number of workers that should be
 run on the cloud}
 
-\item{\code{serverHardware}}{The server hardware}
+\item{\code{serverHardware}}{CloudHardware, the server hardware}
 
-\item{\code{workerHardware}}{The worker hardware}
+\item{\code{workerHardware}}{CloudHardware, the worker hardware}
+
+\item{\code{serverPort}}{Integer or NULL, the port that will be used by the worker
+to connect with the server}
+
+\item{\code{serverPassword}}{Character or NULL, the server password}
+
+\item{\code{serverWorkerSameLAN}}{Logical, whether the server and workers are behind
+the same router}
+
+\item{\code{serverClientSameLAN}}{Logical, whether the server and client are behind
+the same router}
 }}
 
 

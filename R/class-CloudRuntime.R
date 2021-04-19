@@ -13,7 +13,6 @@ CloudRuntime <- function(
                       )
 }
 
-
 .CloudRuntime$methods(
     show = function(){
         publicIp <- ifelse(is.null(.self$serverPublicIp), "NULL", .self$serverPublicIp)

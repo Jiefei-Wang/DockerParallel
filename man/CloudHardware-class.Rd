@@ -11,13 +11,13 @@ The instance hardware for running the docker
 \section{Slots}{
 
 \describe{
-\item{\code{cpu}}{The CPU limitation for the docker. 1024 CPU unit
+\item{\code{cpu}}{Numeric, the CPU limitation for the docker. 1024 CPU unit
 corresponds to 1 core.}
 
-\item{\code{memory}}{The memory limitation for the docker, the unit
+\item{\code{memory}}{Numeric, the memory limitation for the docker, the unit
 is MB}
 
-\item{\code{id}}{The id of the hardware, the meaning of \code{id} depends on
+\item{\code{id}}{Character or NULL, the id of the hardware, the meaning of \code{id} depends on
 the cloud provider.}
 }}
 

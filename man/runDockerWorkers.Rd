@@ -2,7 +2,7 @@
 % Please edit documentation in R/all-generics.R
 \name{runDockerWorkers}
 \alias{runDockerWorkers}
-\title{Run the workers}
+\title{Run the worker container}
 \usage{
 runDockerWorkers(provider, cluster, container, hardware, workerNumber, verbose)
 }
@@ -15,16 +15,18 @@ runDockerWorkers(provider, cluster, container, hardware, workerNumber, verbose)
 
 \item{hardware}{S4 \code{CloudHardware} Object. The worker hardware.}
 
-\item{workerNumber}{Integer. The number of workers need to be run.}
+\item{workerNumber}{Integer. The number of workers needs to be run.}
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{
 A list of object that can be used by the cluster to identify the worker instances.
+The lenght must be equal to \code{workerNumber}
 }
 \description{
-Run the workers and return a list of worker's instance handles. The instance handles
-can be duplicated if multiple workers share the same instance.
+Run the workers and return a list of worker instance handles. The instance handles
+can be duplicated if multiple workers share the same instance. There is no default method
+for this generic.
 }
 \section{Instance Handle}{
 

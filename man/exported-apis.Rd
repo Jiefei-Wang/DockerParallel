@@ -19,21 +19,21 @@ getExportedObject(x, name)
 \item{x}{A cloud provider or container object}
 }
 \value{
-getExportedNames: The names of the exported methods or variables
-getExportedObject: The exported method or variable
+getExportedNames: The names of the exported functions or variables
+getExportedObject: The exported functions or variable
 }
 \description{
 Get the exported method and variable from the provider or container. These
 methods should be used by the developer to export their APIs to the user. The
-\code{DockerCluster} object will call \code{getExportedNames} and \code{getExportedObject} to
+\code{DockerCluster} object will call \code{getExportedNames} and \code{getExportedObject} and
 export them to the user.
 }
 \details{
-If the exported object is a function, the function can find the \code{DockerCluster} cluster
-which contains the cloud provider or the container by the variable \code{cluster}. This
-can be useful if the developer needs to change anything in the cluster besides the provider
-or container itself. If the argument \code{cluster} is provided as a function argument,
-it will be removed when it is exported to the user. Therefore, you can explicitly
-define the argument \code{cluster} and use it in your function. Users would not be bothered
-with the redundant \code{cluster} argument.
+If the exported object is a function, the exported function will be defined in
+an environment such that the \code{DockerCluster} object is assigned to the variable \code{cluster}.
+In other words, the exported function can use the variable \code{cluster} without define it.
+This can be useful if the developer needs to change anything in the cluster without
+asking the user to provide the \code{DockerCluster} object. The best practice is to define
+\code{cluster} as the function argument, the argument will be removed when the function is
+exported to the user. The user would not be bothered with the redundant \code{cluster} argument.
 }

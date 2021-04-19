@@ -16,10 +16,15 @@ reconnectDockerCluster(provider, cluster, verbose)
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }
+\value{
+No return value
+}
 \description{
 Reconnect the cluster if the cluster has been running. It is provider's
 responsibility to recover every information in the cluster, especially the the
-slots in \code{cloudConfg} and \code{cloudRuntime}.
+slots in \code{cloudConfg} and \code{cloudRuntime}. The developer should call setters with the
+prefix \code{.set} to set the values in the cluster.
+The default method does nothing.
 }
 \section{Functions}{
 \itemize{

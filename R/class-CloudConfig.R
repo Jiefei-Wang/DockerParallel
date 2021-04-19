@@ -17,7 +17,6 @@ CloudConfig <- function(jobQueueName = "DockerParallelQueue",
 }
 
 
-
 .CloudConfig$methods(
     show = function(){
         serverPasswordTmp <- ifelse(is.null(.self$serverPassword), "FALSE", "TRUE")

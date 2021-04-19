@@ -2,7 +2,7 @@
 % Please edit documentation in R/all-generics.R
 \name{runDockerServer}
 \alias{runDockerServer}
-\title{Run the server}
+\title{Run the server container}
 \usage{
 runDockerServer(provider, cluster, container, hardware, verbose)
 }
@@ -21,7 +21,8 @@ runDockerServer(provider, cluster, container, hardware, verbose)
 Any object that can be used by the cluster to identify the server instance.
 }
 \description{
-Run the server and return the server's instance handle.
+Run the server and return the server instance handle. There is no default method
+for this generic.
 }
 \section{Instance Handle}{
 

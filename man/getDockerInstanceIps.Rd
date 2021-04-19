@@ -14,11 +14,12 @@ getDockerInstanceIps(provider, instanceHandles, verbose)
 \item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{
-A data.frame with \code{publicIp} and \code{privateIp} columns
+A data.frame with \code{publicIp} and \code{privateIp} columns and each row corresponds
+to an element in \code{instanceHandles}.
 }
 \description{
 Get the instance public/private IPs. The IPs will be used by the cluster to
 make connections between server and worker, server and client. If the instance
 does not have the public or private IP, its value can be set to the character
-"".
+"". There is no default method for this generic.
 }

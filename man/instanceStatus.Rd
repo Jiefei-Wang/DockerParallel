@@ -43,7 +43,11 @@ to an instance in \code{instanceHandles}. Each element must be one of three poss
 A logical vector with each element corresponding to the status of each instance
 }
 \description{
-Get the instance status. Unless you have a special requirement, you only need to
-define \code{getDockerInstanceStatus}. The default \code{getDockerInstanceStatus} do nothing but return
-a vector of "running" with the same lenght of the input instance handles.
+Get the instance status. Unless you have a faster implementation, you only need to
+define \code{getDockerInstanceStatus}. The function \code{getDockerInstanceStatus} should return
+a character vector with each element corresponding to an instance in \code{instanceHandles}.
+Each element must be one of three possible characters \code{"initializing"}, \code{"running"} or
+\code{"stopped"}.
+The default \code{getDockerInstanceStatus} returns
+a vector of character "running" with the same length of the input instance handles.
 }

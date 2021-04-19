@@ -72,9 +72,15 @@ listTasks<-function(clusterName,
 }
 
 stopTasks <- function(clusterName, taskIds){
-    for(id in taskIds){
-        ecs_stop_task(cluster = clusterName, task = id)
+    result <- rep(TRUE, length(taskIds))
+    for(i in seq_along(taskIds)){
+        tryCatch(
+            ecs_stop_task(cluster = clusterName, task = taskIds[i]),
+            error = function(e) result[i] <<- FALSE
+
+        )
     }
+    result
 }
 
 

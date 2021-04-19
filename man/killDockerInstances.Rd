@@ -17,6 +17,8 @@ killDockerInstances(provider, instanceHandles, verbose)
 A logical vector indicating whether the killing operation is success for each instance
 }
 \description{
-Kill the instances. Multiple workers may share the same instance, in this case, all
-workers in the same instance should be killed.
+Kill the instances. The instance handles are unique.
+If multiple workers share the same instance, all workers in the
+same instance should be killed.
+There is no default method for this generic.
 }

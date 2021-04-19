@@ -18,35 +18,36 @@ NULL
 #' Initialize the service provider. This function will be called prior
 #' to `runDockerServer` and `runDockerWorkers`. It is used to initialize the cloud-specific
 #' settings(e.g. Initialize the cloud network). The function might be called many
-#' times so developers can cache the service status and speed up the initialization
+#' times. Developers can cache the cloud status and speed up the initialization
 #' process.
 #'
 #' @inheritParams commonParams
 #'
 #' @details
-#' Basic on the cloud nature, an initialization process might be required
+#' Based on the cloud nature, an initialization process might be required
 #' before deploying the container on the cloud. This function will be called by
-#' the `DockerCluster` object before running the server and workers.
+#' the `DockerCluster` object before running the server and workers. The default
+#' method will do nothing.
 #'
-#' Besides initializing the cloud settings, if the parallel server is provided
-#' by the cloud. The function might needs to change the value in
-#' `cluster@cloudConfig$serverWorkerSameLAN` to inform `DockerCluster` whether the
-#' server and the workers behind the same router. If
-#' `cluster@cloudConfig$serverWorkerSameLAN` is `TRUE`(default), the worker will
-#' connect with the server using the server's private IP. Otherwise, the server's
+#' Besides initializing the cloud settings, if the server container will be deployed
+#' by the cloud provider. The function should call `.setServerWorkerSameLAN()` to inform
+#' the `DockerCluster` object whether the server and the workers are under the same router.
+#' If `.getServerWorkerSameLAN()` is `TRUE`(default), the worker will connect to the
+#' server using the server's private IP. Otherwise, the server's
 #' public IP will be used.
 #'
-#' Although it is possible to change any settings in `cluster` in this fuction,
+#' Although it is possible to change any settings in `cluster` in this function,
 #' the best practice is to only initialize `provider` and
-#' the slot `cluster@cloudConfig$serverWorkerSameLAN`.
+#' the value `serverWorkerSameLAN`.
 #' @return NULL
 setGeneric("initializeProvider", function(provider, cluster, verbose){
     standardGeneric("initializeProvider")
 })
 
-#' Run the server
+#' Run the server container
 #'
-#' Run the server and return the server's instance handle.
+#' Run the server and return the server instance handle. There is no default method
+#' for this generic.
 #'
 #' @inheritParams commonParams
 #' @param container S4 `DockerContainer` Object. The server container.
@@ -65,14 +66,15 @@ setGeneric("runDockerServer", function(provider, cluster, container, hardware, v
     standardGeneric("runDockerServer")
 })
 
-#' Run the workers
+#' Run the worker container
 #'
-#' Run the workers and return a list of worker's instance handles. The instance handles
-#' can be duplicated if multiple workers share the same instance.
+#' Run the workers and return a list of worker instance handles. The instance handles
+#' can be duplicated if multiple workers share the same instance. There is no default method
+#' for this generic.
 #'
 #'
 #' @inheritParams commonParams
-#' @param workerNumber Integer. The number of workers need to be run.
+#' @param workerNumber Integer. The number of workers needs to be run.
 #' @param container S4 `DockerContainer` Object. The worker container.
 #' @param hardware S4 `CloudHardware` Object. The worker hardware.
 #'
@@ -80,6 +82,7 @@ setGeneric("runDockerServer", function(provider, cluster, container, hardware, v
 #' @inheritSection runDockerServer Instance Handle
 #' @returns
 #' A list of object that can be used by the cluster to identify the worker instances.
+#' The lenght must be equal to `workerNumber`
 setGeneric("runDockerWorkers",
            function(provider, cluster, container, hardware, workerNumber, verbose){
     standardGeneric("runDockerWorkers")
@@ -91,12 +94,13 @@ setGeneric("runDockerWorkers",
 #' Get the instance public/private IPs. The IPs will be used by the cluster to
 #' make connections between server and worker, server and client. If the instance
 #' does not have the public or private IP, its value can be set to the character
-#' "".
+#' "". There is no default method for this generic.
 #'
 #' @inheritParams commonParams
 #' @param instanceHandles List. A list of instance handles.
 #'
-#' @return A data.frame with `publicIp` and `privateIp` columns
+#' @return A data.frame with `publicIp` and `privateIp` columns and each row corresponds
+#' to an element in `instanceHandles`.
 setGeneric("getDockerInstanceIps", function(provider, instanceHandles, verbose){
     standardGeneric("getDockerInstanceIps")
 })
@@ -104,9 +108,14 @@ setGeneric("getDockerInstanceIps", function(provider, instanceHandles, verbose){
 
 #' Get the instance status
 #'
-#' Get the instance status. Unless you have a special requirement, you only need to
-#' define `getDockerInstanceStatus`. The default `getDockerInstanceStatus` do nothing but return
-#' a vector of "running" with the same lenght of the input instance handles.
+#' Get the instance status. Unless you have a faster implementation, you only need to
+#' define `getDockerInstanceStatus`. The function `getDockerInstanceStatus` should return
+#' a character vector with each element corresponding to an instance in `instanceHandles`.
+#' Each element must be one of three possible characters `"initializing"`, `"running"` or
+#' `"stopped"`.
+#' The default `getDockerInstanceStatus` returns
+#' a vector of character "running" with the same length of the input instance handles.
+#'
 #'
 #' @inheritParams getDockerInstanceIps
 #'
@@ -146,8 +155,10 @@ setGeneric("IsDockerInstanceStopped", function(provider, instanceHandles, verbos
 
 #' Kill the instances
 #'
-#' Kill the instances. Multiple workers may share the same instance, in this case, all
-#' workers in the same instance should be killed.
+#' Kill the instances. The instance handles are unique.
+#' If multiple workers share the same instance, all workers in the
+#' same instance should be killed.
+#' There is no default method for this generic.
 #'
 #' @inheritParams getDockerInstanceIps
 #'
@@ -162,9 +173,11 @@ setGeneric("killDockerInstances", function(provider, instanceHandles, verbose){
 #' Whether the cluster is running on the cloud?
 #'
 #' The function checks whether the cluster is running on the cloud. It returns
-#' true if the cluster specific to the `jobQueueName` exists.
+#' `TRUE` if the cluster specific to the value from `.getJobQueueName(cluster)` exists.
+#' The default method always returns `FALSE`
 #'
 #' @inheritParams commonParams
+#' @return A logical value
 #' @export
 setGeneric("dockerClusterExists", function(provider, cluster, verbose){
     standardGeneric("dockerClusterExists")
@@ -175,9 +188,12 @@ setGeneric("dockerClusterExists", function(provider, cluster, verbose){
 #'
 #' Reconnect the cluster if the cluster has been running. It is provider's
 #' responsibility to recover every information in the cluster, especially the the
-#' slots in `cloudConfg` and `cloudRuntime`.
+#' slots in `cloudConfg` and `cloudRuntime`. The developer should call setters with the
+#' prefix `.set` to set the values in the cluster.
+#' The default method does nothing.
 #'
 #' @inheritParams commonParams
+#' @return No return value
 #' @export
 setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
     standardGeneric("reconnectDockerCluster")
@@ -189,6 +205,12 @@ setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
 #'
 #' Configurate the server container environment. Developers can use this function
 #' to set the server password, port number and etc. via the container environment variable.
+#' The server info can be found by the getter function with the prefix `.getServer`
+#' (e.g. `.getServerPassword(cluster)`).
+#' The developer *must* calls `container$copy()` before
+#' setting the server environment. The user provided environment variables should
+#' be respected and overwritten only when necessary.
+#' There is no default method for this generic.
 #'
 #' @inheritParams commonParams
 #' @param container Reference Container Object. The server container.
@@ -203,6 +225,13 @@ setGeneric("configServerContainerEnv", function(container, cluster, verbose){
 #'
 #' Configurate the worker container environment. Developers can use this function
 #' to set the server Ip, password and etc. via the container environment variable.
+#' The server info can be found by the getter function with the prefix `.getServer`
+#' (e.g. `.getServerPassword(cluster)`). Depending on the network status, the worker
+#' can use the server private IP to connect with the server.
+#' The developer *must* calls `container$copy()` before
+#' setting the server environment. The user provided environment variables should
+#' be respected and overwritten only when necessary.
+#' There is no default method for this generic.
 #'
 #' @inheritParams commonParams
 #' @param container Reference Container Object. The worker container.
@@ -217,10 +246,10 @@ setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber
 #' Register/deregister the parallel backend
 #'
 #' Register/deregister the parallel backend. These methods will be dispatched based on
-#' the worker container. The parallel framework depends on the container image.
+#' the *worker* container. The parallel framework depends on the container image.
 #' If the container uses the `foreach` framework, there is no need
 #' to define `deregisterParallelBackend` as its default method will deregister the
-#' foreach backend.
+#' foreach backend. There is no default method defined for `registerParallelBackend`.
 #'
 #' @inheritParams commonParams
 #' @param container The worker container.
@@ -237,11 +266,15 @@ setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ..
 
 #' Get the server container from the worker container
 #'
-#' Get the server container from the worker container
+#' Get the server container from the worker container. This function will
+#' be called by the `DockerCluster` object when the user only provides a worker container
+#' to its constructor.
+#'  There is no default method defined for this generic.
 #'
 #' @param container The worker container.
+#' @return A server container
 #' @export
-setGeneric("getServerContainer", function(container, ...){
+setGeneric("getServerContainer", function(workerContainer){
     standardGeneric("getServerContainer")
 })
 
@@ -251,23 +284,23 @@ setGeneric("getServerContainer", function(container, ...){
 #'
 #' Get the exported method and variable from the provider or container. These
 #' methods should be used by the developer to export their APIs to the user. The
-#' `DockerCluster` object will call `getExportedNames` and `getExportedObject` to
+#' `DockerCluster` object will call `getExportedNames` and `getExportedObject` and
 #' export them to the user.
 #'
 #' @param x A cloud provider or container object
 #'
 #' @details
-#' If the exported object is a function, the function can find the `DockerCluster` cluster
-#' which contains the cloud provider or the container by the variable `cluster`. This
-#' can be useful if the developer needs to change anything in the cluster besides the provider
-#' or container itself. If the argument `cluster` is provided as a function argument,
-#' it will be removed when it is exported to the user. Therefore, you can explicitly
-#' define the argument `cluster` and use it in your function. Users would not be bothered
-#' with the redundant `cluster` argument.
+#' If the exported object is a function, the exported function will be defined in
+#' an environment such that the `DockerCluster` object is assigned to the variable `cluster`.
+#' In other words, the exported function can use the variable `cluster` without define it.
+#' This can be useful if the developer needs to change anything in the cluster without
+#' asking the user to provide the `DockerCluster` object. The best practice is to define
+#' `cluster` as the function argument, the argument will be removed when the function is
+#' exported to the user. The user would not be bothered with the redundant `cluster` argument.
 #'
 #' @returns
-#' getExportedNames: The names of the exported methods or variables
-#' getExportedObject: The exported method or variable
+#' getExportedNames: The names of the exported functions or variables
+#' getExportedObject: The exported functions or variable
 #' @rdname exported-apis
 #' @export
 setGeneric("getExportedNames", function(x){
