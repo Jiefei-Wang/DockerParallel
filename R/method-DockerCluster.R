@@ -353,8 +353,14 @@ startServer <- function(cluster){
 setWorkerNumber <- function(cluster, workerNumber){
     workerNumber <- as.integer(workerNumber)
     stopifnot(workerNumber>=0)
-    removeDiedWorkers(cluster)
 
+    ## Initial provider
+    verbose <- cluster$verbose
+    provider <- cluster@cloudProvider
+    initializeProvider(provider = provider, cluster=cluster, verbose = verbose)
+
+    ## set the expected worker number
+    removeDiedWorkers(cluster)
     .setWorkerNumber(cluster, workerNumber)
     workerOffset <- workerNumber - cluster$getWorkerNumber()
     if(workerOffset > 0){
@@ -370,13 +376,14 @@ setWorkerNumber <- function(cluster, workerNumber){
 addWorkers <- function(cluster, workerNumber){
     workerNumber <- as.integer(workerNumber)
     stopifnot(workerNumber>=0)
-    removeDiedWorkers(cluster)
 
+    ## Initial provider
     verbose <- cluster$verbose
     provider <- cluster@cloudProvider
-
     initializeProvider(provider = provider, cluster=cluster, verbose = verbose)
-    ## get the expected worker number
+
+    ## set the expected worker number
+    removeDiedWorkers(cluster)
     .setWorkerNumber(cluster, .getWorkerNumber(cluster) + workerNumber)
     expectedWorkers <- .getWorkerNumber(cluster)
 
@@ -393,11 +400,16 @@ addWorkers <- function(cluster, workerNumber){
 removeWorkers<- function(cluster, workerNumber){
     workerNumber <- as.integer(workerNumber)
     stopifnot(workerNumber>=0)
-    removeDiedWorkers(cluster)
 
+    ## Initial provider
+    verbose <- cluster$verbose
+    provider <- cluster@cloudProvider
+    initializeProvider(provider = provider, cluster=cluster, verbose = verbose)
+
+    ## set the expected worker number
+    removeDiedWorkers(cluster)
     expectedWorkers <- .getWorkerNumber(cluster)
     workerNumber <- min(workerNumber, expectedWorkers)
-    ## set the expected worker number
     .setWorkerNumber(cluster, expectedWorkers - workerNumber)
 
 

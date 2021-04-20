@@ -131,7 +131,7 @@ generalDockerClusterTest <- function(cloudProvider, workerContainer, workerNumbe
 
             ## Stop the cluster
             cluster$stopCluster()
-            testthat::expect_equal(cluster$getExpectedWorkerNumber(), 0)
+            testthat::expect_equal(cluster$getExpectedWorkerNumber(), 1)
             expectServerNotRunning(cluster)
             expectWorkerNotRunning(cluster)
         })

@@ -35,7 +35,7 @@ The design of the package is twofold. It contains two sets of APIs, user APIs an
 ![](package-structure.jpg){width=90%}
 
 The user issues the high-level command to the `DockerCluster` object(e.g. `startCluster`). The `DockerCluster` object will call the downstream functions to supply what the user needs. `CloudConfig` stores the cluster static settings such as  `jobQueueName` and `workerNumber`.
-`CloudRuntime` keeps the runtime information of the server and workers. `CloudProvider` provides the functions to run the container on the cloud and `DockerContainer` defines which container should be used. As the cluster might need to deploy both the server and workers, the `DockerCluster` object defines both `serverContainer` and `workerContainer` as its slots. Since a `DockerCluster` object corresponds to a cluster on the cloud, all of the beforementioned components behave like the environment object in R. Therefore, it is possible to change the value in the `DockerCluster` object inside a function and broadcast the effect to the same object outside of the function.
+`CloudRuntime` keeps the runtime information of the server and workers. `CloudProvider` provides the functions to run the container on the cloud and `DockerContainer` defines which container should be used. As the cluster might need to deploy both the server and workers, the `DockerCluster` object defines both `serverContainer` and `workerContainer` as its slots. Since a `DockerCluster` object corresponds to a cluster on the cloud, all the before-mentioned components behave like the environment object in R. Therefore, it is possible to change the value in the `DockerCluster` object inside a function and broadcast the effect to the same object outside of the function.
 
 The class `CloudProvider` and `DockerContainer` are generalizable, the developer can define a new cloud provider by defining a new class which inherits `CloudProvider`. The same rule applies to `DockerContainer` as well. In the rest of the document, we will discuss the implementation details of the `DockerCluster` object.
 
@@ -104,13 +104,11 @@ setRefClass(
         name = "CharOrNULL",
         maxWorkerNum = "integer",
         environment = "list",
-        image = "character",
-        sysPackages = "CharOrNULL",
-        RPackages = "CharOrNULL"
+        image = "character"
     )
 )
 ```
-where `name` is the name of the container, `maxWorkerNum` defines the maximum number of workers that can be run in the same container. `environment` is the environment variable in the container. `image` is the image used by the container. `sysPackages` is a vector of the system packages that need to be installed before the R worker starts(e.g. packages installed by `apt-get install`). `RPackages` is a vector of R packages that should be installed in the container. Note that a minimum container should define at least the `image` slot. The other slots are optional.
+where `name` is the name of the container, `maxWorkerNum` defines the maximum number of workers that can be run in the same container. `environment` is the environment variable in the container. `image` is the image used by the container. Note that a minimum container should define at least the `image` slot. The other slots are optional.
 
 The generic function for the `DockerContainer` class are
 ```{r eval=FALSE}
@@ -122,25 +120,74 @@ getServerContainer
 getExportedNames
 getExportedObject
 ```
-A minimum container should override `registerParallelBackend`. The rest is optional, but in most cases `configServerContainerEnv` and `configWorkerContainerEnv` should also be defined.
+A minimum container should override `registerParallelBackend`. The rest is optional, but in most cases they should also be defined.
 
 
 ## Configure the container environment
-The motivation for configuring the container environment is to allow developer to pass the server/worker IP, port, password to the container before deploying them on the cloud(please see [The big picture](#The-big-picture)). Therefore, server can be password protected and worker can find the server via the settings in the environment variable. Please keep in mind that the user might also define the environment variables in the container, so you should append your environment variables to `DockerContainer$environment`, not overwrite it.
+The motivation for configuring the container environment is to allow developer to pass the server/worker IP, port, password to the container before deploying them on the cloud(please see [The big picture](#The-big-picture)). Therefore, server can be password protected and worker can find the server via the settings in the environment variable. The function prototypes are
+
+```{r eval=FALSE}
+setGeneric("configServerContainerEnv", function(container, cluster, verbose){
+    standardGeneric("configServerContainerEnv")
+})
+```
+and
+```{r eval=FALSE}
+setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber, verbose){
+    standardGeneric("configWorkerContainerEnv")
+})
+```
+where `container` is the worker container and `cluster` is the `DockerCluster` object. `workerNumber` defines how many workers should be run in the same container. Please keep in mind that the user might also define the environment variables in the container, so you should insert your environment variables to `DockerContainer$environment`, not overwrite the entire environment object.
 
 Since the container object is a reference object, it is recommended to call `$copy()` before set the environment variable to avoid the side affect.
 
 ## Parallel backend
-It is the container's duty to register the parallel backend as neither the cloud provider nor the cluster knows which backend your container uses. The backend can be anything defined globally that the user could use to do the parallel computing. The popular choices are `foreach` or `BiocParallel`. Other backends are also possible. Note that if your backend is not from `foreach`, you should also define `deregisterParallelBackend` as the default method deregisters the foreach backend.
+It is the container's duty to register the parallel backend as neither the cloud provider nor the cluster knows which backend your container supports. The function prototypes are
+```{r eval=FALSE}
+setGeneric("registerParallelBackend", function(container, cluster, verbose, ...){
+    standardGeneric("registerParallelBackend")
+})
+```
+and
+```{r eval=FALSE}
+setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ...){
+    standardGeneric("deregisterParallelBackend")
+})
+```
+where `container` is the worker container and `cluster` is the `DockerCluster` object. The backend can be anything defined globally that the user could use to do the parallel computing. The popular choices are `foreach` or `BiocParallel`. Other backends are also possible. The default `deregisterParallelBackend` can deregister the foreach backend. If your backend is not from `foreach`, you should also define `deregisterParallelBackend`.
 
 ## Server container
-The function `getServerContainer` is purely for obtaining the server container from the worker container. By doing so the user only need to provide the worker container to the cluster. This function is optional, but we recommend to define it as if no method is defined, the user must explicitly provide both the server and worker container to the cluster if both need to be run on the cloud.
+The function `getServerContainer` is purely for obtaining the server container from the worker container. By doing so the user only need to provide the worker container to the cluster. The prototype is
+```{r eval=FALSE}
+setGeneric("getServerContainer", function(workerContainer){
+    standardGeneric("getServerContainer")
+})
+```
+This function is optional, but we recommend to define it as otherwise the user must explicitly provide both the server and worker container to the cluster if both need to be deployed by the cloud.
 
 ## Extension to the container
-You can export the functions and variables in the container via `getExportedNames` and `getExportedObject`. 
+You can export the functions and variables in the container via `getExportedNames` and `getExportedObject`. The prototypes are
+```{r eval=FALSE}
+setGeneric("getExportedNames", function(x){
+    standardGeneric("getExportedNames")
+})
+```
+and
+```{r eval=FALSE}
+setGeneric("getExportedObject", function(x, name){
+    standardGeneric("getExportedObject")
+})
+```
 `getExportedNames` defines the exported names and `getExportedObject` gets the exported object.
-They will be called by the cluster and the user can see the exported objects from `DockerCluster$workerContainer$...`. Note that `DockerCluster` has defined these two functions as well, if you need to override them, you may need to call `callNextMethod` to get the results from the parent function.
+They will be called by the cluster and the user can see the exported objects from `DockerCluster$serverContainer$...` and `DockerCluster$workerContainer$...`. 
 
+If the exported object is a function, the exported function will be defined in an environment such that the `DockerCluster` object is assigned to the variable `cluster`. In other words, the exported function can use the variable `cluster` without define it. For example, if we export the function
+```{r eval=FALSE}
+foo <- function(){
+  cluster$startCluster()
+}
+```
+the user can call `foo` via `DockerCluster$workerContainer$foo()` with no argument and the cluster will be started. This can be useful if the developer needs to change anything in the cluster without asking the user to provide the `DockerCluster` object. If the function has the argument  `cluster`, the argument will be removed from the function when the function is exported to the user. The user would not be bothered with the redundant `cluster` argument.
 
 # The cloud provider
 `CloudProvider` provides functions to deploy the container on the cloud. Its generic functions are
@@ -180,11 +227,11 @@ setGeneric("runDockerWorkers",
     standardGeneric("runDockerWorkers")
 })
 ```
-where `container` should be an object that has `DockerContainer` as its parent class. `hardware` is from the class `CloudHardware`. `workerNumber` indicates how many workers should be run on the cloud. The return value of the `runDockerServer` should be a server handle and `runDockerWorkers` should be a list of worker handles where each handle corresponds to a worker. The worker handles can be duplicated if multiple workers share the same container. The handle can be any object that is used by the cloud provider to identify the running container.
+where `container` should be an object that has `DockerContainer` as its parent class. `hardware` is from the class `DockerHardware`. `workerNumber` indicates how many workers should be run on the cloud. The return value of the `runDockerServer` should be a server handle and `runDockerWorkers` should be a list of worker handles where each handle corresponds to a worker. The worker handles can be duplicated if multiple workers share the same container. The handle can be any object that is used by the cloud provider to identify the running container.
 
 Not all slots in the `container` object need to be used by the cloud provider. Only the slots `name`, `environment` and `image` should be handled. The others will be processed by the `container` object itself. The `environment` slot in the container has been configured before passing to the cloud provider as [The big picture](#The-big-picture)) shows. However, the worker number is set to 1 for each container. If the cloud provider have enough resources to support multiple workers in one container, the provider should call `configWorkerContainerEnv` with the new worker number again to overwrite the previous settings. This can be useful when deploying multiple containers with one worker in each container are slower than deploying one container with multiple workers. It is providers responsibility to make sure the worker number does not exceed the number limitation specified in `container$maxWorkerNum`
 
-The argument `hardware` specifies the hardware for each container. As the hardware is different for each cloud provider, the base class `CloudHardware` only contains the most import hardware parameters, that is, it only has the slots `cpu`, `memory` and `id`. Although the cluster does not have any hard restriction on how these three parameters will be explained by the cloud provider, we recommend to explain them as follow
+The argument `hardware` specifies the hardware for each container. As the hardware is different for each cloud provider, the base class `DockerHardware` only contains the most import hardware parameters, that is, it only has the slots `cpu`, `memory` and `id`. Although the cluster does not have any hard restriction on how these three parameters will be explained by the cloud provider, we recommend to explain them as follow
 
 1. `cpu`: The CPU unit used by each worker, 1024 units corresponds to a physical CPU core.
 2. `memory`: The memory used by each worker, the unit is MB.
@@ -230,3 +277,5 @@ setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
 A cluster is defined by the `jobQueueName`, if a running cluster on the cloud has the same job queue name, it should be treated as the cluster the user wants. Unlike the previous functions, `reconnectDockerCluster` is responsible to set all missing values in `CloudConfig` and `CloudRuntime` in the cluster as it is hard for the user to provide the correct information to the cluster. Please use the setters defined in [Accessor functions](#Accessor-functions)) to set them.
 
 
+## Extension to the provider
+The provider also supports exporting APIs to the user, it follows the same rule as the container and user can find them in `cluster$cloudProvider$...`. Please see [Extension to the container](#Extension-to-the-container)) for the details.
