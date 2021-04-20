@@ -4,8 +4,10 @@ resetRuntimeServer <- function(cloudRuntime){
     cloudRuntime$serverHandle <- NULL
 }
 removeRuntimeWorkers <- function(cloudRuntime, index){
-    cloudRuntime$workerHandles <- cloudRuntime$workerHandles[-index]
-    cloudRuntime$workerPerHandle <- cloudRuntime$workerPerHandle[-index]
+    if(length(index)!=0){
+        cloudRuntime$workerHandles <- cloudRuntime$workerHandles[-index]
+        cloudRuntime$workerPerHandle <- cloudRuntime$workerPerHandle[-index]
+    }
 }
 
 removeDiedServer <- function(cluster){
@@ -47,14 +49,28 @@ addWorkersInternal <- function(cluster, workerNumber){
             verbose = verbose
         )
         instanceHandles <- runDockerWorkers(provider,
-                                      cluster = cluster,
-                                      container = workerContainer,
-                                      hardware = .getWorkerHardware(cluster),
-                                      workerNumber = workerNumber,
-                                      verbose = verbose)
+                                            cluster = cluster,
+                                            container = workerContainer,
+                                            hardware = .getWorkerHardware(cluster),
+                                            workerNumber = workerNumber,
+                                            verbose = verbose)
         .addWorkerHandles(cluster, instanceHandles)
     }
     invisible(NULL)
+}
+
+myknapsack <- function (workerPerHandle, killedWorkerNum)
+{
+    idx <- which(workerPerHandle<=killedWorkerNum)
+    if(length(idx)==0){
+        return(list(capacity=0, indices = c()))
+    }
+    KnapsackSolution <-
+        adagio::knapsack(workerPerHandle[idx],
+                         workerPerHandle[idx],
+                         killedWorkerNum)
+    KnapsackSolution$indices <- idx[KnapsackSolution$indices]
+    KnapsackSolution
 }
 
 
@@ -68,7 +84,7 @@ removeWorkersInternal <- function(cluster, workerNumber){
     ## that the killed workers is less than or equal to workerNumber
     KnapsackSolution <-
         myknapsack(cloudRuntime$workerPerHandle,
-                         workerNumber)
+                   workerNumber)
     killedWorkerNumber <- KnapsackSolution$capacity
     killedInstanceIndex <- KnapsackSolution$indices
     if(killedWorkerNumber < workerNumber){
@@ -83,8 +99,8 @@ removeWorkersInternal <- function(cluster, workerNumber){
     }
     if(killedWorkerNumber!=0){
         success <- killDockerInstances(provider,
-                      instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
-                      verbose = verbose)
+                                       instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
+                                       verbose = verbose)
         if(any(!success)){
             warning("Fail to kill some worker instances")
         }
@@ -130,7 +146,9 @@ checkIfClusterExistAndAsk <- function(cluster){
 }
 DockerCluster.finalizer<- function(e){
     if(e$stopClusterOnExit){
-        e$cluster$stopCluster()
+        if(e$cluster$isServerRunning()||e$cluster$getWorkerNumber()>0){
+            e$cluster$stopCluster()
+        }
     }
 }
 

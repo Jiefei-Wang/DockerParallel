@@ -13,7 +13,7 @@ runDockerWorkers(provider, cluster, container, hardware, workerNumber, verbose)
 
 \item{container}{S4 \code{DockerContainer} Object. The worker container.}
 
-\item{hardware}{S4 \code{CloudHardware} Object. The worker hardware.}
+\item{hardware}{S4 \code{DockerHardware} Object. The worker hardware.}
 
 \item{workerNumber}{Integer. The number of workers needs to be run.}
 

@@ -10,7 +10,7 @@ getServerContainer(workerContainer)
 \S4method{getServerContainer}{ANY}(workerContainer)
 }
 \arguments{
-\item{container}{The worker container.}
+\item{workerContainer}{The worker container.}
 }
 \value{
 A server container

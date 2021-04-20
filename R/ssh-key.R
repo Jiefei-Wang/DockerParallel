@@ -19,10 +19,24 @@ setSSHPubKeyPath<-function(publicKey=NULL){
   }
   packageSetting$publicKey
 }
+#' Get the path to the public ssh key
+#'
+#' Get the path to the public ssh key
+#'
+#' @examples
+#' getSSHPubKeyPath()
+#' @return The path to the public ssh key
 #' @export
 getSSHPubKeyPath <- function(){
   packageSetting$publicKey
 }
+#' Get the public ssh key
+#'
+#' Get the public ssh key
+#'
+#' @examples
+#' getSSHPubKeyValue()
+#' @return The public ssh key
 #' @export
 getSSHPubKeyValue <- function(){
   fileName <- getSSHPubKeyPath()

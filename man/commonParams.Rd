@@ -12,7 +12,7 @@
 
 \item{container}{S4 \code{DockerContainer} Object.}
 
-\item{hardware}{S4 \code{CloudHardware} Object.}
+\item{hardware}{S4 \code{DockerHardware} Object.}
 }
 \description{
 commom params

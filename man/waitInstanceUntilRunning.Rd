@@ -2,18 +2,31 @@
 % Please edit documentation in R/method-export.R
 \name{waitInstanceUntilRunning}
 \alias{waitInstanceUntilRunning}
-\title{Wait the instances until they are running}
+\title{Wait the instances until they have the running status}
 \usage{
 waitInstanceUntilRunning(
   provider,
   instanceHandles,
   progressBar = FALSE,
-  waitTime = 1
+  checkInterval = 1,
+  maxWaitTime = 60 * 5
 )
 }
+\arguments{
+\item{provider}{S4 \code{CloudProvider} object. The service provider.}
+
+\item{instanceHandles}{List. A list of instance handles.}
+
+\item{progressBar}{Logical, whether to show a progress bar while waiting}
+
+\item{checkInterval}{Numeric, the time interval in seconds between two status checks.}
+
+\item{maxWaitTime}{Numeric, the maximum wait time in seconds. There will be no error
+if the wait time exceeds the maximum wait time.}
+}
 \value{
-a logical value indicating if the instances are running
+a logical vector indicating if the instances are running
 }
 \description{
-Wait the instances until they are running
+Wait the instances until they have the running status
 }

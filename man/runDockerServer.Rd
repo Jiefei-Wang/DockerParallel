@@ -13,7 +13,7 @@ runDockerServer(provider, cluster, container, hardware, verbose)
 
 \item{container}{S4 \code{DockerContainer} Object. The server container.}
 
-\item{hardware}{S4 \code{CloudHardware} Object. The server hardware.}
+\item{hardware}{S4 \code{DockerHardware} Object. The server hardware.}
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }

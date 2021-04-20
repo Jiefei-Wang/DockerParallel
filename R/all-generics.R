@@ -5,7 +5,7 @@
 #' @param provider S4 `CloudProvider` object. The service provider.
 #' @param cluster S4 `DockerCluster` object.
 #' @param container S4 `DockerContainer` Object.
-#' @param hardware S4 `CloudHardware` Object.
+#' @param hardware S4 `DockerHardware` Object.
 #' @rdname commonParams
 #' @name commonParams
 NULL
@@ -52,7 +52,7 @@ setGeneric("initializeProvider", function(provider, cluster, verbose){
 #'
 #' @inheritParams commonParams
 #' @param container S4 `DockerContainer` Object. The server container.
-#' @param hardware S4 `CloudHardware` Object. The server hardware.
+#' @param hardware S4 `DockerHardware` Object. The server hardware.
 #'
 #' @section Instance Handle:
 #' The instance handle is nothing but any data type that can be used by the
@@ -78,7 +78,7 @@ setGeneric("runDockerServer", function(provider, cluster, container, hardware, v
 #' @inheritParams commonParams
 #' @param workerNumber Integer. The number of workers needs to be run.
 #' @param container S4 `DockerContainer` Object. The worker container.
-#' @param hardware S4 `CloudHardware` Object. The worker hardware.
+#' @param hardware S4 `DockerHardware` Object. The worker hardware.
 #'
 #'
 #' @inheritSection runDockerServer Instance Handle
@@ -258,6 +258,7 @@ setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber
 #'
 #' @inheritParams commonParams
 #' @param container The worker container.
+#' @param ... The additional parameter that will be passed to the registration function
 #'
 #' @rdname containerParallelBackend
 #' @return NULL
@@ -278,7 +279,7 @@ setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ..
 #' to its constructor.
 #'  There is no default method defined for this generic.
 #'
-#' @param container The worker container.
+#' @param workerContainer The worker container.
 #' @return A server container
 #' @export
 setGeneric("getServerContainer", function(workerContainer){
@@ -313,6 +314,7 @@ setGeneric("getServerContainer", function(workerContainer){
 setGeneric("getExportedNames", function(x){
     standardGeneric("getExportedNames")
 })
+#' @param name The name of the exported object
 #' @rdname exported-apis
 #' @export
 setGeneric("getExportedObject", function(x, name){

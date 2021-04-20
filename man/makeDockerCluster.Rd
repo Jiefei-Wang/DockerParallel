@@ -5,8 +5,8 @@
 \title{Create a docker cluster}
 \usage{
 makeDockerCluster(
-  cloudProvider,
-  workerContainer,
+  cloudProvider = NULL,
+  workerContainer = NULL,
   workerNumber = 1,
   workerCpu = 1024,
   workerMemory = 2048,
@@ -33,6 +33,9 @@ deployed}
 1024 CPU unit corresponds to a physical CPU core.}
 
 \item{serverMemory, workerMemory}{Integer, the memory used by the server or each worker in MB}
+
+\item{serverHardwareId, workerHardwareId}{Character, the ID of the hardware, this argument
+might be ignored by some cloud providers.}
 
 \item{cloudConfig}{A \code{CloudConfig} object. The object that stores the cloud information such
 as server password, port, network status. Generally there is no need to provide this object

@@ -19,9 +19,9 @@ which starts with the prefix \code{.get}(e.g. \code{.getJobQueueName(cluster)}).
 \item{\code{workerNumber}}{Integer, the required number of workers that should be
 run on the cloud}
 
-\item{\code{serverHardware}}{CloudHardware, the server hardware}
+\item{\code{serverHardware}}{DockerHardware, the server hardware}
 
-\item{\code{workerHardware}}{CloudHardware, the worker hardware}
+\item{\code{workerHardware}}{DockerHardware, the worker hardware}
 
 \item{\code{serverPort}}{Integer or NULL, the port that will be used by the worker
 to connect with the server}

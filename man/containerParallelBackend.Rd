@@ -18,6 +18,8 @@ deregisterParallelBackend(container, cluster, verbose, ...)
 \item{cluster}{S4 \code{DockerCluster} object.}
 
 \item{verbose}{Integer. The verbose level, default 1.}
+
+\item{...}{The additional parameter that will be passed to the registration function}
 }
 \description{
 Register/deregister the parallel backend. These methods will be dispatched based on

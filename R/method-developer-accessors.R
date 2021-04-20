@@ -1,14 +1,3 @@
-.DockerCluster <- setClass(
-    "DockerCluster",
-    slots = list(
-        cloudProvider = "CloudProvider",
-        cloudConfig = "CloudConfig",
-        serverContainer = "DockerContainerOrNULL",
-        workerContainer = "DockerContainer",
-        cloudRuntime = "CloudRuntime",
-        settings = "environment"
-    )
-)
 #' Accessor functions
 #'
 #' Accessor functions for the developer.

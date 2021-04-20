@@ -27,9 +27,9 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
 #' @exportClass CloudProvider
 .CloudProvider <- setRefClass("CloudProvider")
 
-#' The instance hardware for running the docker
+#' The hardware for running the docker
 #'
-#' The instance hardware for running the docker
+#' The hardware for running the docker
 #'
 #' @slot cpu Numeric, the CPU limitation for the docker. 1024 CPU unit
 #' corresponds to 1 core.
@@ -37,9 +37,9 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
 #' is MB
 #' @slot id Character or NULL, the id of the hardware, the meaning of `id` depends on
 #' the cloud provider.
-#' @exportClass CloudHardware
-.CloudHardware <- setClass(
-    "CloudHardware",
+#' @exportClass DockerHardware
+.DockerHardware <- setClass(
+    "DockerHardware",
     slots = list(
         cpu = "numeric",
         memory = "numeric",
@@ -58,8 +58,8 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
 #' @field jobQueueName Character, the name of the job queue
 #' @field workerNumber Integer, the required number of workers that should be
 #' run on the cloud
-#' @field serverHardware CloudHardware, the server hardware
-#' @field workerHardware CloudHardware, the worker hardware
+#' @field serverHardware DockerHardware, the server hardware
+#' @field workerHardware DockerHardware, the worker hardware
 #' @field serverPort Integer or NULL, the port that will be used by the worker
 #' to connect with the server
 #' @field serverPassword Character or NULL, the server password
@@ -72,8 +72,8 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
     fields = list(
         jobQueueName = "character",
         workerNumber = "integer",
-        serverHardware = "CloudHardware",
-        workerHardware = "CloudHardware",
+        serverHardware = "DockerHardware",
+        workerHardware = "DockerHardware",
         serverPort = "IntOrNULL",
         serverPassword = "CharOrNULL",
         serverWorkerSameLAN = "logical",
@@ -133,21 +133,6 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
 )
 
 
-###########################
-## container provider
-###########################
-#' The Bioconductor Foreach Redis container
-#'
-#' The Bioconductor Foreach Redis container. See `?BiocFERServerContainer` and
-#' `?BiocFERWorkerContainer`
-.BiocFERContainer <- setRefClass(
-    "BiocFERContainer",
-    fields = list(
-                  sysPackages = "CharOrNULL",
-                  RPackages = "CharOrNULL"
-    ),
-    contains = "DockerContainer"
-)
 
 ##################################
 ##          ClusterMethodGetter

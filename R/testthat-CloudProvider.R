@@ -1,22 +1,22 @@
 expectServerNotRunning <- function(cluster){
-    expect_true(is.null(.getServerHandle(cluster)))
-    expect_true(is.null(.getServerPublicIp(cluster)))
-    expect_true(is.null(.getServerPrivateIp(cluster)))
+    testthat::expect_true(is.null(.getServerHandle(cluster)))
+    testthat::expect_true(is.null(.getServerPublicIp(cluster)))
+    testthat::expect_true(is.null(.getServerPrivateIp(cluster)))
 }
 expectServerRunning <- function(cluster){
-    expect_true(!is.null(.getServerHandle(cluster)))
-    expect_true(!is.null(.getServerPublicIp(cluster)))
-    expect_true(!is.null(.getServerPrivateIp(cluster)))
+    testthat::expect_true(!is.null(.getServerHandle(cluster)))
+    testthat::expect_true(!is.null(.getServerPublicIp(cluster)))
+    testthat::expect_true(!is.null(.getServerPrivateIp(cluster)))
 }
 expectWorkerNotRunning <- function(cluster){
-    expect_equal(cluster$getWorkerNumber(), 0)
-    expect_equal(length(.getWorkerHandles(cluster)), 0)
+    testthat::expect_equal(cluster$getWorkerNumber(), 0)
+    testthat::expect_equal(length(.getWorkerHandles(cluster)), 0)
 }
 expectWorkerRunning <- function(cluster, expectNum, workerPerContainer){
-    expect_equal(cluster$getWorkerNumber(), expectNum)
-    expect_equal(cluster$getExpectedWorkerNumber(), expectNum)
-    expect_equal(length(.getWorkerHandles(cluster)), expectNum)
-    expect_equal(length(unique(.getWorkerHandles(cluster))),
+    testthat::expect_equal(cluster$getWorkerNumber(), expectNum)
+    testthat::expect_equal(cluster$getExpectedWorkerNumber(), expectNum)
+    testthat::expect_equal(length(.getWorkerHandles(cluster)), expectNum)
+    testthat::expect_equal(length(unique(.getWorkerHandles(cluster))),
                  ceiling(expectNum/workerPerContainer))
 }
 
@@ -45,49 +45,49 @@ generalDockerClusterTest <- function(cloudProvider, workerContainer, workerNumbe
                                  workerMemory = 512)
 
 
-    test_that("basic test",{
-        expect_equal(cluster$getWorkerNumber(), 0)
-        expect_equal(cluster$getExpectedWorkerNumber(), workerNumber)
+    testthat::test_that("basic test",{
+        testthat::expect_equal(cluster$getWorkerNumber(), 0)
+        testthat::expect_equal(cluster$getExpectedWorkerNumber(), workerNumber)
 
         ## Server info
-        expect_true(!cluster$isServerRunning())
+        testthat::expect_true(!cluster$isServerRunning())
         expectServerNotRunning(cluster)
 
         ## Worker info
         expectWorkerNotRunning(cluster)
-        expect_equal(.getWorkerHardware(cluster)@cpu, 256)
-        expect_equal(.getWorkerHardware(cluster)@memory, 512)
+        testthat::expect_equal(.getWorkerHardware(cluster)@cpu, 256)
+        testthat::expect_equal(.getWorkerHardware(cluster)@memory, 512)
     })
 
 
-    test_that("start server",{
+    testthat::test_that("start server",{
         cluster$startServer()
-        expect_true(cluster$isServerRunning())
+        testthat::expect_true(cluster$isServerRunning())
         expectServerRunning(cluster)
     })
 
-    test_that("start workers",{
+    testthat::test_that("start workers",{
         cluster$addWorkers(0)
         expectWorkerRunning(cluster, workerNumber, workerPerContainer)
     })
 
-    test_that("register backend",{
-        expect_error(cluster$registerBackend(), NA)
+    testthat::test_that("register backend",{
+        testthat::expect_error(cluster$registerBackend(), NA)
     })
 
-    test_that("stop workers",{
+    testthat::test_that("stop workers",{
         cluster$setWorkerNumber(0)
-        expect_equal(cluster$getExpectedWorkerNumber(), 0)
+        testthat::expect_equal(cluster$getExpectedWorkerNumber(), 0)
         expectWorkerNotRunning(cluster)
     })
 
-    test_that("stop server",{
+    testthat::test_that("stop server",{
         cluster$stopServer()
         expectServerNotRunning(cluster)
     })
 
     if(testReconnect){
-        test_that("stop cluster on exit",{
+        testthat::test_that("stop cluster on exit",{
             cluster <- makeDockerCluster(cloudProvider = cloudProvider,
                                          workerContainer = workerContainer,
                                          workerNumber = 1,
@@ -109,7 +109,7 @@ generalDockerClusterTest <- function(cloudProvider, workerContainer, workerNumbe
                                          workerNumber = 1,
                                          workerCpu = 256,
                                          workerMemory = 512)
-            expect_error(cluster$reconnect())
+            testthat::expect_error(cluster$reconnect())
 
             ## Start the cluster again
             cluster$startCluster()
@@ -131,7 +131,7 @@ generalDockerClusterTest <- function(cloudProvider, workerContainer, workerNumbe
 
             ## Stop the cluster
             cluster$stopCluster()
-            expect_equal(cluster$getExpectedWorkerNumber(), 0)
+            testthat::expect_equal(cluster$getExpectedWorkerNumber(), 0)
             expectServerNotRunning(cluster)
             expectWorkerNotRunning(cluster)
         })

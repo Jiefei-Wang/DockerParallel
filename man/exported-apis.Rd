@@ -17,6 +17,8 @@ getExportedObject(x, name)
 }
 \arguments{
 \item{x}{A cloud provider or container object}
+
+\item{name}{The name of the exported object}
 }
 \value{
 getExportedNames: The names of the exported functions or variables

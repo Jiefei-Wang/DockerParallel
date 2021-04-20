@@ -1,12 +1,11 @@
-#' @import aws.ecx
 #' @import methods
 #' @import utils
-#' @import testthat
-#' @importFrom doRedis registerDoRedis
 NULL
 
 packageSetting<-new.env()
 packageSetting$publicKey <- NULL
+packageSetting$cloudProvider <- NULL
+packageSetting$workerContainer <- NULL
 
 
 .onLoad <- function(libname, pkgname){
