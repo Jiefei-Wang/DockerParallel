@@ -126,7 +126,7 @@ checkIfClusterExistAndAsk <- function(cluster){
             jobName,
             "> exists on the cloud, do you want to reuse the same cluster?"
         )
-        answer <- menu(c("Yes", "No", "Cancle"), title=msg)
+        answer <- menu(c("Yes", "No", "Cancel"), title=msg)
         if(answer == 1){
             if(cluster$stopClusterOnExit){
                 verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")

@@ -108,7 +108,7 @@ setRefClass(
     )
 )
 ```
-where `name` is the name of the container, `maxWorkerNum` defines the maximum number of workers that can be run in the same container. `environment` is the environment variable in the container. `image` is the image used by the container. Note that a minimum container should define at least the `image` slot. The other slots are optional.
+where `name` is the an optional slot for the developer to name and distinguish the server and worker container, `maxWorkerNum` defines the maximum number of workers that can be run in the same container. `environment` is the environment variable in the container. `image` is the image used by the container. Note that a minimum container should define at least the `image` slot. The other slots are optional.
 
 The generic function for the `DockerContainer` class are
 ```{r eval=FALSE}
@@ -120,7 +120,7 @@ getServerContainer
 getExportedNames
 getExportedObject
 ```
-A minimum container should override `registerParallelBackend`. The rest is optional, but in most cases they should also be defined.
+A minimum container should override `configServerContainerEnv`, `configWorkerContainerEnv` and `registerParallelBackend`. The rest is optional, but in most cases they should also be defined.
 
 
 ## Configure the container environment
