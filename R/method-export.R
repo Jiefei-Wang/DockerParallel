@@ -59,7 +59,7 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
 #' @export
 clusterPreset<- function(
     cloudProvider = c("ECSFargateProvider"),
-    container = c("BiocFEDRContainer")
+    container = c("BiocFEDRContainer", "BiocBPRPContainer", "baseFEDRContainer")
 ){
     cloudProvider <- match.arg(cloudProvider)
     container <- match.arg(container)
@@ -72,6 +72,15 @@ clusterPreset<- function(
     if(container == "BiocFEDRContainer"){
         loadPackage("BiocFEDRContainer")
         workerContainer <- BiocFEDRWorkerContainer()
+    }
+
+    if(container == "BiocBPRPContainer"){
+        loadPackage("BiocBPRPContainer")
+        workerContainer <- BiocBPRPWorkerContainer()
+    }
+    if(container == "baseFEDRContainer"){
+        loadPackage("baseFEDRContainer")
+        workerContainer <- baseFEDRWorkerContainer()
     }
 
     packageSetting$cloudProvider <- provider

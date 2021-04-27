@@ -25,12 +25,11 @@ In this vignette, We use the foreach doRedis parallel backend and deploy the con
 
 The cluster object is created in your local R session, but the workers and redis server are from Amazon ECS. Each docker container contains one or more R workers, they will receive jobs sent by your local R session and do the parallel computing. The workflow of the `DockerParallel` package is as follow
 
-1. Select a cloud provider(default: ECSProvider)
-2. Select a container(default: BiocFEDRContainer)
+1. Select a cloud provider(Available: ECSProvider)
+2. Select a container(Available: BiocFEDRContainer, BiocBPRPContainer, baseFEDRContainer)
 3. Create the cluster and run your parallel task
 
-In the rest of the vignette we will introduce them step by step
-
+In the rest of the vignette we will introduce them step by step.
 
 # Select a cloud provider
 Even though the topic says "select", currently the only available cloud provider is the before-mentioned ECS fargate provider. You can call `ECSFargateProvider` to create an ECS fargate provider 
@@ -40,6 +39,7 @@ Even though the topic says "select", currently the only available cloud provider
 library(ECSFargateProvider)
 provider <- ECSFargateProvider()
 provider
+#> Region:               ap-southeast-1 
 #> Cluster name:         R-worker-cluster 
 #> Server task definition:      R-server-task-definition 
 #> Worker task definition:      R-worker-task-definition 
@@ -80,7 +80,7 @@ library(BiocFEDRContainer)
 workerContainer <- BiocFEDRWorkerContainer()
 workerContainer
 #> Bioconductor foreach redis container reference object
-#>   Image:      dockerparallel/parallel-redis-worker 
+#>   Image:      dockerparallel/bioc-foreach-doredis-worker:latest 
 #>   maxWorkers: 4 
 #>   Environment variables:
 ```
@@ -90,7 +90,7 @@ This should be enough for creating the cluster object. However, if you want to h
 serverContainer <- BiocFEDRServerContainer()
 serverContainer
 #> Bioconductor foreach redis container reference object
-#>   Image:      dockerparallel/parallel-redis-server 
+#>   Image:      dockerparallel/redis-r-server:latest 
 #>   maxWorkers: 1 
 #>   Environment variables:
 ```
@@ -148,7 +148,7 @@ foreach(i = 1:2)%dopar%{
 #>                                         sysname                                         release 
 #>                                         "Linux"                 "4.14.225-168.357.amzn2.x86_64" 
 #>                                         version                                        nodename 
-#>           "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-61-84.ap-southeast-1.compute.internal" 
+#>           "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-96-90.ap-southeast-1.compute.internal" 
 #>                                         machine                                           login 
 #>                                        "x86_64"                                       "unknown" 
 #>                                            user                                  effective_user 
@@ -158,7 +158,7 @@ foreach(i = 1:2)%dopar%{
 #>                                         sysname                                         release 
 #>                                         "Linux"                 "4.14.225-168.357.amzn2.x86_64" 
 #>                                         version                                        nodename 
-#>           "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-61-84.ap-southeast-1.compute.internal" 
+#>           "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "ip-10-0-96-90.ap-southeast-1.compute.internal" 
 #>                                         machine                                           login 
 #>                                        "x86_64"                                       "unknown" 
 #>                                            user                                  effective_user 
@@ -238,25 +238,20 @@ sessionInfo()
 #> system code page: 936
 #> 
 #> attached base packages:
-#> [1] parallel  stats     graphics  grDevices utils     datasets  methods   base     
+#> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] foreach_1.5.1             BiocGenerics_0.36.0       BiocFEDRContainer_0.99.0 
-#> [4] ECSFargateProvider_0.99.0 DockerParallel_0.99.0    
+#> [1] foreach_1.5.1             ECSFargateProvider_0.99.0 DockerParallel_0.99.0    
+#> [4] BiocFEDRContainer_0.99.0 
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] compiler_4.0.4      remotes_2.2.0       prettyunits_1.1.1   base64enc_0.1-3    
-#>  [5] iterators_1.0.13    doRedis_2.0.1       tools_4.0.4         testthat_3.0.2     
-#>  [9] digest_0.6.27       pkgbuild_1.1.0      pkgload_1.1.0       evaluate_0.14      
-#> [13] jsonlite_1.7.2      memoise_1.1.0       rlang_0.4.10        cli_2.3.1          
-#> [17] rstudioapi_0.13     yaml_2.2.1          curl_4.3            xfun_0.19          
-#> [21] stringr_1.4.0       knitr_1.31          withr_2.3.0         httr_1.4.2         
-#> [25] xml2_1.3.2          cluster_2.1.0       fs_1.5.0            desc_1.2.0         
-#> [29] devtools_2.3.2      rprojroot_2.0.2     glue_1.4.2          R6_2.5.0           
-#> [33] redux_1.1.0         processx_3.4.4      aws.ecx_1.0.4       rmarkdown_2.7      
-#> [37] sessioninfo_1.1.1   adagio_0.7.1        magrittr_1.5        callr_3.5.1        
-#> [41] htmltools_0.5.0     usethis_1.6.3       codetools_0.2-18    ps_1.4.0           
-#> [45] ellipsis_0.3.1      assertthat_0.2.1    aws.signature_0.6.0 stringi_1.5.3      
-#> [49] crayon_1.3.4        rjson_0.2.20
+#>  [1] magrittr_2.0.1      knitr_1.32          xml2_1.3.2          aws.signature_0.6.0
+#>  [5] rjson_0.2.20        R6_2.5.0            rlang_0.4.10        aws.ecx_1.0.4      
+#>  [9] stringr_1.4.0       httr_1.4.2          tools_4.0.4         parallel_4.0.4     
+#> [13] xfun_0.22           htmltools_0.5.1.1   doRedis_2.0.1       iterators_1.0.13   
+#> [17] yaml_2.2.1          digest_0.6.27       aws.iam_0.1.8       adagio_0.7.1       
+#> [21] base64enc_0.1-3     codetools_0.2-18    curl_4.3            evaluate_0.14      
+#> [25] rmarkdown_2.7       redux_1.1.0         stringi_1.5.3       compiler_4.0.4     
+#> [29] jsonlite_1.7.2
 ```
 

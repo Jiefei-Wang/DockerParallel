@@ -65,12 +65,11 @@ In this vignette, We use the foreach doRedis parallel backend and deploy the con
 
 The cluster object is created in your local R session, but the workers and redis server are from Amazon ECS. Each docker container contains one or more R workers, they will receive jobs sent by your local R session and do the parallel computing. The workflow of the `DockerParallel` package is as follow
 
-1. Select a cloud provider(default: ECSProvider)
-2. Select a container(default: BiocFEDRContainer)
+1. Select a cloud provider(Available: ECSProvider)
+2. Select a container(Available: BiocFEDRContainer, BiocBPRPContainer, baseFEDRContainer)
 3. Create the cluster and run your parallel task
 
-In the rest of the vignette we will introduce them step by step
-
+In the rest of the vignette we will introduce them step by step.
 
 # Select a cloud provider
 Even though the topic says "select", currently the only available cloud provider is the before-mentioned ECS fargate provider. You can call `ECSFargateProvider` to create an ECS fargate provider 
