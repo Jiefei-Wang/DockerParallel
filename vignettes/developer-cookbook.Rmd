@@ -279,3 +279,17 @@ A cluster is defined by the `jobQueueName`, if a running cluster on the cloud ha
 
 ## Extension to the provider
 The provider also supports exporting APIs to the user, it follows the same rule as the container and user can find them in `cluster$cloudProvider$...`. Please see [Extension to the container](#Extension-to-the-container)) for the details.
+
+
+# Unit test for the extension
+We provide a general purpose unit test function for the developers to test their extensions. The test function uses `testthat` framework. Since the package needs a provider and a container package to work, the developer needs to define both components in the test file. 
+```{r eval=FALSE}
+provider <- ECSFargateProvider::ECSFargateProvider()
+container <- BiocFEDRContainer::BiocFEDRWorkerContainer()
+generalDockerClusterTest(
+  cloudProvider = provider, 
+  workerContainer = container,
+  workerNumber = 3L,
+  testReconnect = TRUE)
+```
+Please see `?generalDockerClusterTest` for more information, 
