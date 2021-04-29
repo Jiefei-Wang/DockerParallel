@@ -48,39 +48,44 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
 
 #' Set the default cloud provider and container
 #'
-#' Set the default cloud provider and container
+#' Set the default cloud provider and container. You must install the provider and container
+#' before using them.
 #'
 #' @param cloudProvider The default cloud provider name, can be abbreviated
 #' @param container The default container name, can be abbreviated
 #' @examples
+#' \dontrun{
 #' clusterPreset(cloudProvider = "ECSFargateProvider", container = "BiocFEDRContainer")
 #' cluster <- makeDockerCluster()
 #' cluster
+#' }
 #' @export
 clusterPreset<- function(
-    cloudProvider = c("ECSFargateProvider"),
-    container = c("BiocFEDRContainer", "BiocBPRPContainer", "baseFEDRContainer")
+    cloudProvider = c("","ECSFargateProvider"),
+    container = c("","BiocFEDRContainer", "BiocBPRPContainer", "baseFEDRContainer")
 ){
     cloudProvider <- match.arg(cloudProvider)
     container <- match.arg(container)
 
+    provider <- NULL
+    workerContainer <- NULL
     if(cloudProvider == "ECSFargateProvider"){
         loadPackage("ECSFargateProvider")
-        provider <- ECSFargateProvider()
+        eval(parse(text = "provider <- ECSFargateProvider::ECSFargateProvider()"))
     }
 
     if(container == "BiocFEDRContainer"){
         loadPackage("BiocFEDRContainer")
-        workerContainer <- BiocFEDRWorkerContainer()
+        eval(parse(text = "workerContainer <- BiocFEDRContainer::BiocFEDRWorkerContainer()"))
     }
 
     if(container == "BiocBPRPContainer"){
         loadPackage("BiocBPRPContainer")
-        workerContainer <- BiocBPRPWorkerContainer()
+        eval(parse(text = "workerContainer <- BiocBPRPContainer::BiocBPRPWorkerContainer()"))
     }
     if(container == "baseFEDRContainer"){
         loadPackage("baseFEDRContainer")
-        workerContainer <- baseFEDRWorkerContainer()
+        eval(parse(text = "workerContainer <- baseFEDRContainer::baseFEDRWorkerContainer()"))
     }
 
     packageSetting$cloudProvider <- provider

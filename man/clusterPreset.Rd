@@ -5,8 +5,8 @@
 \title{Set the default cloud provider and container}
 \usage{
 clusterPreset(
-  cloudProvider = c("ECSFargateProvider"),
-  container = c("BiocFEDRContainer")
+  cloudProvider = c("", "ECSFargateProvider"),
+  container = c("", "BiocFEDRContainer", "BiocBPRPContainer", "baseFEDRContainer")
 )
 }
 \arguments{
@@ -15,10 +15,13 @@ clusterPreset(
 \item{container}{The default container name, can be abbreviated}
 }
 \description{
-Set the default cloud provider and container
+Set the default cloud provider and container. You must install the provider and container
+before using them.
 }
 \examples{
+\dontrun{
 clusterPreset(cloudProvider = "ECSFargateProvider", container = "BiocFEDRContainer")
 cluster <- makeDockerCluster()
 cluster
+}
 }

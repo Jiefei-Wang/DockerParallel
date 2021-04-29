@@ -249,10 +249,10 @@ setMethod(f = "show",signature = "DockerCluster",
           definition = function(object){
               isServerRunning <- object$isServerRunning()
 
-              publicIp <- ifelse(is.null(.getServerPublicIp(cluster)) ,
-                                 "NULL", .getServerPublicIp(cluster))
-              privateIp <- ifelse(is.null(.getServerPrivateIp(cluster)) ,
-                                  "NULL", .getServerPrivateIp(cluster))
+              publicIp <- ifelse(is.null(.getServerPublicIp(object)) ,
+                                 "NULL", .getServerPublicIp(object))
+              privateIp <- ifelse(is.null(.getServerPrivateIp(object)) ,
+                                  "NULL", .getServerPrivateIp(object))
 
               cat("Server status:     ", ifelse(isServerRunning ,"Running", "Stopped"), "\n")
               if(isServerRunning){
