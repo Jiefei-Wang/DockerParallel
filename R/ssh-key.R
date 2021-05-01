@@ -1,22 +1,25 @@
 #' Set the ssh key file
 #'
 #' Set the ssh key file. This function will be called when the package is
-#' loaded. If no argument is provided, it
+#' loaded. If no argument is provided and the current stored path is `NULL`, it
 #' will look at the environment variables `DockerParallelSSHPublicKey`
 #'
 #' @param publicKey path to the public key
+#' @examples
+#' ## Getting the path from the environment variable "DockerParallelSSHPublicKey"
+#' setSSHPubKeyPath()
+#' @return The path to the public key
 #' @export
 setSSHPubKeyPath<-function(publicKey=NULL){
   if(!is.null(publicKey)){
     packageSetting$publicKey <- publicKey
-  }
-  public_key_env <- Sys.getenv("DockerParallelSSHPublicKey")
-
-  if(is.null(packageSetting$publicKey)){
-    if(public_key_env!=""){
-      packageSetting$publicKey<- public_key_env
+  }else{
+    publicKeyEnv <- Sys.getenv("DockerParallelSSHPublicKey")
+    if(publicKeyEnv!=""){
+      packageSetting$publicKey<- publicKeyEnv
     }
   }
+
   packageSetting$publicKey
 }
 #' Get the path to the public ssh key
@@ -41,11 +44,11 @@ getSSHPubKeyPath <- function(){
 getSSHPubKeyValue <- function(){
   fileName <- getSSHPubKeyPath()
   if(!is.empty(fileName)){
-      pubkey <- readChar(fileName, file.info(fileName)$size, useBytes  = TRUE)
-      pubkey <- gsub("[\r\n]", "", pubkey)
-      pubkey
+    pubkey <- readChar(fileName, file.info(fileName)$size, useBytes  = TRUE)
+    pubkey <- gsub("[\r\n]", "", pubkey)
+    pubkey
   }else{
-      NULL
+    NULL
   }
 
 }

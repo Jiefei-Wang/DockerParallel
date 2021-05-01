@@ -14,6 +14,9 @@ clusterPreset(
 
 \item{container}{The default container name, can be abbreviated}
 }
+\value{
+No return value
+}
 \description{
 Set the default cloud provider and container. You must install the provider and container
 before using them.

@@ -9,6 +9,11 @@ DockerHardware <- function(cpu = 256, memory = 512, id = NULL){
 #'
 #' @param object The DockerHardware object
 #'
+#' @examples
+#' ## This is the internal function and should not be called by the user
+#' ## It is for illustration purpose only
+#' hardware <- DockerParallel:::DockerHardware()
+#' show(hardware)
 #' @return NULL
 #' @export
 setMethod(f = "show",signature = "DockerHardware",

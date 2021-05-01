@@ -16,7 +16,7 @@ generalDockerClusterTest(
 
 \item{workerContainer}{The workerContainer}
 
-\item{workerNumber}{The worker number in the unit test}
+\item{workerNumber}{The number of workers used in the unit test}
 
 \item{testReconnect}{Logical, whether to test the reconnect feature}
 }

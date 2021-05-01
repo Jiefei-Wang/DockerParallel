@@ -13,6 +13,9 @@
 
 \item{value}{The value of the exported object}
 }
+\value{
+The \code{DockerCluster} object
+}
 \description{
 Set the value of the exported object
 }

@@ -12,3 +12,9 @@
 \description{
 Print the docker hardware
 }
+\examples{
+## This is the internal function and should not be called by the user
+## It is for illustration purpose only
+hardware <- DockerParallel:::DockerHardware()
+show(hardware)
+}

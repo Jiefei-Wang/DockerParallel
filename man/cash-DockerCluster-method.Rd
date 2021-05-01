@@ -11,6 +11,9 @@
 
 \item{name}{Character, the name of the exported object}
 }
+\value{
+The object in the cluster
+}
 \description{
 Get the exported object
 }

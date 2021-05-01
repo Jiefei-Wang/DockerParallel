@@ -9,8 +9,15 @@ setSSHPubKeyPath(publicKey = NULL)
 \arguments{
 \item{publicKey}{path to the public key}
 }
+\value{
+The path to the public key
+}
 \description{
 Set the ssh key file. This function will be called when the package is
-loaded. If no argument is provided, it
+loaded. If no argument is provided and the current stored path is \code{NULL}, it
 will look at the environment variables \code{DockerParallelSSHPublicKey}
+}
+\examples{
+## Getting the path from the environment variable "DockerParallelSSHPublicKey"
+setSSHPubKeyPath()
 }

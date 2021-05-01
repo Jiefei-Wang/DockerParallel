@@ -59,6 +59,7 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
 #' cluster <- makeDockerCluster()
 #' cluster
 #' }
+#' @return No return value
 #' @export
 clusterPreset<- function(
     cloudProvider = c("","ECSFargateProvider"),
@@ -90,6 +91,7 @@ clusterPreset<- function(
 
     packageSetting$cloudProvider <- provider
     packageSetting$workerContainer <- workerContainer
+    invisible(NULL)
 }
 
 

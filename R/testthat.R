@@ -29,7 +29,7 @@ expectWorkerRunning <- function(cluster, expectNum, workerPerContainer){
 #'
 #' @param cloudProvider The CloudProvider
 #' @param workerContainer The workerContainer
-#' @param workerNumber The worker number in the unit test
+#' @param workerNumber The number of workers used in the unit test
 #' @param testReconnect Logical, whether to test the reconnect feature
 #'
 #' @return No return value

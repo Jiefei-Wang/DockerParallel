@@ -196,6 +196,7 @@ setMethod(f = "names",signature = "DockerCluster",
 #' Get the exported object
 #'
 #' @inheritParams DockerCluster-common-parameters
+#' @return The object in the cluster
 #' @export
 setMethod(f = "$",signature = "DockerCluster",
           definition = function(x, name){
@@ -221,6 +222,7 @@ setMethod(f = "$",signature = "DockerCluster",
 #'
 #' @inheritParams DockerCluster-common-parameters
 #' @param value The value of the exported object
+#' @return The `DockerCluster` object
 #' @export
 setMethod(f = "$<-",signature = "DockerCluster",
           definition = function(x, name, value){
@@ -243,6 +245,8 @@ setMethod(f = "$<-",signature = "DockerCluster",
 #' Print the DockerCluster object
 #'
 #' @inheritParams DockerCluster-common-parameters
+#'
+#' @return NULL
 #'
 #' @export
 setMethod(f = "show",signature = "DockerCluster",

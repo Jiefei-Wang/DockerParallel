@@ -9,7 +9,28 @@
 #' When multiple workers share the same container, the developer can call
 #' `.addWorkerHandles` and pass a list of duplicated handles to inform the cluster the
 #' sharing exists. To remove such container handle from the list, you need to call
-#' `.removeWorkerHandles` will the duplicated handles.
+#' `.removeWorkerHandles` with the duplicated handles.
+#'
+#' @examples
+#' ## This is the virtual class and should not be called by the user
+#' ## It is only for illustration purpose
+#' provider <- DockerParallel:::.CloudProvider()
+#' workerContainer <- DockerParallel:::.DockerContainer()
+#' serverContainer <- workerContainer
+#'
+#' cluster <- makeDockerCluster(cloudProvider = provider,
+#'                              workerContainer = workerContainer,
+#'                              serverContainer = serverContainer)
+#'
+#' ## Get the job queue name
+#' .getJobQueueName(cluster)
+#'
+#' ## Set the job queue name
+#' .setJobQueueName(cluster, "foo")
+#' .getJobQueueName(cluster)
+#' @returns
+#' No return value for the setter. The getter will get the object from the cluster.
+#'
 #' @rdname accessors
 #' @export
 .getCloudProvider <- function(cluster){
