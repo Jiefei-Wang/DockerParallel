@@ -62,12 +62,14 @@ dockerCluster <- function(cloudProvider,
 #' @param serverMemory,workerMemory Integer, the memory used by the server or each worker in MB
 #' @param serverHardwareId,workerHardwareId Character, the ID of the hardware, this argument
 #' might be ignored by some cloud providers.
+#' @param jobQueueName Character, the job queue name used by the cluster to send the job.
 #' @param cloudConfig A `CloudConfig` object. The object that stores the cloud information such
-#' as server password, port, network status. Generally there is no need to provide this object
-#' unless you want to customize the cloud setting.
+#' as server password, port, network status. If this argument is provided, the arguments
+#' `workerNumber`, `serverCpu`,`workerCpu`,`serverMemory`,`workerMemory`,`serverHardwareId`,
+#' `workerHardwareId` and `jobQueueName` will be ignored.
 #' @param cloudRuntime A `CloudRuntime` object. The obect that stores the cloud runtime data such
-#' as server IP, handle and worker handles. Generally there is no need to provide this object
-#' unless you want to customize the cloud setting.
+#' as server IP, handle and worker handles. There is no need to provide this object
+#' unless you want to use an existing cloud cluster.
 #' @param serverContainer A `DockerContainer` object, the object that defines the server container.
 #' If the value is `NULL`, the server container will be obtained from the worker container via
 #' `getServerContainer(workerContainer)`
@@ -115,6 +117,7 @@ makeDockerCluster <- function(cloudProvider = NULL,
                               workerNumber = 1,
                               workerCpu = 1024, workerMemory = 2048, workerHardwareId = NULL,
                               serverCpu = 256, serverMemory = 2048, serverHardwareId = NULL,
+                              jobQueueName = "DockerParallelQueue",
                               cloudConfig = NULL,
                               cloudRuntime = NULL,
                               serverContainer = NULL,
@@ -139,7 +142,8 @@ makeDockerCluster <- function(cloudProvider = NULL,
         workerHardware <- DockerHardware(cpu = workerCpu,
                                          memory = workerMemory,
                                          id = workerHardwareId)
-        cloudConfig <- CloudConfig(workerNumber = workerNumber,
+        cloudConfig <- CloudConfig(jobQueueName=jobQueueName,
+                                   workerNumber = workerNumber,
                                    serverHardware =  serverHardware,
                                    workerHardware = workerHardware)
     }
@@ -174,6 +178,8 @@ makeDockerCluster <- function(cloudProvider = NULL,
 #'
 #' @rdname DockerCluster-common-parameters
 #' @name DockerCluster-common-parameters
+#' @returns
+#' No return value
 NULL
 
 
@@ -246,7 +252,7 @@ setMethod(f = "$<-",signature = "DockerCluster",
 #'
 #' @inheritParams DockerCluster-common-parameters
 #'
-#' @return NULL
+#' @return No return value
 #'
 #' @export
 setMethod(f = "show",signature = "DockerCluster",
@@ -481,7 +487,7 @@ getExpectedWorkerNumber <- function(cluster){
 
 registerBackend <- function(cluster, ...){
     verbose <- cluster$verbose
-    verbosePrint(verbose, "Registering foreach redis backend, it might take a few minutes")
+    verbosePrint(verbose, "Registering parallel backend, it might take a few minutes")
     if(!is.null(.getServerHandle(cluster))){
         success <- waitInstanceUntilRunning(
             cluster@cloudProvider,

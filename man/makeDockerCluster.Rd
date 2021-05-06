@@ -14,6 +14,7 @@ makeDockerCluster(
   serverCpu = 256,
   serverMemory = 2048,
   serverHardwareId = NULL,
+  jobQueueName = "DockerParallelQueue",
   cloudConfig = NULL,
   cloudRuntime = NULL,
   serverContainer = NULL,
@@ -37,13 +38,16 @@ deployed}
 \item{serverHardwareId, workerHardwareId}{Character, the ID of the hardware, this argument
 might be ignored by some cloud providers.}
 
+\item{jobQueueName}{Character, the job queue name used by the cluster to send the job.}
+
 \item{cloudConfig}{A \code{CloudConfig} object. The object that stores the cloud information such
-as server password, port, network status. Generally there is no need to provide this object
-unless you want to customize the cloud setting.}
+as server password, port, network status. If this argument is provided, the arguments
+\code{workerNumber}, \code{serverCpu},\code{workerCpu},\code{serverMemory},\code{workerMemory},\code{serverHardwareId},
+\code{workerHardwareId} and \code{jobQueueName} will be ignored.}
 
 \item{cloudRuntime}{A \code{CloudRuntime} object. The obect that stores the cloud runtime data such
-as server IP, handle and worker handles. Generally there is no need to provide this object
-unless you want to customize the cloud setting.}
+as server IP, handle and worker handles. There is no need to provide this object
+unless you want to use an existing cloud cluster.}
 
 \item{serverContainer}{A \code{DockerContainer} object, the object that defines the server container.
 If the value is \code{NULL}, the server container will be obtained from the worker container via

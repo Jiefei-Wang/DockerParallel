@@ -1,2 +1,8 @@
+                          Changes in version 1.0.1
++ Change the arguments in clusterPreset to make its meaning more clear.
++ Add jobQueueName argument to makeDockerCluster
+
                           Changes in version 1.0.0
 First public release.
+
+

@@ -16,6 +16,9 @@ initializeProvider(provider, cluster, verbose)
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }
+\value{
+No return value
+}
 \description{
 Initialize the service provider. This function will be called prior
 to \code{runDockerServer} and \code{runDockerWorkers}. It is used to initialize the cloud-specific

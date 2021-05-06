@@ -59,7 +59,7 @@ We would not discuss the technical details of these components as they should be
 # The structure of ECS
 Amazon provides Elastic Compute Service to take over the management of servers. By using ECS, the user only needs to prepare the container image and ECS will find the best server to run the container. ECS provides both the traditional server and fargate as the host machine of the container. For the traditional server, the user is able to select a set of hardware that can run the container. For the fargate launch type, it does not refer to any particular server. The choice of the server is determined by Amazon and is opaque to the user. The user only need to specify the CPU and memory that a container needs. Therefore, it greatly simplifies the deployment of the container. 
 
-In this vignette, We use the foreach doRedis parallel backend and deploy the container using the ECS fargate launch type. Below is the diagram of how `DockerParallel` works with ECS and Bioconductor foreach doRedis container
+In this vignette, We use the foreach doRedis parallel backend and deploy the container using the ECS fargate launch type. Below is the diagram of how `DockerParallel` works with ECS and  foreach doRedis container
 
 ![](fargate.jpg)
 
@@ -97,22 +97,22 @@ You can either explicitly specify them or provide them as environment variables.
 [AWS Documentation]: https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_access-keys.html#Using_CreateAccessKey
 
 # Select a container
-Similar to the cloud provider, the container is also changeable and provides different running environment and parallel backend. Currently the only available container is `BiocFEDRContainer`(stands for `Bioconductor ForEach DoRedis Container`). Users can create a `BiocFEDRContainer` worker container by
+Similar to the cloud provider, the container is also changeable and provides different running environment and parallel backend. Currently we provides r-base or Bioconductor container image with `doRedis` or `RedisParam` backend, the container can be made by
 ```{r}
-## Load the Bioconductor Foreach doRedis package
-library(BiocFEDRContainer)
-workerContainer <- BiocFEDRWorkerContainer()
+## Create the r-base foreach doRedis container image
+library(RedisContainerProvider)
+workerContainer <- RedisWorkerContainer(image = "r-base", backend = "doRedis")
 workerContainer
 ```
-This should be enough for creating the cluster object. However, if you want to have more control over the container object, the server can be created separately via
+This should be enough for creating the cluster. However, if you want to have more control over the container, the server container can be obtained from the worker container via
 ```{r}
-serverContainer <- BiocFEDRServerContainer()
+serverContainer <- getServerContainer(workerContainer)
 serverContainer
 ```
 
 
 # Create the cluster and run your parallel task
-Once you have selected the provider and containers, the cluster can be created by
+Once you have selected the provider and container, the cluster can be created by
 ```{r}
 cluster <- makeDockerCluster(
   cloudProvider = provider,
@@ -122,10 +122,10 @@ cluster <- makeDockerCluster(
 ```
 where `workerCpu` defines the CPU unit used by the worker container, 1024 CPU unit corresponds to a single CPU core. `workerMemory` defines the worker memory and the unit is `MB`. The server and worker containers will be implicitly generated from the container object you passed to the function. 
 
-For simplifying the cluster creation process, the package provides a function for quickly choosing the provider and container as the default values.
+For simplifying the cluster creation process, the package provides `clusterPreset` for quickly choosing the provider and container as the default values. In this case you do not need to specify the provider and container arguments when calling `makeDockerCluster`.
 ```{r}
-## Set ECSFargateProvider and BiocFEDRContainer as the default
-clusterPreset(cloudProvider = "ECSFargateProvider", container = "BiocFEDRContainer")
+## Set ECSFargateProvider and r-base doRedis container as the default
+clusterPreset(cloudProvider = "ECSFargateProvider", container = "rbaseDoRedis")
 cluster <- makeDockerCluster(
   workerNumber = 1,
   workerCpu = 1024, workerMemory = 2048)
@@ -154,7 +154,7 @@ cluster$stopCluster()
 By default, the cluster will step itself if it has been removed from the R session, but we recommended to explicitly stop it after use.
 
 # Advanced topic
-In this document, we will introduce some advanced topics related to the package. Please note that the some features described in this section may not be available for all cloud providers and containers, they are only tested at the ECS fargate provider and Bioconductor foreach doRedis container.
+In this document, we will introduce some advanced topics related to the package. Please note that the some features described in this section may not be available for all cloud providers and containers, they are only tested with the package `ECSFargateProvider` and `RedisContainerProvider`.
 
 ## Installing the system packages
 Some R packages require the system dependence before they can be installed. The system packages can be added via `addSysPackages` in the container object. For example
@@ -162,7 +162,7 @@ Some R packages require the system dependence before they can be installed. The 
 cluster$workerContainer$addSysPackages(c("package1", "package2"))
 cluster$workerContainer$getSysPackages()
 ```
-When the contain is deployed, the system packages will be installed via `apt-get install` before the start of the R workers. Note that this function only work with the incoming worker container. It has no effect on the current running container. The Bioconductor foreach doRedis server container does not support this operation. You can also set the system packages using
+When the contain is deployed, the system packages will be installed via `apt-get install` before the start of the R workers. Note that this function only work with the incoming worker container. It has no effect on the current running container. The server container does not support this operation. You can also set the system packages using
 ```{r}
 cluster$workerContainer$setSysPackages(c("package1", "package2"))
 ```
@@ -174,7 +174,7 @@ Users can ask the workers to install the R packages before connecting with the s
 cluster$workerContainer$addRPackages("S4Vectors")
 cluster$workerContainer$getRPackages()
 ```
-Similar to `addSysPackages`, this feature does not work with the existing container. The Bioconductor foreach doRedis server container does not support this operation. The `setRPackages` is also available if preserving the previous package setting is not required.
+Similar to `addSysPackages`, this feature does not work with the existing container. The  server container does not support this operation. The `setRPackages` is also available if preserving the previous package setting is not required.
 
 ## SSH to the container
 Sometimes it might be helpful to ssh into the container and look at the debug information. The package can search for your public key file through the environment variable `DockerParallelSSHPublicKey`. If the public key file is available, it can be used by the container object and allow you to access the container using your private key. If you want to explicitly provide a public key, this can be done via
@@ -189,7 +189,7 @@ The ssh key value can be found by
 ```{r eval=FALSE}
 getSSHPubKeyValue()
 ```
-Note that the availability of the SSH service depends on the implementation of both the cloud provider and container. The formal one needs to allow the ssh access to the container and the latter one needs to run the SSH server inside the container. The ECS fargate provider and the Bioconductor foreach doRedis container support the SSH access. If the Bioconductor foreach doRedis container is used, users can find the worker's log file from `/workspace/log`
+Note that the availability of the SSH service depends on the implementation of both the cloud provider and container. The formal one needs to allow the ssh access to the container and the latter one needs to run the SSH server inside the container. The ECS fargate provider and the containers from the package `RedisContainerProvider` support the SSH access. Users can find the worker's log file from `/workspace/log`
 
 
 # Session info

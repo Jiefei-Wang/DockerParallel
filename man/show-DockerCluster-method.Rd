@@ -9,6 +9,9 @@
 \arguments{
 \item{object}{The \code{DockerCluster} object}
 }
+\value{
+No return value
+}
 \description{
 Print the DockerCluster object
 }

@@ -48,7 +48,7 @@ setMethod(f = "$",signature = "ClusterMethodGetter",
 #' print method
 #'
 #' @param object `ClusterMethodGetter` object
-#' @return NULL
+#' @return No return value
 #' @export
 setMethod(f = "show",signature = "ClusterMethodGetter",
           definition = function(object){

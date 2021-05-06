@@ -49,13 +49,13 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
 #' Set the default cloud provider and container
 #'
 #' Set the default cloud provider and container. You must install the provider and container
-#' before using them.
+#' packages before using them.
 #'
 #' @param cloudProvider The default cloud provider name, can be abbreviated
 #' @param container The default container name, can be abbreviated
 #' @examples
 #' \dontrun{
-#' clusterPreset(cloudProvider = "ECSFargateProvider", container = "BiocFEDRContainer")
+#' clusterPreset(cloudProvider = "ECSFargateProvider", container = "rbaseDoRedis")
 #' cluster <- makeDockerCluster()
 #' cluster
 #' }
@@ -63,7 +63,12 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
 #' @export
 clusterPreset<- function(
     cloudProvider = c("","ECSFargateProvider"),
-    container = c("","BiocFEDRContainer", "BiocBPRPContainer", "baseFEDRContainer")
+    container = c("",
+                  "rbaseDoRedis",
+                  "rbaseRedisParam",
+                  "biocDoRedis",
+                  "biocRedisParam"
+    )
 ){
     cloudProvider <- match.arg(cloudProvider)
     container <- match.arg(container)
@@ -75,18 +80,25 @@ clusterPreset<- function(
         eval(parse(text = "provider <- ECSFargateProvider::ECSFargateProvider()"))
     }
 
-    if(container == "BiocFEDRContainer"){
-        loadPackage("BiocFEDRContainer")
-        eval(parse(text = "workerContainer <- BiocFEDRContainer::BiocFEDRWorkerContainer()"))
+    if(container!=""){
+        loadPackage("RedisContainerProvider")
     }
 
-    if(container == "BiocBPRPContainer"){
-        loadPackage("BiocBPRPContainer")
-        eval(parse(text = "workerContainer <- BiocBPRPContainer::BiocBPRPWorkerContainer()"))
+    if(container == "rbaseDoRedis"){
+        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"r-base\", backend = \"doRedis\")"))
     }
-    if(container == "baseFEDRContainer"){
-        loadPackage("baseFEDRContainer")
-        eval(parse(text = "workerContainer <- baseFEDRContainer::baseFEDRWorkerContainer()"))
+
+    if(container == "rbaseRedisParam"){
+        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"r-base\", backend = \"RedisParam\")"))
+    }
+    if(container == "biocDoRedis"){
+        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"bioconductor\", backend = \"doRedis\")"))
+    }
+    if(container == "biocRedisParam"){
+        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"bioconductor\", backend = \"RedisParam\")"))
+    }
+    if(container!=""&&is.null(workerContainer)){
+        stop("Somethine is wrong")
     }
 
     packageSetting$cloudProvider <- provider

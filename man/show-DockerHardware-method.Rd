@@ -9,6 +9,9 @@
 \arguments{
 \item{object}{The DockerHardware object}
 }
+\value{
+No return value
+}
 \description{
 Print the docker hardware
 }

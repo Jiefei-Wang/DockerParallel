@@ -1,6 +1,6 @@
 Package: DockerParallel
 Title: Using the Docker Container to Create R Workers on Local or Cloud Platform
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: 
     person(given = "Jiefei",
            family = "Wang",

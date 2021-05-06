@@ -9,6 +9,9 @@
 \arguments{
 \item{object}{\code{ClusterMethodGetter} object}
 }
+\value{
+No return value
+}
 \description{
 print method
 }

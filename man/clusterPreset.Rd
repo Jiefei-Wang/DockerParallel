@@ -6,7 +6,7 @@
 \usage{
 clusterPreset(
   cloudProvider = c("", "ECSFargateProvider"),
-  container = c("", "BiocFEDRContainer", "BiocBPRPContainer", "baseFEDRContainer")
+  container = c("", "rbaseDoRedis", "rbaseRedisParam", "biocDoRedis", "biocRedisParam")
 )
 }
 \arguments{
@@ -19,11 +19,11 @@ No return value
 }
 \description{
 Set the default cloud provider and container. You must install the provider and container
-before using them.
+packages before using them.
 }
 \examples{
 \dontrun{
-clusterPreset(cloudProvider = "ECSFargateProvider", container = "BiocFEDRContainer")
+clusterPreset(cloudProvider = "ECSFargateProvider", container = "rbaseDoRedis")
 cluster <- makeDockerCluster()
 cluster
 }

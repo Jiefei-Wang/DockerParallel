@@ -21,6 +21,9 @@ deregisterParallelBackend(container, cluster, verbose, ...)
 
 \item{...}{The additional parameter that will be passed to the registration function}
 }
+\value{
+No return value
+}
 \description{
 Register/deregister the parallel backend. These methods will be dispatched based on
 the \emph{worker} container. The parallel framework depends on the container image.

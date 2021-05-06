@@ -6,8 +6,9 @@
 #' @param cluster S4 `DockerCluster` object.
 #' @param container S4 `DockerContainer` Object.
 #' @param hardware S4 `DockerHardware` Object.
-#' @rdname commonParams
-#' @name commonParams
+#' @rdname generics-commonParams
+#' @name generics-commonParams
+#' @return No return value
 NULL
 
 
@@ -21,7 +22,7 @@ NULL
 #' times. Developers can cache the cloud status and speed up the initialization
 #' process.
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #'
 #' @details
 #' Based on the cloud nature, an initialization process might be required
@@ -39,7 +40,7 @@ NULL
 #' Although it is possible to change any settings in `cluster` in this function,
 #' the best practice is to only initialize `provider` and
 #' the value `serverWorkerSameLAN`.
-#' @return NULL
+#' @return No return value
 #' @export
 setGeneric("initializeProvider", function(provider, cluster, verbose){
     standardGeneric("initializeProvider")
@@ -50,7 +51,7 @@ setGeneric("initializeProvider", function(provider, cluster, verbose){
 #' Run the server and return the server instance handle. There is no default method
 #' for this generic.
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @param container S4 `DockerContainer` Object. The server container.
 #' @param hardware S4 `DockerHardware` Object. The server hardware.
 #'
@@ -75,7 +76,7 @@ setGeneric("runDockerServer", function(provider, cluster, container, hardware, v
 #' for this generic.
 #'
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @param workerNumber Integer. The number of workers needs to be run.
 #' @param container S4 `DockerContainer` Object. The worker container.
 #' @param hardware S4 `DockerHardware` Object. The worker hardware.
@@ -99,7 +100,7 @@ setGeneric("runDockerWorkers",
 #' does not have the public or private IP, its value can be set to the character
 #' "". There is no default method for this generic.
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @param instanceHandles List. A list of instance handles.
 #'
 #' @return A data.frame with `publicIp` and `privateIp` columns and each row corresponds
@@ -181,7 +182,7 @@ setGeneric("killDockerInstances", function(provider, instanceHandles, verbose){
 #' `TRUE` if the cluster specific to the value from `.getJobQueueName(cluster)` exists.
 #' The default method always returns `FALSE`
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @return A logical value
 #' @export
 setGeneric("dockerClusterExists", function(provider, cluster, verbose){
@@ -197,7 +198,7 @@ setGeneric("dockerClusterExists", function(provider, cluster, verbose){
 #' prefix `.set` to set the values in the cluster.
 #' The default method does nothing.
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @return No return value
 #' @export
 setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
@@ -217,7 +218,7 @@ setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
 #' be respected and overwritten only when necessary.
 #' There is no default method for this generic.
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @param container Reference Container Object. The server container.
 #'
 #' @return An object which has the same class as `container`
@@ -238,7 +239,7 @@ setGeneric("configServerContainerEnv", function(container, cluster, verbose){
 #' be respected and overwritten only when necessary.
 #' There is no default method for this generic.
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @param container Reference Container Object. The worker container.
 #' @param workerNumber Integer. The number of workers in a container.
 #'
@@ -256,12 +257,12 @@ setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber
 #' to define `deregisterParallelBackend` as its default method will deregister the
 #' foreach backend. There is no default method defined for `registerParallelBackend`.
 #'
-#' @inheritParams commonParams
+#' @inheritParams generics-commonParams
 #' @param container The worker container.
 #' @param ... The additional parameter that will be passed to the registration function
 #'
 #' @rdname containerParallelBackend
-#' @return NULL
+#' @return No return value
 #' @export
 setGeneric("registerParallelBackend", function(container, cluster, verbose, ...){
     standardGeneric("registerParallelBackend")

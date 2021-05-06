@@ -14,7 +14,7 @@ DockerHardware <- function(cpu = 256, memory = 512, id = NULL){
 #' ## It is for illustration purpose only
 #' hardware <- DockerParallel:::DockerHardware()
 #' show(hardware)
-#' @return NULL
+#' @return No return value
 #' @export
 setMethod(f = "show",signature = "DockerHardware",
           definition = function(object){
