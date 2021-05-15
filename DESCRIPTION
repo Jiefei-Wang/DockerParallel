@@ -25,3 +25,5 @@ Suggests:
     rmarkdown,
     testthat
 VignetteBuilder: knitr
+URL: https://github.com/Jiefei-Wang/DockerParallel
+BugReports: https://github.com/Jiefei-Wang/DockerParallel/issues
