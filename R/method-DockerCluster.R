@@ -120,7 +120,7 @@ makeDockerCluster <- function(cloudProvider = NULL,
                               jobQueueName = "DockerParallelQueue",
                               cloudConfig = NULL,
                               cloudRuntime = NULL,
-                              serverContainer = NULL,
+                              serverContainer = getServerContainer(workerContainer),
                               stopClusterOnExit = TRUE,
                               verbose = 1){
     if(is.null(cloudProvider)){
@@ -150,9 +150,7 @@ makeDockerCluster <- function(cloudProvider = NULL,
     if(is.null(cloudRuntime)){
         cloudRuntime <- CloudRuntime()
     }
-    if(is.null(serverContainer)){
-        serverContainer <- getServerContainer(workerContainer)
-    }
+
 
     cluster <- dockerCluster(
         cloudProvider = cloudProvider,

@@ -80,23 +80,24 @@ clusterPreset<- function(
         eval(parse(text = "provider <- ECSFargateProvider::ECSFargateProvider()"))
     }
 
-    if(container!=""){
-        loadPackage("RedisContainerProvider")
-    }
 
     if(container == "rbaseDoRedis"){
-        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"r-base\", backend = \"doRedis\")"))
+        loadPackage("doRedisContainer")
+        eval(parse(text = "workerContainer <- doRedisContainer::doRedisWorkerContainer(image = \"r-base\")"))
     }
 
     if(container == "rbaseRedisParam"){
-        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"r-base\", backend = \"RedisParam\")"))
+        loadPackage("RedisParamContainer")
+        eval(parse(text = "workerContainer <- RedisParamContainer::RedisParamWorkerContainer(image = \"r-base\")"))
     }
     if(container == "biocDoRedis"){
-        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"bioconductor\", backend = \"doRedis\")"))
+        loadPackage("doRedisContainer")
+        eval(parse(text = "workerContainer <- doRedisContainer::doRedisWorkerContainer(image = \"bioconductor\")"))
     }
     if(container == "biocRedisParam"){
-        eval(parse(text = "workerContainer <- RedisContainerProvider::RedisWorkerContainer(image = \"bioconductor\", backend = \"RedisParam\")"))
-    }
+        loadPackage("RedisParamContainer")
+        eval(parse(text = "workerContainer <- RedisParamContainer::RedisParamWorkerContainer(image = \"bioconductor\")"))
+        }
     if(container!=""&&is.null(workerContainer)){
         stop("Somethine is wrong")
     }
