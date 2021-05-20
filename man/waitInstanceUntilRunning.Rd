@@ -15,7 +15,7 @@ waitInstanceUntilRunning(
 \arguments{
 \item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
-\item{instanceHandles}{List. A list of instance handles.}
+\item{instanceHandles}{Character(n). A list of instance handles.}
 
 \item{progressBar}{Logical, whether to show a progress bar while waiting}
 

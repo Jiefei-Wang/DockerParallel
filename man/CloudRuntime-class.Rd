@@ -9,23 +9,25 @@
 The cloud runtime. It is a class purely for storing the runtime information
 for the cloud.
 The values in \code{CloudRuntime} in a cluster can be accessed by the getter function
-which starts with the prefix \code{.get}(e.g. \code{.getServerHandle(cluster)}).
+which starts with the prefix \code{.get}(e.g. \code{.getServerPublicIp(cluster)}).
 }
 \section{Fields}{
 
 \describe{
-\item{\code{serverHandle}}{Any data type, the server handle that can be recognized by the
-cloud provider.}
+\item{\code{serverFromOtherSource}}{Logical(1), whether the server is provided outside of
+cluster. If \code{TRUE}, the cluster will not try to stop the server when it is stopped.}
 
-\item{\code{workerHandles}}{A list object for internal use only.
-Please call \code{.getWorkerHandles(cluster)} to access the worker handles}
+\item{\code{serverPublicIp}}{Character(1) or character(0), the server public IP.}
 
-\item{\code{workerPerHandle}}{An internal counter. Please call \code{.getWorkerHandles(cluster)}
-to access the worker handles}
+\item{\code{serverPublicPort}}{Integer(1) or integer(0), the server public port.}
 
-\item{\code{serverPublicIp}}{Character or NULL, the server public IP}
+\item{\code{serverPrivateIp}}{Character(1) or character(0), the server private IP.}
 
-\item{\code{serverPrivateIp}}{Character or NULL, the server private IP}
+\item{\code{serverPrivatePort}}{Integer(1) or integer(0), the server private port.}
+
+\item{\code{runningWorkerNumber}}{Integer(1), the current initializing workers.}
+
+\item{\code{runningWorkerNumber}}{Integer(1), the current running workers.}
 }}
 
 

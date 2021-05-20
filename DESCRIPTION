@@ -23,7 +23,8 @@ Suggests:
     markdown,
     knitr,
     rmarkdown,
-    testthat
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 URL: https://github.com/Jiefei-Wang/DockerParallel
 BugReports: https://github.com/Jiefei-Wang/DockerParallel/issues
+Config/testthat/edition: 3
