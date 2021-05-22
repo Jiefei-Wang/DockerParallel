@@ -7,25 +7,15 @@ DockerCluster.finalizer<- function(e){
 }
 
 initializeCloudProviderInternal <- function(cluster){
-    if(!cluster$settings$cloudProviderInitialized){
+    settings <- .getClusterSettings(cluster)
+    if(!settings$cloudProviderInitialized){
         verbose <- cluster$verbose
         provider <- .getCloudProvider(cluster)
         initializeCloudProvider(provider = provider, cluster=cluster, verbose = verbose)
+        settings$cloudProviderInitialized <- TRUE
     }
 }
 
-removeDiedServer <- function(cluster){
-    verbose <- cluster$verbose
-    provider <- .getCloudProvider(cluster)
-    cloudRuntime <- .getCloudRuntime(cluster)
-    status <- getServerStatus(provider = provider,
-                              cluster = cluster,
-                              verbose = verbose)
-    if(status == "stopped"){
-        resetServerRuntime(cloudRuntime)
-    }
-    status
-}
 
 
 ## Check if the cluster exists on the cloud
@@ -71,17 +61,24 @@ checkIfClusterExistAndAsk <- function(cluster){
 updateWorkerNumber <- function(cluster){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
-    workerNumber <-
+    workerNumbers <-
         tryCatch(
-            getDockerWorkerNumber(
+            getDockerWorkerNumbers(
                 provider = provider,
                 cluster = cluster,
                 verbose = verbose),
             error = function(e) warning(e$message))
-    if(is.integer(workerNumber)&&length(workerNumber)==2){
-        .setInitializingWorkerNumber(cluster, workerNumber[1])
-        .setRunningWorkerNumber(cluster, workerNumber[2])
+    if(length(workerNumbers)!=2){
+        stop("The worker numbers returned by <getDockerWorkerNumbers> must be of length 2")
     }
+    if(!is.list(workerNumbers)){
+        stop("The worker numbers returned by <getDockerWorkerNumbers> must be a list")
+    }
+    if(!setequal(names(workerNumbers), c("initializing", "running"))){
+        stop("The name of the worker numbers returned by getDockerWorkerNumbers must be 'initializing' and 'running'")
+    }
+    .setInitializingWorkerNumber(cluster, workerNumbers$initializing)
+    .setRunningWorkerNumber(cluster, workerNumbers$running)
 }
 
 
@@ -137,6 +134,21 @@ handleError <- function(expr, errorToWarning = FALSE){
     }
 }
 
+updateServerStatus <- function(cluster){
+    verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
+    cloudRuntime <- .getCloudRuntime(cluster)
+    status <- getServerStatus(provider = provider,
+                              cluster = cluster,
+                              verbose = verbose)
+    if(status == "stopped"){
+        resetServerRuntime(cloudRuntime)
+    }
+    if(status == "running"){
+        updateServerIp(cluster)
+    }
+    status
+}
 
 updateServerIp <- function(cluster){
     verbose <- cluster$verbose

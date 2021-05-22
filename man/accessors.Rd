@@ -6,6 +6,13 @@
 \alias{.getServerContainer}
 \alias{.getWorkerContainer}
 \alias{.getCloudRuntime}
+\alias{.getClusterSettings}
+\alias{.setCloudProvider}
+\alias{.setCloudConfig}
+\alias{.setServerContainer}
+\alias{.setWorkerContainer}
+\alias{.setCloudRuntime}
+\alias{.setClusterSettings}
 \alias{.getJobQueueName}
 \alias{.getExpectedWorkerNumber}
 \alias{.getWorkerHardware}
@@ -47,6 +54,20 @@
 .getWorkerContainer(cluster)
 
 .getCloudRuntime(cluster)
+
+.getClusterSettings(cluster)
+
+.setCloudProvider(cluster, value)
+
+.setCloudConfig(cluster, value)
+
+.setServerContainer(cluster, value)
+
+.setWorkerContainer(cluster, value)
+
+.setCloudRuntime(cluster, value)
+
+.setClusterSettings(cluster, value)
 
 .getJobQueueName(cluster)
 

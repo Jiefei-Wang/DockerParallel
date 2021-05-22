@@ -4,7 +4,7 @@
 \alias{DockerHardware}
 \title{Make a DockerHardware object}
 \usage{
-DockerHardware(cpu = 256, memory = 512, id = NULL)
+DockerHardware(cpu = 256, memory = 512, id = character(0))
 }
 \arguments{
 \item{cpu}{Numeric(1), the CPU limitation for the docker. 1024 CPU unit

@@ -39,6 +39,47 @@
     cluster@cloudRuntime
 }
 
+#' @rdname accessors
+#' @export
+.getClusterSettings <- function(cluster){
+    cluster@settings
+}
+
+#' @rdname accessors
+#' @export
+.setCloudProvider <- function(cluster, value){
+    cluster@cloudProvider <- value
+}
+
+#' @rdname accessors
+#' @export
+.setCloudConfig <- function(cluster, value){
+    cluster@cloudConfig <- value
+}
+
+#' @rdname accessors
+#' @export
+.setServerContainer <- function(cluster, value){
+    cluster@serverContainer <- value
+}
+
+#' @rdname accessors
+#' @export
+.setWorkerContainer <- function(cluster, value){
+    cluster@workerContainer <- value
+}
+
+#' @rdname accessors
+#' @export
+.setCloudRuntime <- function(cluster, value){
+    cluster@cloudRuntime <- value
+}
+
+#' @rdname accessors
+#' @export
+.setClusterSettings <- function(cluster, value){
+    cluster@settings <- value
+}
 
 ## CloudConfig
 #' @rdname accessors
@@ -203,7 +244,7 @@
 #' @export
 .setInitializingWorkerNumber <- function(cluster, value){
     runtime <- .getCloudRuntime(cluster)
-    runtime$InitializingWorkerNumber <- as.integer(value)
+    runtime$initializingWorkerNumber <- as.integer(value)
 }
 #' @rdname accessors
 #' @export

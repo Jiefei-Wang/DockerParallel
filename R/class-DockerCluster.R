@@ -92,8 +92,8 @@ dockerCluster <- function(cloudProvider,
 makeDockerCluster <- function(cloudProvider = NULL,
                               workerContainer = NULL,
                               workerNumber = 1,
-                              workerCpu = 1024, workerMemory = 2048, workerHardwareId = NULL,
-                              serverCpu = 256, serverMemory = 2048, serverHardwareId = NULL,
+                              workerCpu = 1024, workerMemory = 2048, workerHardwareId = character(0),
+                              serverCpu = 256, serverMemory = 2048, serverHardwareId = character(0),
                               jobQueueName = "DockerParallelQueue",
                               cloudConfig = NULL,
                               cloudRuntime = NULL,
@@ -120,12 +120,12 @@ makeDockerCluster <- function(cloudProvider = NULL,
                                          memory = workerMemory,
                                          id = workerHardwareId)
         cloudConfig <- CloudConfig(jobQueueName=jobQueueName,
-                                   workerNumber = workerNumber,
+                                   expectedWorkerNumber = workerNumber,
                                    serverHardware =  serverHardware,
                                    workerHardware = workerHardware)
     }
     if(is.null(cloudRuntime)){
-        cloudRuntime <- CloudRuntime()
+        cloudRuntime <- CloudRuntime(serverFromOtherSource = FALSE)
     }
 
 

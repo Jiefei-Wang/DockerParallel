@@ -4,10 +4,10 @@ setMethod("initializeCloudProvider", "ANY", function(provider, cluster, verbose 
 
 })
 
-#' @describeIn getDockerWorkerNumber The default getDockerWorkerNumber method. Return `c(0L, .getExpectedWorkerNumber(cluster))`
+#' @describeIn getDockerWorkerNumbers The default getDockerWorkerNumbers method. Return `c(0L, .getExpectedWorkerNumber(cluster))`
 #' @export
-setMethod("getDockerWorkerNumber", "ANY", function(provider, cluster, verbose = 0L){
-    c(0L, .getExpectedWorkerNumber(cluster))
+setMethod("getDockerWorkerNumbers", "ANY", function(provider, cluster, verbose = 0L){
+    list(initializing = 0L, running = .getExpectedWorkerNumber(cluster))
 })
 
 
@@ -16,7 +16,6 @@ setMethod("getDockerWorkerNumber", "ANY", function(provider, cluster, verbose = 
 setMethod("dockerClusterExists", "ANY",function(provider, cluster, verbose){
     FALSE
 })
-
 
 #' @describeIn reconnectDockerCluster The default method, do nothing.
 #' @export

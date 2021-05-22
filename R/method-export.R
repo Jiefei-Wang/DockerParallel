@@ -108,6 +108,27 @@ clusterPreset<- function(
 }
 
 
+serializeDockerClusterStaticData <- function(cluster){
+    cloudConfig <- .getCloudConfig(cluster)
+    serverContainer <- .getServerContainer(cluster)
+    workerContainer <- .getWorkerContainer(cluster)
+    settings <- .getClusterSettings(cluster)
 
+    clusterData <- list(cloudConfig = cloudConfig,
+                        serverContainer = serverContainer,
+                        workerContainer = workerContainer,
+                        settings = settings)
+    clusterData$settings$parallelBackendRegistered <- FALSE
 
+    serialize(clusterData, NULL)
+}
 
+unserializeDockerCluster <- function(cluster, provider, staticData){
+    clusterData <- unserialize(staticData)
+    .setCloudConfig(cluster, clusterData$cloudConfig)
+    .setServerContainer(cluster, clusterData$serverContainer)
+    .setWorkerContainer(cluster, clusterData$workerContainer)
+    .setClusterSettings(cluster, clusterData$settings)
+    .setCloudProvider(cluster , provider)
+
+}

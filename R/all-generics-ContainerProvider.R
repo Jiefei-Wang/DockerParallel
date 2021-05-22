@@ -59,6 +59,7 @@ setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber
 setGeneric("registerParallelBackend", function(container, cluster, verbose, ...){
     standardGeneric("registerParallelBackend")
 })
+
 #' @rdname containerParallelBackend
 #' @export
 setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ...){

@@ -139,6 +139,7 @@ setMethod(f = "show",signature = "DockerCluster",
 # cluster$status()
 
 startCluster <- function(cluster, ...){
+    initializeCloudProviderInternal(cluster)
     verbose <- cluster$verbose
 
     ## Check if the cluster exists on the cloud
@@ -151,9 +152,9 @@ startCluster <- function(cluster, ...){
     startServer(cluster)
 
     ## Start the worker
-    workerNumber <- cluster@cloudConfig$workerNumber
-    verbosePrint(verbose>0, "The cluster has ",workerNumber," workers")
-    setWorkerNumber(cluster, workerNumber)
+    expectedWorkerNumber <- .getExpectedWorkerNumber(cluster)
+    verbosePrint(verbose>0, "The cluster has ",expectedWorkerNumber," workers")
+    cluster$setWorkerNumber(expectedWorkerNumber)
 
     ## Register backend
     registerBackend(cluster, ...)
@@ -171,7 +172,7 @@ startServer <- function(cluster){
     serverFromOtherSource <- .getServerFromOtherSource(cluster)
 
     if(!serverFromOtherSource){
-        status <- removeDiedServer(cluster)
+        status <- updateServerStatus(cluster)
         ## Run the server if it does not exist
         if(status == "stopped"){
             if(is.null(.getServerContainer(cluster))){
@@ -234,7 +235,7 @@ getWorkerNumber <- function(cluster){
     ## Check the latest status
     updateWorkerNumber(cluster)
 
-    initializings <- .getInitializingWorkerNumber(cluster)
+    initializing <- .getInitializingWorkerNumber(cluster)
     running <- .getRunningWorkerNumber(cluster)
     expected <- .getExpectedWorkerNumber(cluster)
 
@@ -244,16 +245,24 @@ getWorkerNumber <- function(cluster){
 }
 
 stopCluster <- function(cluster, ignoreError = FALSE){
-    verbosePrint(cluster$verbose, "Stopping cluster")
+    verbose <- cluster$verbose
+    verbosePrint(verbose, "Stopping cluster")
     provider <- .getCloudProvider(cluster)
+    settings <- .getClusterSettings(cluster)
     handleError(deregisterBackend(cluster), errorToWarning = ignoreError)
+    ## We use this trick to preserve the expected worker number
+    expectedWorkerNumber <- .getExpectedWorkerNumber(cluster)
     handleError(setWorkerNumber(cluster, 0), errorToWarning = ignoreError)
+    .setExpectedWorkerNumber(cluster, expectedWorkerNumber)
+
     handleError(stopServer(cluster), errorToWarning = ignoreError)
-    handleError(
-        cleanupDockerCluster(provider = provider,
-                             cluster = cluster,
-                             verbose = verbose),
-        errorToWarning = ignoreError)
+    if(settings$cloudProviderInitialized){
+        handleError(
+            cleanupDockerCluster(provider = provider,
+                                 cluster = cluster,
+                                 verbose = verbose),
+            errorToWarning = ignoreError)
+    }
     invisible(NULL)
 }
 
@@ -277,6 +286,7 @@ stopServer<- function(cluster){
 }
 
 reconnect <- function(cluster, ...){
+    initializeCloudProviderInternal(cluster)
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
     exist <- dockerClusterExists(provider=provider, cluster=cluster, verbose=verbose)
@@ -292,6 +302,9 @@ reconnect <- function(cluster, ...){
     reconnectDockerCluster(provider = provider,
                            cluster = cluster,
                            verbose = verbose)
+    updateServerIp(cluster)
+    workerNumber <- cluster$getWorkerNumber()
+    .setExpectedWorkerNumber(cluster, workerNumber$initializing + workerNumber$running)
     cluster$registerBackend(...)
 }
 
@@ -300,21 +313,23 @@ registerBackend <- function(cluster, ...){
     verbose <- cluster$verbose
     verbosePrint(verbose, "Registering parallel backend, it might take a few minutes")
     stopifnot(cluster$isServerRunning())
+    settings <- .getClusterSettings(cluster)
 
     registerParallelBackend(container = .getWorkerContainer(cluster),
                             cluster = cluster,
                             verbose = cluster$verbose, ...)
-    cluster@settings$parallelBackendRegistered <- TRUE
+    settings$parallelBackendRegistered <- TRUE
     invisible(NULL)
 }
 
 
 deregisterBackend <- function(cluster){
-    if(cluster@settings$parallelBackendRegistered){
+    settings <- .getClusterSettings(cluster)
+    if(settings$parallelBackendRegistered){
         deregisterParallelBackend(container = .getWorkerContainer(cluster),
                                   cluster = cluster,
                                   verbose = cluster$verbose)
-        cluster@settings$parallelBackendRegistered <- FALSE
+        settings$parallelBackendRegistered <- FALSE
     }
     invisible(NULL)
 }
@@ -330,6 +345,7 @@ isServerRunning <- function(cluster){
 }
 
 update <- function(cluster){
+    status <- updateServerStatus(cluster)
     cluster$setWorkerNumber(.getExpectedWorkerNumber(cluster))
     cluster
 }

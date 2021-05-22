@@ -102,16 +102,17 @@ setGeneric("setDockerWorkerNumber", function(provider, cluster, container, hardw
 
 #' Get the worker number on the cloud
 #'
-#' Get the worker number on the cloud. Return an integer vector with two elements,
-#' which are the number of initializing and running workers. The default method will
-#' return the vector `c(0L, .getExpectedWorkerNumber(cluster))`
+#' Get the worker number on the cloud. Return a list with two elements,
+#' which are the number of initializing and running workers. The names must
+#' be `"initializing"` and `"running"`. The default method will
+#' return `list(initializing = 0L, running = .getExpectedWorkerNumber(cluster))`
 #'
 #' @inheritParams generics-commonParams
 #' @param status Character(1), the status of the container.
-#' @return An integer vector with two elements.
+#' @return `list(initializing = ?, running = ?)`.
 #' @export
-setGeneric("getDockerWorkerNumber", function(provider, cluster, verbose){
-    standardGeneric("getDockerWorkerNumber")
+setGeneric("getDockerWorkerNumbers", function(provider, cluster, verbose){
+    standardGeneric("getDockerWorkerNumbers")
 })
 
 

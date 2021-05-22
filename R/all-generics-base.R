@@ -41,6 +41,7 @@ NULL
 setGeneric("getExportedNames", function(x){
     standardGeneric("getExportedNames")
 })
+
 #' @param name The name of the exported object
 #' @rdname exported-apis
 #' @export
