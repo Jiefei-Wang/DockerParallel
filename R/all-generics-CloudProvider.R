@@ -88,10 +88,7 @@ setGeneric("getDockerServerIp", function(provider, cluster, verbose){
 #' Set the worker number on the cloud. There is no default method for this generic.
 #'
 #' Set the worker number on the cloud. The provider needs to scale the worker
-#' number up and down accordingly. If this method is defined, `runDockerWorkers`
-#' `getDockerInstanceStatus`,`IsDockerInstanceInitializing`, `IsDockerInstanceRunning`,
-#' `IsDockerInstanceStopped` and `killDockerInstances` will not be applied to the workers
-#' as the worker instance ID is not known(also does not need to be known) for the cluster.
+#' number up and down accordingly.
 #'
 #' @inheritParams generics-commonParams
 #' @return The worker number on the cloud

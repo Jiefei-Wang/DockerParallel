@@ -4,11 +4,9 @@
 ##################################################
 #' Run the worker container
 #'
-#' Run the workers and return a character vector of the container handles
-#' which the workers live in.
-#' The handle must be recognized by the cloud provider to manage the containers.
-#' The instance handles can be duplicated if multiple workers share the same container instance.
-#' There is no default method for this generic.
+#' Run the workers and return a character vector of the worker handles. Each handle must
+#' correspond to a container. The handle can be duplicated if multiple workers share the
+#' same container. There is no default method for this generic.
 #'
 #'
 #' @inheritParams generics-commonParams
@@ -21,72 +19,70 @@
 #' A character vector with each element corresponding to a worker container.
 #' The length must be equal to `workerNumber`
 #' @export
-setGeneric("runDockerWorkers",
+setGeneric("runDockerWorkerContainers",
            function(provider, cluster, container, hardware, workerNumber, verbose){
-               standardGeneric("runDockerWorkers")
+               standardGeneric("runDockerWorkerContainers")
            })
 
 
-#' Get the instance status
+#' Get the worker status
 #'
-#' Get the instance status. Unless you have a faster implementation, you only need to
-#' define `getDockerInstanceStatus`. The function `getDockerInstanceStatus` should return
-#' a character vector with each element corresponding to an instance in `instanceHandles`.
+#' Get the worker status. Unless you have a faster implementation, you only need to
+#' define `getDockerWorkerStatus`. The function should return a character vector with
+#' each element corresponding to a worker in `workerHandles`.
 #' Each element must be one of three possible characters `"initializing"`, `"running"` or
-#' `"stopped"`.
-#' The default `getDockerInstanceStatus` returns
-#' a vector of character "running" with the same length of the input instance handles.
+#' `"stopped"`. The default `getDockerWorkerStatus` returns
+#' a vector of character `"running"` with the same length of the input worker handles.
 #'
 #'
 #' @inheritParams generics-commonParams
-#' @param instanceHandles Character(n). A list of instance handles.
+#' @param workerHandles Character(n). A character vector of instance handles.
 #'
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @returns
-#' `getDockerInstanceStatus` : A character vector with each element corresponding
-#' to an instance in `instanceHandles`. Each element must be one of three possible characters
+#' `getDockerWorkerStatus` : A character vector with each element corresponding
+#' to an instance in `workerHandles`. Each element must be one of three possible characters
 #' `"initializing"`, `"running"` or `"stopped"`
 #'
-#' `IsDockerInstanceInitializing`, `IsDockerInstanceRunning`, `IsDockerInstanceStopped`:
+#' `IsDockerWorkerInitializing`, `IsDockerWorkerRunning`, `IsDockerWorkerStopped`:
 #' A logical vector with each element corresponding to the status of each instance
 #' @export
-setGeneric("getDockerInstanceStatus", function(provider, instanceHandles, verbose){
-    standardGeneric("getDockerInstanceStatus")
+setGeneric("getDockerWorkerStatus", function(provider, workerHandles, verbose){
+    standardGeneric("getDockerWorkerStatus")
 })
 
 
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @export
-setGeneric("IsDockerInstanceInitializing", function(provider, instanceHandles, verbose){
-    standardGeneric("IsDockerInstanceInitializing")
+setGeneric("IsDockerWorkerInitializing", function(provider, workerHandles, verbose){
+    standardGeneric("IsDockerWorkerInitializing")
 })
 
 
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @export
-setGeneric("IsDockerInstanceRunning", function(provider, instanceHandles, verbose){
-    standardGeneric("IsDockerInstanceRunning")
+setGeneric("IsDockerWorkerRunning", function(provider, workerHandles, verbose){
+    standardGeneric("IsDockerWorkerRunning")
 })
 
 
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @export
-setGeneric("IsDockerInstanceStopped", function(provider, instanceHandles, verbose){
-    standardGeneric("IsDockerInstanceStopped")
+setGeneric("IsDockerWorkerStopped", function(provider, workerHandles, verbose){
+    standardGeneric("IsDockerWorkerStopped")
 })
 
-#' Kill the instances
+#' Kill the worker container
 #'
-#' Kill the instances. The instance handles are unique.
+#' Kill the worker container. The worker handles are unique.
 #' If multiple workers share the same instance, all workers in the
-#' same instance should be killed.
-#' There is no default method for this generic.
+#' same container should be killed. There is no default method for this generic.
 #'
-#' @inheritParams getDockerInstanceStatus
+#' @inheritParams getDockerWorkerStatus
 #'
 #' @returns
 #' A logical vector indicating whether the killing operation is successful for each instance
 #' @export
-setGeneric("killDockerInstances", function(provider, instanceHandles, verbose){
-    standardGeneric("killDockerInstances")
+setGeneric("killDockerWorkerContainers", function(provider, workerHandles, verbose){
+    standardGeneric("killDockerWorkerContainers")
 })

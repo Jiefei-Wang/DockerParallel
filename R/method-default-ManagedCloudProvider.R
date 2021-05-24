@@ -1,33 +1,33 @@
 
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @export
-setMethod("getDockerInstanceStatus", "ANY", function(provider, instanceHandles, verbose = 0L){
-    rep("running", length(instanceHandles))
+setMethod("getDockerWorkerStatus", "ANY", function(provider, workerHandles, verbose = 0L){
+    rep("running", length(workerHandles))
 })
 
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @export
-setMethod("IsDockerInstanceInitializing", "ANY", function(provider, instanceHandles, verbose = 0L){
-    status <- getDockerInstanceStatus(provider=provider,
-                                      instanceHandles=instanceHandles,
-                                      verbose = verbose)
+setMethod("IsDockerWorkerInitializing", "ANY", function(provider, workerHandles, verbose = 0L){
+    status <- getDockerWorkerStatus(provider=provider,
+                                    workerHandles=workerHandles,
+                                    verbose = verbose)
     status == "initializing"
 })
 
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @export
-setMethod("IsDockerInstanceRunning", "ANY", function(provider, instanceHandles, verbose = 0L){
-    status <- getDockerInstanceStatus(provider=provider,
-                                      instanceHandles=instanceHandles,
-                                      verbose = verbose)
+setMethod("IsDockerWorkerRunning", "ANY", function(provider, workerHandles, verbose = 0L){
+    status <- getDockerWorkerStatus(provider=provider,
+                                    workerHandles=workerHandles,
+                                    verbose = verbose)
     status == "running"
 })
 
-#' @rdname instanceStatus
+#' @rdname workerStatus
 #' @export
-setMethod("IsDockerInstanceStopped", "ANY", function(provider, instanceHandles, verbose = 0L){
-    status <- getDockerInstanceStatus(provider=provider,
-                                      instanceHandles=instanceHandles,
-                                      verbose = verbose)
+setMethod("IsDockerWorkerStopped", "ANY", function(provider, workerHandles, verbose = 0L){
+    status <- getDockerWorkerStatus(provider=provider,
+                                    workerHandles=workerHandles,
+                                    verbose = verbose)
     status == "stopped"
 })

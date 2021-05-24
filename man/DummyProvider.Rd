@@ -4,12 +4,7 @@
 \alias{DummyProvider}
 \title{Create a Dummy provider for testing the container}
 \usage{
-DummyProvider(
-  initialized = FALSE,
-  workerNumber = 0,
-  isServerRunning = FALSE,
-  cleanup = FALSE
-)
+DummyProvider(initialized = FALSE, isServerRunning = FALSE, cleanup = FALSE)
 }
 \value{
 A \code{DummyProvider} object

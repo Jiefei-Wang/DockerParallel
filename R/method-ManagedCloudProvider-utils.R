@@ -5,13 +5,12 @@ removeWorkersHandle <- function(provider, index){
     }
 }
 
-
 removeDiedWorkers <- function(cluster){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
     cloudRuntime <- .getCloudRuntime(cluster)
     if(length(cloudRuntime$workerHandles)!=0){
-        stoppedWorkers <- IsDockerInstanceStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
+        stoppedWorkers <- IsDockerworkerStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
         if(any(stoppedWorkers)){
             removeRuntimeWorkers(cloudRuntime, which(stoppedWorkers))
         }
@@ -41,13 +40,13 @@ addWorkerHandles <- function(provider, handles){
 
 addWorkersInternal <- function(cluster, container, hardware, workerNumber){
     provider <- .getCloudProvider(cluster)
-    instanceHandles <- runDockerWorkers(provider = provider,
+    workerHandles <- runDockerWorkerContainers(provider = provider,
                                         cluster = cluster,
                                         container = container,
                                         hardware = hardware,
                                         workerNumber = workerNumber,
                                         verbose = cluster$verbose)
-    addWorkerHandles(provider, instanceHandles)
+    addWorkerHandles(provider, workerHandles)
     invisible(NULL)
 }
 
@@ -71,7 +70,7 @@ removeWorkersInternal <- function(cluster, workerNumber){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
 
-    ## Find which instances will be killed while satisfying
+    ## Find which workers will be killed while satisfying
     ## that the killed workers is less than or equal to workerNumber
     KnapsackSolution <-
         myknapsack(provider$workerPerHandle,
@@ -80,22 +79,23 @@ removeWorkersInternal <- function(cluster, workerNumber){
     killedInstanceIndex <- KnapsackSolution$indices
     if(killedWorkerNumber < workerNumber){
         if(killedWorkerNumber==0){
-            message("No worker can be killed as all instances have more than ",
+            message("No worker can be killed as all containers have more than ",
                     workerNumber,
                     " workers")
         }else{
             message("Only ", killedWorkerNumber,
-                    " workers will be killed as multiple workers share the same instance")
+                    " workers will be killed as multiple workers share the same container")
         }
     }
     if(killedWorkerNumber!=0){
-        success <- killDockerInstances(provider,
-                                       instanceHandles = provider$workerHandles[killedInstanceIndex],
+        success <- killDockerWorkerContainers(provider,
+                                       workerHandles = provider$workerHandles[killedInstanceIndex],
                                        verbose = verbose)
         if(any(!success)){
-            warning("Fail to kill some worker instances")
+            warning("Fail to kill some worker containers")
         }
         removeWorkersHandle(provider, killedInstanceIndex[success])
     }
     invisible(NULL)
 }
+

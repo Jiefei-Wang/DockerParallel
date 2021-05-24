@@ -2,7 +2,7 @@
 #'
 #' Wait the instances until they have the running status
 #'
-#' @inheritParams getDockerInstanceStatus
+#' @inheritParams getDockerWorkerStatus
 #' @param progressBar Logical, whether to show a progress bar while waiting
 #' @param checkInterval Numeric, the time interval in seconds between two status checks.
 #' @param maxWaitTime Numeric, the maximum wait time in seconds. There will be no error
@@ -12,8 +12,8 @@
 #' a logical vector indicating if the instances are running
 #'
 #' @export
-waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALSE,
-                                   checkInterval = 1, maxWaitTime = 60*5){
+waitWorkerUntilRunning<-function(provider, workerHandles, progressBar = FALSE,
+                                 checkInterval = 1, maxWaitTime = 60*5){
     on.exit(
         {
             if(progressBar){
@@ -22,29 +22,30 @@ waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALS
         }
     )
     if(progressBar){
-        pb <- txtProgressBar(min=0,max = length(instanceHandles), style=3)
+        pb <- txtProgressBar(min=0,max = length(workerHandles), style=3)
     }
     startTime <- Sys.time()
     while(TRUE){
-        instanceStatus <- getDockerInstanceStatus(provider=provider,
-                                                  instanceHandles = instanceHandles,
-                                                  verbose = FALSE)
-        if(all(instanceStatus=="running")){
+        workerStatus <- getDockerWorkerStatus(provider=provider,
+                                              workerHandles = workerHandles,
+                                              verbose = FALSE)
+        if(all(workerStatus=="running")){
             return(TRUE)
         }
-        if(any(instanceStatus=="stopped")){
+        if(any(workerStatus=="stopped")){
             return(FALSE)
         }
         if(progressBar){
-            setTxtProgressBar(pb, sum(instanceStatus=="running"))
+            setTxtProgressBar(pb, sum(workerStatus=="running"))
         }
         if(difftime(Sys.time(), startTime, units = "secs")>maxWaitTime){
             break
         }
         Sys.sleep(checkInterval)
     }
-    instanceStatus=="running"
+    workerStatus=="running"
 }
+
 
 #' Set the default cloud provider and container
 #'

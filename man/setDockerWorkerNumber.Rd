@@ -29,8 +29,5 @@ The worker number on the cloud
 }
 \description{
 Set the worker number on the cloud. The provider needs to scale the worker
-number up and down accordingly. If this method is defined, \code{runDockerWorkers}
-\code{getDockerInstanceStatus},\code{IsDockerInstanceInitializing}, \code{IsDockerInstanceRunning},
-\code{IsDockerInstanceStopped} and \code{killDockerInstances} will not be applied to the workers
-as the worker instance ID is not known(also does not need to be known) for the cluster.
+number up and down accordingly.
 }
