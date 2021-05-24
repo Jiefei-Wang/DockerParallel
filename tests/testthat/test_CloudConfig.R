@@ -1,6 +1,3 @@
-context("Testing cloud config")
-
-
 test_that("CloudConfig Constructor", {
     expect_error(config <- CloudConfig(), NA)
     expect_error(

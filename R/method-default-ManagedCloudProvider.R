@@ -1,14 +1,8 @@
-
 #' @rdname workerStatus
 #' @export
-setMethod("getDockerWorkerStatus", "ANY", function(provider, workerHandles, verbose = 0L){
-    rep("running", length(workerHandles))
-})
-
-#' @rdname workerStatus
-#' @export
-setMethod("IsDockerWorkerInitializing", "ANY", function(provider, workerHandles, verbose = 0L){
+setMethod("IsDockerWorkerInitializing", "ANY", function(provider, cluster, workerHandles, verbose = 0L){
     status <- getDockerWorkerStatus(provider=provider,
+                                    cluster = cluster,
                                     workerHandles=workerHandles,
                                     verbose = verbose)
     status == "initializing"
@@ -16,8 +10,9 @@ setMethod("IsDockerWorkerInitializing", "ANY", function(provider, workerHandles,
 
 #' @rdname workerStatus
 #' @export
-setMethod("IsDockerWorkerRunning", "ANY", function(provider, workerHandles, verbose = 0L){
+setMethod("IsDockerWorkerRunning", "ANY", function(provider, cluster, workerHandles, verbose = 0L){
     status <- getDockerWorkerStatus(provider=provider,
+                                    cluster = cluster,
                                     workerHandles=workerHandles,
                                     verbose = verbose)
     status == "running"
@@ -25,8 +20,9 @@ setMethod("IsDockerWorkerRunning", "ANY", function(provider, workerHandles, verb
 
 #' @rdname workerStatus
 #' @export
-setMethod("IsDockerWorkerStopped", "ANY", function(provider, workerHandles, verbose = 0L){
+setMethod("IsDockerWorkerStopped", "ANY", function(provider, cluster, workerHandles, verbose = 0L){
     status <- getDockerWorkerStatus(provider=provider,
+                                    cluster = cluster,
                                     workerHandles=workerHandles,
                                     verbose = verbose)
     status == "stopped"

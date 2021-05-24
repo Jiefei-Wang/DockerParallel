@@ -1,6 +1,3 @@
-context("Testing docker hardware")
-
-
 test_that("DockerHardware constructor", {
     expect_error(
         hardware <- DockerHardware()

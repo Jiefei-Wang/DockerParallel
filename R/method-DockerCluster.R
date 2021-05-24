@@ -119,10 +119,10 @@ setMethod(f = "show",signature = "DockerCluster",
               workerNumber <- object$getWorkerNumber()
 
               cat("Worker Number:     ",
-                  workerNumber$initializing, "/",
+                  workerNumber$expected, "/",
                   workerNumber$running,"/",
-                  workerNumber$expected,
-                  " (initializing/running/expected)\n")
+                  workerNumber$initializing,
+                  " (expected/running/initializing)\n")
               invisible(NULL)
           })
 

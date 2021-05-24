@@ -1,9 +1,15 @@
-Sys.setenv(dummyProvider = "")
+workerHandles <- names(getAllHandles())
+for(i in workerHandles){
+    handleName <- getHandleName(i)
+    Sys.unsetenv(handleName)
+}
+
+Sys.setenv(DummyManagedProvider = "")
 cluster <- NULL
 
 test_that("DockerCluster constructor", {
     expect_error(
-        provider <- DummyProvider()
+        provider <- DummyManagedProvider()
         ,NA)
     expect_error(
         container <- DummyWorkerContainer()
@@ -97,7 +103,7 @@ test_that("DockerCluster stop cluster", {
 
 
 test_that("DockerCluster reconnect", {
-    provider1 <- DummyProvider()
+    provider1 <- DummyManagedProvider()
     container1 <- DummyWorkerContainer()
     cluster1 <- makeDockerCluster(
         cloudProvider = provider1,
@@ -112,7 +118,7 @@ test_that("DockerCluster reconnect", {
         list(initializing = 0L, running = 5L, expected = 5L)
     )
 
-    provider2 <- DummyProvider()
+    provider2 <- DummyManagedProvider()
     container2 <- DummyWorkerContainer()
     cluster2 <- makeDockerCluster(
         cloudProvider = provider2,
@@ -127,15 +133,14 @@ test_that("DockerCluster reconnect", {
 })
 
 
+
 test_that("DockerCluster auto remove the cluster", {
     gc()
-    provider <- DummyProvider()
+    provider <- DummyManagedProvider()
     container <- DummyWorkerContainer()
     cluster <- makeDockerCluster(
         cloudProvider = provider,
         workerContainer = container)
     expect_error(cluster$reconnect())
 })
-
-
 

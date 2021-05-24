@@ -38,7 +38,8 @@ setMethod(f = "show",signature = "CloudRuntime",
               cat("Server public port:  ", object$serverPublicPort, "\n")
               cat("Server private Ip:   ", object$serverPrivateIp, "\n")
               cat("Server private port: ", object$serverPrivatePort, "\n")
-              cat("Worker number:       ", object$runningWorkerNumber + object$initializingWorkerNumber, "\n")
+              cat("Worker number:       ", object$runningWorkerNumber, "/",
+                  object$initializingWorkerNumber, " (running/initializing)\n")
               invisible(NULL)
           })
 

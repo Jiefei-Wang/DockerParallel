@@ -6,30 +6,29 @@
 \alias{IsDockerWorkerInitializing}
 \alias{IsDockerWorkerRunning}
 \alias{IsDockerWorkerStopped}
-\alias{getDockerWorkerStatus,ANY-method}
 \alias{IsDockerWorkerInitializing,ANY-method}
 \alias{IsDockerWorkerRunning,ANY-method}
 \alias{IsDockerWorkerStopped,ANY-method}
 \title{Get the worker status}
 \usage{
-getDockerWorkerStatus(provider, workerHandles, verbose)
+getDockerWorkerStatus(provider, cluster, workerHandles, verbose)
 
-IsDockerWorkerInitializing(provider, workerHandles, verbose)
+IsDockerWorkerInitializing(provider, cluster, workerHandles, verbose)
 
-IsDockerWorkerRunning(provider, workerHandles, verbose)
+IsDockerWorkerRunning(provider, cluster, workerHandles, verbose)
 
-IsDockerWorkerStopped(provider, workerHandles, verbose)
+IsDockerWorkerStopped(provider, cluster, workerHandles, verbose)
 
-\S4method{getDockerWorkerStatus}{ANY}(provider, workerHandles, verbose = 0L)
+\S4method{IsDockerWorkerInitializing}{ANY}(provider, cluster, workerHandles, verbose = 0L)
 
-\S4method{IsDockerWorkerInitializing}{ANY}(provider, workerHandles, verbose = 0L)
+\S4method{IsDockerWorkerRunning}{ANY}(provider, cluster, workerHandles, verbose = 0L)
 
-\S4method{IsDockerWorkerRunning}{ANY}(provider, workerHandles, verbose = 0L)
-
-\S4method{IsDockerWorkerStopped}{ANY}(provider, workerHandles, verbose = 0L)
+\S4method{IsDockerWorkerStopped}{ANY}(provider, cluster, workerHandles, verbose = 0L)
 }
 \arguments{
 \item{provider}{S4 \code{CloudProvider} object. The service provider.}
+
+\item{cluster}{S4 \code{DockerCluster} object.}
 
 \item{workerHandles}{Character(n). A character vector of instance handles.}
 
@@ -48,6 +47,5 @@ Get the worker status. Unless you have a faster implementation, you only need to
 define \code{getDockerWorkerStatus}. The function should return a character vector with
 each element corresponding to a worker in \code{workerHandles}.
 Each element must be one of three possible characters \code{"initializing"}, \code{"running"} or
-\code{"stopped"}. The default \code{getDockerWorkerStatus} returns
-a vector of character \code{"running"} with the same length of the input worker handles.
+\code{"stopped"}. There is no default method for \code{getDockerWorkerStatus}.
 }

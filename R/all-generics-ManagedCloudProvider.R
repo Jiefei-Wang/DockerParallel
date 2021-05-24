@@ -31,8 +31,7 @@ setGeneric("runDockerWorkerContainers",
 #' define `getDockerWorkerStatus`. The function should return a character vector with
 #' each element corresponding to a worker in `workerHandles`.
 #' Each element must be one of three possible characters `"initializing"`, `"running"` or
-#' `"stopped"`. The default `getDockerWorkerStatus` returns
-#' a vector of character `"running"` with the same length of the input worker handles.
+#' `"stopped"`. There is no default method for `getDockerWorkerStatus`.
 #'
 #'
 #' @inheritParams generics-commonParams
@@ -47,28 +46,28 @@ setGeneric("runDockerWorkerContainers",
 #' `IsDockerWorkerInitializing`, `IsDockerWorkerRunning`, `IsDockerWorkerStopped`:
 #' A logical vector with each element corresponding to the status of each instance
 #' @export
-setGeneric("getDockerWorkerStatus", function(provider, workerHandles, verbose){
+setGeneric("getDockerWorkerStatus", function(provider, cluster, workerHandles, verbose){
     standardGeneric("getDockerWorkerStatus")
 })
 
 
 #' @rdname workerStatus
 #' @export
-setGeneric("IsDockerWorkerInitializing", function(provider, workerHandles, verbose){
+setGeneric("IsDockerWorkerInitializing", function(provider, cluster, workerHandles, verbose){
     standardGeneric("IsDockerWorkerInitializing")
 })
 
 
 #' @rdname workerStatus
 #' @export
-setGeneric("IsDockerWorkerRunning", function(provider, workerHandles, verbose){
+setGeneric("IsDockerWorkerRunning", function(provider, cluster, workerHandles, verbose){
     standardGeneric("IsDockerWorkerRunning")
 })
 
 
 #' @rdname workerStatus
 #' @export
-setGeneric("IsDockerWorkerStopped", function(provider, workerHandles, verbose){
+setGeneric("IsDockerWorkerStopped", function(provider, cluster, workerHandles, verbose){
     standardGeneric("IsDockerWorkerStopped")
 })
 
@@ -83,6 +82,6 @@ setGeneric("IsDockerWorkerStopped", function(provider, workerHandles, verbose){
 #' @returns
 #' A logical vector indicating whether the killing operation is successful for each instance
 #' @export
-setGeneric("killDockerWorkerContainers", function(provider, workerHandles, verbose){
+setGeneric("killDockerWorkerContainers", function(provider, cluster, workerHandles, verbose){
     standardGeneric("killDockerWorkerContainers")
 })

@@ -1,18 +1,17 @@
 removeWorkersHandle <- function(provider, index){
     if(length(index)!=0){
-        cloudRuntime$workerHandles <- provider$workerHandles[-index]
-        cloudRuntime$workerPerHandle <- provider$workerPerHandle[-index]
+        provider$workerHandles <- provider$workerHandles[-index]
+        provider$workerPerHandle <- provider$workerPerHandle[-index]
     }
 }
 
 removeDiedWorkers <- function(cluster){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
-    cloudRuntime <- .getCloudRuntime(cluster)
-    if(length(cloudRuntime$workerHandles)!=0){
-        stoppedWorkers <- IsDockerworkerStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
+    if(length(provider$workerHandles)!=0){
+        stoppedWorkers <- IsDockerWorkerStopped(provider, cluster, provider$workerHandles, verbose=verbose)
         if(any(stoppedWorkers)){
-            removeRuntimeWorkers(cloudRuntime, which(stoppedWorkers))
+            removeWorkersHandle(provider, which(stoppedWorkers))
         }
     }
 }
@@ -21,7 +20,7 @@ getManagedWorkerNumber <- function(provider){
     sum(provider$workerPerHandle)
 }
 
-getWorkerHandles <- function(provider){
+getManagedWorkerHandles <- function(provider){
     workerHandles <- provider$workerHandles
     workerPerHandle <- provider$workerPerHandle
     x <- lapply(seq_along(workerHandles),
@@ -30,23 +29,23 @@ getWorkerHandles <- function(provider){
     unlist(x)
 }
 
-addWorkerHandles <- function(provider, handles){
-    allHandles <- c(getWorkerHandles(provider), handles)
+addManagedWorkerHandles <- function(provider, handles){
+    allHandles <- c(getManagedWorkerHandles(provider), handles)
     info <- table(allHandles)
     provider$workerHandles <- names(info)
-    provider$workerPerHandle <- as.vector(a)
+    provider$workerPerHandle <- as.vector(info)
     invisible(NULL)
 }
 
-addWorkersInternal <- function(cluster, container, hardware, workerNumber){
+addManagedWorkersInternal <- function(cluster, container, hardware, workerNumber){
     provider <- .getCloudProvider(cluster)
     workerHandles <- runDockerWorkerContainers(provider = provider,
-                                        cluster = cluster,
-                                        container = container,
-                                        hardware = hardware,
-                                        workerNumber = workerNumber,
-                                        verbose = cluster$verbose)
-    addWorkerHandles(provider, workerHandles)
+                                               cluster = cluster,
+                                               container = container,
+                                               hardware = hardware,
+                                               workerNumber = workerNumber,
+                                               verbose = cluster$verbose)
+    addManagedWorkerHandles(provider, workerHandles)
     invisible(NULL)
 }
 
@@ -66,7 +65,7 @@ myknapsack <- function (workerPerHandle, killedWorkerNum)
 }
 
 
-removeWorkersInternal <- function(cluster, workerNumber){
+removeManagedWorkersInternal <- function(cluster, workerNumber){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
 
@@ -88,9 +87,11 @@ removeWorkersInternal <- function(cluster, workerNumber){
         }
     }
     if(killedWorkerNumber!=0){
-        success <- killDockerWorkerContainers(provider,
-                                       workerHandles = provider$workerHandles[killedInstanceIndex],
-                                       verbose = verbose)
+        success <- killDockerWorkerContainers(
+            provider,
+            cluster,
+            workerHandles = provider$workerHandles[killedInstanceIndex],
+            verbose = verbose)
         if(any(!success)){
             warning("Fail to kill some worker containers")
         }

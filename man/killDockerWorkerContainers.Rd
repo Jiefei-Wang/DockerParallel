@@ -4,10 +4,12 @@
 \alias{killDockerWorkerContainers}
 \title{Kill the worker container}
 \usage{
-killDockerWorkerContainers(provider, workerHandles, verbose)
+killDockerWorkerContainers(provider, cluster, workerHandles, verbose)
 }
 \arguments{
 \item{provider}{S4 \code{CloudProvider} object. The service provider.}
+
+\item{cluster}{S4 \code{DockerCluster} object.}
 
 \item{workerHandles}{Character(n). A character vector of instance handles.}
 

@@ -1,5 +1,3 @@
-context("Testing cloud runtime")
-
 test_that("CloudRuntime constructor", {
     expect_error(runtime <- CloudRuntime(),NA)
     expect_error(
