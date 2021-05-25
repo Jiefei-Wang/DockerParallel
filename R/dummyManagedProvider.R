@@ -171,6 +171,8 @@ setMethod("reconnectDockerCluster", "DummyManagedProvider", function(provider, c
     encodedValue <- Sys.getenv("dummyProviderClusterData")
     clusterData <- jsonlite::base64_dec(encodedValue)
     unserializeDockerCluster(cluster, provider, clusterData)
+    allHandles <- getAllHandles()
+    addManagedWorkerHandles(provider, names(allHandles))
     provider$isServerRunning <- TRUE
 })
 

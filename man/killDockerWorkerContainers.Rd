@@ -11,7 +11,7 @@ killDockerWorkerContainers(provider, cluster, workerHandles, verbose)
 
 \item{cluster}{S4 \code{DockerCluster} object.}
 
-\item{workerHandles}{Character(n). A character vector of instance handles.}
+\item{workerHandles}{Character(n). A character vector of \strong{unique} instance handles.}
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }

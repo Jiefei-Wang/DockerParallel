@@ -35,7 +35,7 @@ setGeneric("runDockerWorkerContainers",
 #'
 #'
 #' @inheritParams generics-commonParams
-#' @param workerHandles Character(n). A character vector of instance handles.
+#' @param workerHandles Character(n). A character vector of **unique** instance handles.
 #'
 #' @rdname workerStatus
 #' @returns

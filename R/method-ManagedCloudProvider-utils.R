@@ -20,22 +20,7 @@ getManagedWorkerNumber <- function(provider){
     sum(provider$workerPerHandle)
 }
 
-getManagedWorkerHandles <- function(provider){
-    workerHandles <- provider$workerHandles
-    workerPerHandle <- provider$workerPerHandle
-    x <- lapply(seq_along(workerHandles),
-                function(i)rep(workerHandles[i],workerPerHandle[i])
-    )
-    unlist(x)
-}
 
-addManagedWorkerHandles <- function(provider, handles){
-    allHandles <- c(getManagedWorkerHandles(provider), handles)
-    info <- table(allHandles)
-    provider$workerHandles <- names(info)
-    provider$workerPerHandle <- as.vector(info)
-    invisible(NULL)
-}
 
 addManagedWorkersInternal <- function(cluster, container, hardware, workerNumber){
     provider <- .getCloudProvider(cluster)

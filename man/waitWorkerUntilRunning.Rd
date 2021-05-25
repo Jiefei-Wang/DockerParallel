@@ -15,7 +15,7 @@ waitWorkerUntilRunning(
 \arguments{
 \item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
-\item{workerHandles}{Character(n). A character vector of instance handles.}
+\item{workerHandles}{Character(n). A character vector of \strong{unique} instance handles.}
 
 \item{progressBar}{Logical, whether to show a progress bar while waiting}
 

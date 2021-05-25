@@ -172,9 +172,12 @@ startServer <- function(cluster){
     serverFromOtherSource <- .getServerFromOtherSource(cluster)
 
     if(!serverFromOtherSource){
-        status <- updateServerStatus(cluster)
-        ## Run the server if it does not exist
-        if(status == "stopped"){
+        ## update the server status if the server is running
+        if(cluster$isServerRunning()){
+            updateServerStatus(cluster)
+        }
+        ## Only run a new server if there is no server running
+        if(!cluster$isServerRunning()){
             if(is.null(.getServerContainer(cluster))){
                 stop("No server container can be found")
             }

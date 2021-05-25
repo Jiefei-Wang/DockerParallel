@@ -123,7 +123,7 @@ test_that("DockerCluster reconnect", {
     cluster2 <- makeDockerCluster(
         cloudProvider = provider2,
         workerContainer = container2,
-        workerNumber = 5)
+        workerNumber = 0)
     expect_error(cluster2$reconnect(),
                  NA)
     expect_identical(
