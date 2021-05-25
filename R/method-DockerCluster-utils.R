@@ -171,3 +171,25 @@ updateServerIp <- function(cluster){
         .setServerPublicPort(cluster, serverIp$publicPort)
     }
 }
+
+
+
+waitServerRunning <- function(cluster){
+    verbose <- cluster$verbose
+    while(TRUE){
+        serverStatus <- getServerStatus(
+            provider = provider,
+            cluster = cluster,
+            verbose = verbose)
+        if(serverStatus == "initializing"){
+            verbosePrint(verbose > 1, "The server is still initializing, check again after 1 second")
+        }
+        if(serverStatus == "running"){
+            return(TRUE)
+        }
+        if(serverStatus == "stopped"){
+            return(FALSE)
+        }
+        Sys.sleep(1)
+    }
+}

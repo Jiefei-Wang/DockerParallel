@@ -66,3 +66,4 @@ getManagedWorkerHandles <- function(provider){
     )
     unlist(x)
 }
+

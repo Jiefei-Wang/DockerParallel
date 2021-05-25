@@ -318,6 +318,12 @@ registerBackend <- function(cluster, ...){
     stopifnot(cluster$isServerRunning())
     settings <- .getClusterSettings(cluster)
 
+    status <- waitServerRunning(cluster)
+    if(!status){
+        resetServerRuntime(.getCloudRuntime(cluster))
+        stop("The server has been stopped, something is wrong")
+    }
+
     registerParallelBackend(container = .getWorkerContainer(cluster),
                             cluster = cluster,
                             verbose = cluster$verbose, ...)
