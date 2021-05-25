@@ -26,9 +26,10 @@ setMethod("setDockerWorkerNumber", "ManagedCloudProvider",
 #' @export
 setMethod("getDockerWorkerNumbers", "ManagedCloudProvider", function(provider, cluster, verbose){
     if(cluster$isServerRunning()){
-        removeDiedWorkers(cluster)
-        runningWorkers <- getManagedWorkerNumber(provider)
-        list(initializing = 0L, running = runningWorkers)
+        workerStatus <- removeDiedWorkers(cluster)
+        list(initializing = sum(provider$workerPerHandle[workerStatus=="initializing"]),
+             running = sum(provider$workerPerHandle[workerStatus=="running"])
+             )
     }else{
         list(initializing = 0L, running = 0L)
     }
