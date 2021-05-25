@@ -8,12 +8,14 @@ removeWorkersHandle <- function(provider, index){
 removeDiedWorkers <- function(cluster){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
+    workerStatus <- NULL
     if(length(provider$workerHandles)!=0){
-        stoppedWorkers <- IsDockerWorkerStopped(provider, cluster, provider$workerHandles, verbose=verbose)
-        if(any(stoppedWorkers)){
-            removeWorkersHandle(provider, which(stoppedWorkers))
+        workerStatus <- getDockerWorkerStatus(provider, cluster, provider$workerHandles, verbose=verbose)
+        if(any(workerStatus=="stopped")){
+            removeWorkersHandle(provider, which(workerStatus=="stopped"))
         }
     }
+    workerStatus
 }
 
 getManagedWorkerNumber <- function(provider){
