@@ -204,7 +204,7 @@ setMethod("reconnectDockerCluster", "DummyProvider", function(provider, cluster,
     stopifnot(Sys.getenv("dummyProvider") == .getJobQueueName(cluster))
     encodedValue <- Sys.getenv("dummyProviderClusterData")
     clusterData <- jsonlite::base64_dec(encodedValue)
-    unserializeDockerCluster(cluster, provider, clusterData)
+    unserializeDockerClusterStaticData(cluster, clusterData)
     provider$isServerRunning <- TRUE
 })
 

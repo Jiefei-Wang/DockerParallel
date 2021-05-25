@@ -108,28 +108,52 @@ clusterPreset<- function(
     invisible(NULL)
 }
 
-
+#' Serialize docker cluster static data
+#'
+#' Serialize docker cluster static data. This function is designed for the
+#' generic `reconnectDockerCluster`. The serialized data can be used by the cloud
+#' provider to recover the `DockerCluster` object.
+#'
+#' @param cluster The `DockerCluster` object
+#' @param serializedData The serialized data returned by `serializeDockerClusterStaticData`
+#' @return
+#' serializeDockerClusterStaticData: The binary serialized data
+#' unserializeDockerClusterStaticData: No return value should be expected, the cluster
+#' object will be updated.
+#' @rdname serializeStaticData
+#' @export
 serializeDockerClusterStaticData <- function(cluster){
     cloudConfig <- .getCloudConfig(cluster)
     serverContainer <- .getServerContainer(cluster)
     workerContainer <- .getWorkerContainer(cluster)
     settings <- .getClusterSettings(cluster)
 
-    clusterData <- list(cloudConfig = cloudConfig,
-                        serverContainer = serverContainer,
-                        workerContainer = workerContainer,
-                        settings = settings)
-    clusterData$settings$parallelBackendRegistered <- FALSE
-
+    clusterData <- list(cloudConfig = getObjectData(cloudConfig),
+                        serverContainer = getObjectData(serverContainer),
+                        workerContainer = getObjectData(workerContainer),
+                        settings = as.list(settings))
+    clusterData$settings$parallelBackendRegistered <- NULL
+    clusterData$settings$cluster <- NULL
     serialize(clusterData, NULL)
 }
 
-unserializeDockerCluster <- function(cluster, provider, staticData){
-    clusterData <- unserialize(staticData)
-    .setCloudConfig(cluster, clusterData$cloudConfig)
-    .setServerContainer(cluster, clusterData$serverContainer)
-    .setWorkerContainer(cluster, clusterData$workerContainer)
-    .setClusterSettings(cluster, clusterData$settings)
-    .setCloudProvider(cluster , provider)
+#' @rdname serializeStaticData
+#' @export
+unserializeDockerClusterStaticData <- function(cluster, serializedData){
+    clusterData <- unserialize(serializedData)
+    cloudConfig <- .getCloudConfig(cluster)
+    serverContainer <- .getServerContainer(cluster)
+    workerContainer <- .getWorkerContainer(cluster)
 
+    setObjectData(cloudConfig, clusterData$cloudConfig)
+    setObjectData(serverContainer, clusterData$serverContainer)
+    setObjectData(workerContainer, clusterData$workerContainer)
+
+    clusterData$settings$parallelBackendRegistered <- FALSE
+    clusterData$settings$cluster <- cluster
+    .setClusterSettings(cluster, as.environment(clusterData$settings))
+    invisible(NULL)
 }
+
+
+

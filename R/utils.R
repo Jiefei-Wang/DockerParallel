@@ -23,3 +23,19 @@ loadPackage <- function(pkg){
   library(pkg, character.only = TRUE)
 }
 
+
+getObjectData <- function(x){
+  refClass <- x$getRefClass()
+  fields <- names(refClass$fields())
+  data <- list()
+  for(i in fields){
+    data[[i]] <- x$field(i)
+  }
+  data
+}
+setObjectData <- function(x, data){
+  for(i in seq_along(data)){
+    name <- names(data)[i]
+    x$field(name, data[[i]])
+  }
+}
