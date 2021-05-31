@@ -1,4 +1,4 @@
-Sys.setenv(dummyProvider = "")
+resetDummyProvider()
 cluster <- NULL
 verbose <- 0
 

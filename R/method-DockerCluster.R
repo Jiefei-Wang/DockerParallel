@@ -335,6 +335,10 @@ stopServer<- function(cluster){
                              verbose = verbose)
             resetServerRuntime(cloudRuntime)
         }
+    }else{
+        verbosePrint(
+            verbose>=1,
+            "The server is not managed by the cloud provider and will not be stopped")
     }
     invisible(NULL)
 }
@@ -342,7 +346,8 @@ stopServer<- function(cluster){
 clusterExists <- function(cluster){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
-    dockerClusterExists(provider, cluster, verbose)
+    cluster$isServerRunning()||
+        dockerClusterExists(provider, cluster, verbose)
 }
 
 
@@ -375,11 +380,14 @@ registerBackend <- function(cluster, ...){
     verbosePrint(verbose, "Registering parallel backend, it might take a few minutes")
     stopifnot(cluster$isServerRunning())
     settings <- .getClusterSettings(cluster)
+    serverFromOtherSource <- .getServerFromOtherSource(cluster)
 
-    status <- waitServerRunning(cluster)
-    if(!status){
-        resetServerRuntime(.getCloudRuntime(cluster))
-        stop("The server has been stopped, something is wrong")
+    if(!serverFromOtherSource){
+        status <- waitServerRunning(cluster)
+        if(!status){
+            resetServerRuntime(.getCloudRuntime(cluster))
+            stop("The server has been stopped, something is wrong")
+        }
     }
 
     registerParallelBackend(container = .getWorkerContainer(cluster),
@@ -408,7 +416,7 @@ isServerRunning <- function(cluster){
     publicExists <- length(.getServerPublicIp(cluster))!=0 &&
         length(.getServerPublicPort(cluster)) != 0
 
-    privateExists||publicExists
+    privateExists||publicExists||.getServerFromOtherSource(cluster)
 }
 
 update <- function(cluster){

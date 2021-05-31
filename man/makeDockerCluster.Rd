@@ -15,8 +15,7 @@ makeDockerCluster(
   serverMemory = 2048,
   serverHardwareId = character(0),
   jobQueueName = "DockerParallelQueue",
-  cloudConfig = NULL,
-  cloudRuntime = NULL,
+  privateServerData = NULL,
   serverContainer = getServerContainer(workerContainer),
   stopClusterOnExit = TRUE,
   verbose = 1
@@ -40,6 +39,17 @@ might be ignored by some cloud providers.}
 
 \item{jobQueueName}{Character, the job queue name used by the cluster to send the job.}
 
+\item{privateServerData}{A data object made from \code{CloudPrivateServer}. If this object
+is provided, the cluster server should be from another source and the cloud provider
+will not deploy the server container.}
+
+\item{serverContainer}{A \code{DockerContainer} object, the object that defines the server container.}
+
+\item{stopClusterOnExit}{Logical, whether to stop the cluster when the cluster has been removed
+from the R session. The default value is \code{TRUE}.}
+
+\item{verbose}{Integer, the verbose level}
+
 \item{cloudConfig}{A \code{CloudConfig} object. The object that stores the cloud information such
 as server password, port, network status. If this argument is provided, the arguments
 \code{workerNumber}, \code{serverCpu},\code{workerCpu},\code{serverMemory},\code{workerMemory},\code{serverHardwareId},
@@ -48,15 +58,6 @@ as server password, port, network status. If this argument is provided, the argu
 \item{cloudRuntime}{A \code{CloudRuntime} object. The obect that stores the cloud runtime data such
 as server IP, handle and worker handles. There is no need to provide this object
 unless you want to use an existing cloud cluster.}
-
-\item{serverContainer}{A \code{DockerContainer} object, the object that defines the server container.
-If the value is \code{NULL}, the server container will be obtained from the worker container via
-\code{getServerContainer(workerContainer)}}
-
-\item{stopClusterOnExit}{Logical, whether to stop the cluster when the cluster has been removed
-from the R session. The default value is \code{TRUE}.}
-
-\item{verbose}{Integer, the verbose level}
 }
 \value{
 A \code{DockerCluster} object

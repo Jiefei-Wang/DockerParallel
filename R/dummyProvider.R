@@ -7,6 +7,20 @@
                                    serverContainer = "DockerContainer",
                                    workerContainer = "DockerContainer"),
                            contains = "CloudProvider")
+#' reset the dummy provider
+#'
+#' reset the dummy provider and remove all the environment variables it
+#' defined.
+#' @examples
+#' resetDummyProvider()
+#' @return No return value
+#' @export
+resetDummyProvider <- function(){
+    Sys.setenv(dummyProvider = "")
+    Sys.setenv(dummyProviderClusterData = "")
+    Sys.setenv(dummyProviderWorkerNumber = "")
+    invisible()
+}
 
 #' Create a Dummy provider for testing the container
 #'
@@ -220,7 +234,6 @@ setMethod("cleanupDockerCluster", "DummyProvider", function(provider, cluster, v
     stopifnot(is(cluster, "DockerCluster"))
     stopifnot(is(verbose, "numeric"))
     stopifnot(!provider$isServerRunning)
-    stopifnot(!provider$cleanup)
     stopifnot(Sys.getenv("dummyProvider") == "")
     provider$cleanup <- TRUE
 })

@@ -47,9 +47,10 @@ dockerCluster <- function(cloudProvider,
 #' @param cloudRuntime A `CloudRuntime` object. The obect that stores the cloud runtime data such
 #' as server IP, handle and worker handles. There is no need to provide this object
 #' unless you want to use an existing cloud cluster.
+#' @param privateServerData A data object made from `CloudPrivateServer`. If this object
+#' is provided, the cluster server should be from another source and the cloud provider
+#' will not deploy the server container.
 #' @param serverContainer A `DockerContainer` object, the object that defines the server container.
-#' If the value is `NULL`, the server container will be obtained from the worker container via
-#' `getServerContainer(workerContainer)`
 #' @param stopClusterOnExit Logical, whether to stop the cluster when the cluster has been removed
 #' from the R session. The default value is `TRUE`.
 #' @param verbose Integer, the verbose level
@@ -95,8 +96,7 @@ makeDockerCluster <- function(cloudProvider = NULL,
                               workerCpu = 1024, workerMemory = 2048, workerHardwareId = character(0),
                               serverCpu = 256, serverMemory = 2048, serverHardwareId = character(0),
                               jobQueueName = "DockerParallelQueue",
-                              cloudConfig = NULL,
-                              cloudRuntime = NULL,
+                              privateServerData = NULL,
                               serverContainer = getServerContainer(workerContainer),
                               stopClusterOnExit = TRUE,
                               verbose = 1){
@@ -112,7 +112,6 @@ makeDockerCluster <- function(cloudProvider = NULL,
         }
         workerContainer <- packageSetting$workerContainer$copy()
     }
-    if(is.null(cloudConfig)){
         serverHardware <- DockerHardware(cpu = serverCpu,
                                          memory = serverMemory,
                                          id = serverHardwareId)
@@ -123,11 +122,17 @@ makeDockerCluster <- function(cloudProvider = NULL,
                                    expectedWorkerNumber = workerNumber,
                                    serverHardware =  serverHardware,
                                    workerHardware = workerHardware)
-    }
-    if(is.null(cloudRuntime)){
         cloudRuntime <- CloudRuntime(serverFromOtherSource = FALSE)
-    }
 
+    if(!is.null(privateServerData)){
+        cloudConfig$serverWorkerSameLAN <- privateServerData$serverWorkerSameLAN
+        cloudConfig$serverClientSameLAN <- privateServerData$serverClientSameLAN
+        cloudRuntime$serverFromOtherSource <- TRUE
+        cloudRuntime$serverPublicIp <- privateServerData$publicIp
+        cloudRuntime$serverPublicPort <- as.integer(privateServerData$publicPort)
+        cloudRuntime$serverPrivateIp <- privateServerData$privateIp
+        cloudRuntime$serverPrivatePort <- as.integer(privateServerData$privatePort)
+    }
 
     cluster <- dockerCluster(
         cloudProvider = cloudProvider,

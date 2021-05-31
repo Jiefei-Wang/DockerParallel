@@ -138,16 +138,21 @@ updateServerStatus <- function(cluster){
     verbose <- cluster$verbose
     provider <- .getCloudProvider(cluster)
     cloudRuntime <- .getCloudRuntime(cluster)
-    status <- getServerStatus(provider = provider,
-                              cluster = cluster,
-                              verbose = verbose)
-    if(status == "stopped"){
-        resetServerRuntime(cloudRuntime)
+    serverFromOtherSource <- .getServerFromOtherSource(cluster)
+    if(!serverFromOtherSource){
+        status <- getServerStatus(provider = provider,
+                                  cluster = cluster,
+                                  verbose = verbose)
+        if(status == "stopped"){
+            resetServerRuntime(cloudRuntime)
+        }
+        if(status == "running"){
+            updateServerIp(cluster)
+        }
+        status
+    }else{
+        "running"
     }
-    if(status == "running"){
-        updateServerIp(cluster)
-    }
-    status
 }
 
 updateServerIp <- function(cluster){
