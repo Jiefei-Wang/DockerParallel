@@ -48,3 +48,37 @@ setGeneric("getExportedNames", function(x){
 setGeneric("getExportedObject", function(x, name){
     standardGeneric("getExportedObject")
 })
+
+#' get/set docker cluster static data
+#'
+#' get/set docker cluster static data.
+#' These functions are designed for the `reconnect` function for `DockerCluster`.
+#' The return value can be serialized and used by the cloud provider to recover
+#' the `DockerCluster` object. The default method for `DockerCluster` will
+#' use `getDockerStaticData` to get the static data in `cloudConfig`, `ServerContainer`
+#' and `WorkerContainer`.
+#'
+#' @param x The object which the static data will be extracted from
+#' or the object that will hold the unserialized data.
+#' @param staticData The data returned by `getDockerStaticData`
+#' @return
+#' getDockerStaticData: Any data that is serializable
+#' setDockerStaticData: No return value should be expected, the object that
+#' is passed to the function will be updated.
+#' @rdname DockerStaticData
+#' @export
+setGeneric("getDockerStaticData", function(x){
+    standardGeneric("getDockerStaticData")
+})
+#' @rdname DockerStaticData
+#' @export
+setGeneric("setDockerStaticData", function(x, staticData){
+    standardGeneric("setDockerStaticData")
+})
+
+
+
+
+
+
+

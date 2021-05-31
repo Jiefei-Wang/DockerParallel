@@ -17,7 +17,7 @@
     )
 )
 
-setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
+# setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
 
 #' The root class of the cloud provider
 #'
@@ -116,7 +116,6 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
 #' @slot cloudProvider CloudProvider
 #' @slot cloudConfig CloudConfig
 #' @slot serverContainer The container definition for the server.
-#' If the value is NULL, the server IP must be provided.
 #' @slot workerContainer The container definition for the worker
 #' @slot cloudRuntime CloudRuntime
 #' @slot settings Environment, the cluster settings
@@ -125,7 +124,7 @@ setClassUnion("DockerContainerOrNULL",c("NULL","DockerContainer"))
     slots = list(
         cloudProvider = "CloudProvider",
         cloudConfig = "CloudConfig",
-        serverContainer = "DockerContainerOrNULL",
+        serverContainer = "DockerContainer",
         workerContainer = "DockerContainer",
         cloudRuntime = "CloudRuntime",
         settings = "environment"

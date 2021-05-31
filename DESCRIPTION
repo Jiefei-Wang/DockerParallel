@@ -1,6 +1,6 @@
 Package: DockerParallel
 Title: Using the Docker Container to Create R Workers on Local or Cloud Platform
-Version: 1.0.1
+Version: 1.0.2
 Authors@R: 
     person(given = "Jiefei",
            family = "Wang",
@@ -12,7 +12,6 @@ Description: This is the core package that provides both the user API and develo
     to create the cluster. The developer should see "developer's cookbook" on how to define
     the cloud provider and container.
 Imports:
-  adagio,
   methods,
   utils
 License: GPL-3
@@ -27,4 +26,3 @@ Suggests:
 VignetteBuilder: knitr
 URL: https://github.com/Jiefei-Wang/DockerParallel
 BugReports: https://github.com/Jiefei-Wang/DockerParallel/issues
-Config/testthat/edition: 3

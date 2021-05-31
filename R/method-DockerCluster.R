@@ -3,13 +3,14 @@ clusterMethods <- c(
     "stopCluster",
     "startServer",
     "stopServer",
+    "isServerRunning",
     "setWorkerNumber",
     "getWorkerNumber",
-    "reconnect",
-    "update",
     "registerBackend",
     "deregisterBackend",
-    "isServerRunning"
+    "update",
+    "clusterExists",
+    "reconnect"
 )
 
 clusterObjects <- c("cloudProvider", "serverContainer", "workerContainer")
@@ -125,6 +126,56 @@ setMethod(f = "show",signature = "DockerCluster",
                   " (expected/running/initializing)\n")
               invisible(NULL)
           })
+
+
+setMethod("getDockerStaticData", "DockerCluster", function(x){
+    cloudConfig <- .getCloudConfig(x)
+    serverContainer <- .getServerContainer(x)
+    workerContainer <- .getWorkerContainer(x)
+    settings <- .getClusterSettings(x)
+
+    staticData <- list(
+        cloudConfigClass = class(cloudConfig),
+        serverContainerClass = class(serverContainer),
+        workerContainerClass = class(workerContainer),
+        cloudConfig = getDockerStaticData(cloudConfig),
+        serverContainer = getDockerStaticData(serverContainer),
+        workerContainer = getDockerStaticData(workerContainer),
+        settings = as.list(settings))
+    staticData$settings$parallelBackendRegistered <- NULL
+    staticData$settings$cluster <- NULL
+    staticData
+})
+
+setMethod("setDockerStaticData", "DockerCluster", function(x, staticData){
+    cloudConfig <- .getCloudConfig(x)
+    serverContainer <- .getServerContainer(x)
+    workerContainer <- .getWorkerContainer(x)
+
+    if(!identical(staticData$cloudConfigClass, class(cloudConfig))){
+        stop("The current <cloudConfig> is different from the <cloudConfig> on the cloud")
+    }
+    if(!identical(staticData$serverContainerClass, class(serverContainer))){
+        stop("The current <serverContainer> is different from the <serverContainer> on the cloud")
+    }
+    if(!identical(staticData$workerContainerClass, class(workerContainer))){
+        stop("The current <workerContainer> is different from the <workerContainer> on the cloud")
+    }
+    setDockerStaticData(cloudConfig,
+                        staticData$cloudConfig)
+    setDockerStaticData(serverContainer,
+                        staticData$serverContainer)
+    setDockerStaticData(workerContainer,
+                        staticData$workerContainer)
+
+    staticData$settings$parallelBackendRegistered <- FALSE
+    staticData$settings$cluster <- x
+    .setClusterSettings(x, as.environment(staticData$settings))
+    invisible(NULL)
+})
+
+
+
 
 ####################################################
 ## Some internal functions
@@ -287,6 +338,13 @@ stopServer<- function(cluster){
     }
     invisible(NULL)
 }
+
+clusterExists <- function(cluster){
+    verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
+    dockerClusterExists(provider, cluster, verbose)
+}
+
 
 reconnect <- function(cluster, ...){
     initializeCloudProviderInternal(cluster)

@@ -1,5 +1,6 @@
 Sys.setenv(dummyProvider = "")
 cluster <- NULL
+verbose <- 0
 
 test_that("DockerCluster constructor", {
     expect_error(
@@ -11,13 +12,14 @@ test_that("DockerCluster constructor", {
     expect_error(
         cluster <<- makeDockerCluster(
             cloudProvider = provider,
-            workerContainer = container)
+            workerContainer = container,
+            verbose = verbose)
         ,NA)
 })
 
 test_that("DockerCluster print", {
     expect_error(
-        show(cluster),
+        capture.output(show(cluster)),
         NA
     )
 })
@@ -102,7 +104,9 @@ test_that("DockerCluster reconnect", {
     cluster1 <- makeDockerCluster(
         cloudProvider = provider1,
         workerContainer = container1,
-        workerNumber = 5)
+        workerNumber = 5,
+        verbose = verbose)
+    expect_false(cluster1$clusterExists())
     expect_error(
         cluster1$startCluster(),
         NA
@@ -117,7 +121,9 @@ test_that("DockerCluster reconnect", {
     cluster2 <- makeDockerCluster(
         cloudProvider = provider2,
         workerContainer = container2,
-        workerNumber = 5)
+        workerNumber = 5,
+        verbose = verbose)
+    expect_true(cluster2$clusterExists())
     expect_error(cluster2$reconnect(),
                  NA)
     expect_identical(
@@ -133,7 +139,9 @@ test_that("DockerCluster auto remove the cluster", {
     container <- DummyWorkerContainer()
     cluster <- makeDockerCluster(
         cloudProvider = provider,
-        workerContainer = container)
+        workerContainer = container,
+        verbose = verbose)
+    expect_false(cluster$clusterExists())
     expect_error(cluster$reconnect())
 })
 

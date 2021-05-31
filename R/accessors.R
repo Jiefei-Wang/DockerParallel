@@ -78,7 +78,12 @@
 #' @rdname accessors
 #' @export
 .setClusterSettings <- function(cluster, value){
-    cluster@settings <- value
+    settings <-  cluster@settings
+    rm(list = names(settings), envir = settings)
+    for(i in names(value)){
+        settings[[i]] <- value[[i]]
+    }
+    settings$cluster <- cluster
 }
 
 ## CloudConfig

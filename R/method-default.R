@@ -49,3 +49,9 @@ setMethod("getExportedNames", "ANY", function(x){
 setMethod("getExportedObject", "ANY", function(x, name){
     stop("Unable to find the exported object.")
 })
+
+
+
+
+
+

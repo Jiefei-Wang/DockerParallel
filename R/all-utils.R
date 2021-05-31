@@ -33,9 +33,9 @@ getObjectData <- function(x){
   }
   data
 }
-setObjectData <- function(x, data){
-  for(i in seq_along(data)){
-    name <- names(data)[i]
-    x$field(name, data[[i]])
+setObjectData <- function(x, staticData){
+  for(i in seq_along(staticData)){
+    name <- names(staticData)[i]
+    x$field(name, staticData[[i]])
   }
 }

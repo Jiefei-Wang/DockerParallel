@@ -25,16 +25,24 @@ CloudConfig <- function(jobQueueName = "DockerParallelQueue",
 #' @export
 setMethod(f = "show",signature = "CloudConfig",
           definition = function(object){
-        serverPasswordTmp <- ifelse(is.null(object$serverPassword), "FALSE", "TRUE")
-        cat("A reference CloudConfig object\n")
-        cat("Job queue name:  ", object$jobQueueName, "\n")
-        cat("Worker number:   ", object$expectedWorkerNumber, "\n")
-        cat("Worker CPU:      ", object$workerHardware@cpu, " unit\n")
-        cat("Worker memory:   ", object$workerHardware@memory, " MB\n")
-        cat("server CPU:      ", object$serverHardware@cpu, " unit\n")
-        cat("server memory:   ", object$serverHardware@memory, " MB\n")
-        cat("Server port:     ", object$serverPort, "\n")
-        cat("Server password: ", serverPasswordTmp, "\n")
-        invisible(NULL)
-    }
+              serverPasswordTmp <- ifelse(is.null(object$serverPassword), "FALSE", "TRUE")
+              cat("A reference CloudConfig object\n")
+              cat("Job queue name:  ", object$jobQueueName, "\n")
+              cat("Worker number:   ", object$expectedWorkerNumber, "\n")
+              cat("Worker CPU:      ", object$workerHardware@cpu, " unit\n")
+              cat("Worker memory:   ", object$workerHardware@memory, " MB\n")
+              cat("server CPU:      ", object$serverHardware@cpu, " unit\n")
+              cat("server memory:   ", object$serverHardware@memory, " MB\n")
+              cat("Server port:     ", object$serverPort, "\n")
+              cat("Server password: ", serverPasswordTmp, "\n")
+              invisible(NULL)
+          }
 )
+
+#' @describeIn DockerStaticData The getDockerStaticData method for CloudConfig
+#' @export
+setMethod("getDockerStaticData", "CloudConfig", getObjectData)
+
+#' @describeIn DockerStaticData The setDockerStaticData method for CloudConfig
+#' @export
+setMethod("setDockerStaticData", "CloudConfig", setObjectData)

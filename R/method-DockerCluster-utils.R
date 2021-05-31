@@ -175,6 +175,7 @@ updateServerIp <- function(cluster){
 
 
 waitServerRunning <- function(cluster){
+    provider <- .getCloudProvider(cluster)
     verbose <- cluster$verbose
     while(TRUE){
         serverStatus <- getServerStatus(

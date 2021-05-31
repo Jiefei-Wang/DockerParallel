@@ -61,7 +61,7 @@ setMethod("runDockerServer", "DummyProvider", function(provider, cluster, contai
     provider$serverContainer <- container
     Sys.setenv(dummyProvider = .getJobQueueName(cluster))
 
-    clusterData <- serializeDockerClusterStaticData(cluster)
+    clusterData <- serialize(getDockerStaticData(cluster), NULL)
     encodedValue <- jsonlite::base64_enc(clusterData)
     Sys.setenv(dummyProviderClusterData = encodedValue)
 })
@@ -82,6 +82,7 @@ setMethod("stopDockerServer", "DummyProvider", function(provider, cluster, verbo
     stopifnot(provider$isServerRunning)
     provider$isServerRunning <- FALSE
     Sys.setenv(dummyProvider = "")
+    Sys.setenv(dummyProviderClusterData = "")
 })
 
 #' Create a Dummy provider for testing the container
@@ -180,10 +181,8 @@ setMethod("getDockerWorkerNumbers", "DummyProvider", function(provider, cluster,
 #' @return No return value
 #' @export
 setMethod("dockerClusterExists", "DummyProvider", function(provider, cluster, verbose){
-    stopifnot(provider$initialized)
     stopifnot(is(cluster, "DockerCluster"))
     stopifnot(is(verbose, "numeric"))
-    stopifnot(!provider$isServerRunning)
 
     Sys.getenv("dummyProvider") == .getJobQueueName(cluster)
 })
@@ -203,8 +202,8 @@ setMethod("reconnectDockerCluster", "DummyProvider", function(provider, cluster,
     stopifnot(!provider$isServerRunning)
     stopifnot(Sys.getenv("dummyProvider") == .getJobQueueName(cluster))
     encodedValue <- Sys.getenv("dummyProviderClusterData")
-    clusterData <- jsonlite::base64_dec(encodedValue)
-    unserializeDockerClusterStaticData(cluster, clusterData)
+    staticData <- unserialize(jsonlite::base64_dec(encodedValue))
+    setDockerStaticData(cluster, staticData)
     provider$isServerRunning <- TRUE
 })
 

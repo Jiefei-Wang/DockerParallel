@@ -16,3 +16,11 @@ setMethod("show", "DockerContainer", function(object){
     }
     invisible(NULL)
 })
+
+#' @describeIn DockerStaticData The getDockerStaticData method for DockerContainer
+#' @export
+setMethod("getDockerStaticData", "DockerContainer", getObjectData)
+
+#' @describeIn DockerStaticData The getDockerStaticData method for DockerContainer
+#' @export
+setMethod("setDockerStaticData", "DockerContainer", setObjectData)
