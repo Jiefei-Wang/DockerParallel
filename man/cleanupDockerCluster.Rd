@@ -24,7 +24,8 @@ No return value
 Cleanup the resources after the cluster has been stopped. After this
 function is called, all the non-free resources should be stopped.
 The cloud provider can still preserve some resources if they
-are free. The default method does nothing.
+are free. This generic might be called multiple times.
+The default method does nothing.
 }
 \section{Functions}{
 \itemize{

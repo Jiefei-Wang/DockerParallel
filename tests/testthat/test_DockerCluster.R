@@ -30,7 +30,7 @@ test_that("DockerCluster set worker number", {
         NA
     )
     expect_equal(.getExpectedWorkerNumber(cluster), 10)
-    expect_identical(cluster$getWorkerNumber(),
+    expect_identical(cluster$getWorkerNumbers(),
                      list(initializing = 0L, running = 0L, expected = 10L))
 
 })
@@ -42,7 +42,7 @@ test_that("DockerCluster run server", {
     )
     expect_true(cluster@cloudProvider$initialized)
     expect_true(cluster$isServerRunning())
-    expect_identical(cluster$getWorkerNumber(),
+    expect_identical(cluster$getWorkerNumbers(),
                      list(initializing = 0L, running = 0L, expected = 10L))
     expect_equal(cluster@cloudRuntime$serverPublicIp, "8.8.8.8")
     expect_equal(cluster@cloudRuntime$serverPublicPort, 123)
@@ -58,7 +58,7 @@ test_that("DockerCluster run worker", {
         cluster$setWorkerNumber(5),
         NA
     )
-    expect_identical(cluster$getWorkerNumber(),
+    expect_identical(cluster$getWorkerNumbers(),
                      list(initializing = 0L, running = 5L, expected = 5L))
     expect_identical(cluster@cloudProvider$workerContainer$image, "workerImage")
 })
@@ -87,7 +87,7 @@ test_that("DockerCluster stop cluster", {
         cluster$stopCluster(),
         NA
     )
-    expect_identical(cluster$getWorkerNumber(),
+    expect_identical(cluster$getWorkerNumbers(),
                      list(initializing = 0L, running = 0L, expected = 5L))
     expect_false(cluster$isServerRunning())
 
@@ -112,7 +112,7 @@ test_that("DockerCluster reconnect", {
         NA
     )
     expect_identical(
-        cluster1$getWorkerNumber(),
+        cluster1$getWorkerNumbers(),
         list(initializing = 0L, running = 5L, expected = 5L)
     )
 
@@ -127,7 +127,7 @@ test_that("DockerCluster reconnect", {
     expect_error(cluster2$reconnect(),
                  NA)
     expect_identical(
-        cluster1$getWorkerNumber(),
+        cluster1$getWorkerNumbers(),
         list(initializing = 0L, running = 5L, expected = 5L)
     )
 })

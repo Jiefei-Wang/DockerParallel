@@ -1,6 +1,6 @@
 DockerCluster.finalizer<- function(e){
     if(e$stopClusterOnExit){
-        if(e$cluster$isServerRunning()||e$cluster$getWorkerNumber()>0){
+        if(e$cluster$isServerRunning()||e$cluster$getWorkerNumbers()>0){
             e$cluster$stopCluster(ignoreError = TRUE)
         }
     }

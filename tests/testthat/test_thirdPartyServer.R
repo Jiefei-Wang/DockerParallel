@@ -34,7 +34,7 @@ test_that("DockerCluster set worker number", {
         cluster$setWorkerNumber(10),
         NA
     )
-    expect_identical(cluster$getWorkerNumber(),
+    expect_identical(cluster$getWorkerNumbers(),
                      list(initializing = 0L, running = 10L, expected = 10L))
 })
 
@@ -76,7 +76,7 @@ test_that("DockerCluster stop cluster", {
         cluster$stopCluster(),
         NA
     )
-    expect_identical(cluster$getWorkerNumber(),
+    expect_identical(cluster$getWorkerNumbers(),
                      list(initializing = 0L, running = 0L, expected = 10L))
     expect_true(cluster$isServerRunning())
 

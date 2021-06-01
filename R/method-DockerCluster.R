@@ -5,7 +5,7 @@ clusterMethods <- c(
     "stopServer",
     "isServerRunning",
     "setWorkerNumber",
-    "getWorkerNumber",
+    "getWorkerNumbers",
     "registerBackend",
     "deregisterBackend",
     "update",
@@ -117,7 +117,7 @@ setMethod(f = "show",signature = "DockerCluster",
                   cat("Server public IP:  ", .getServerPublicIp(object), "\n")
                   cat("Server private IP: ", .getServerPrivateIp(object), "\n")
               }
-              workerNumber <- object$getWorkerNumber()
+              workerNumber <- object$getWorkerNumbers()
 
               cat("Worker Number:     ",
                   workerNumber$expected, "/",
@@ -186,7 +186,7 @@ setMethod("setDockerStaticData", "DockerCluster", function(x, staticData){
 # cluster$stopCluster()
 # cluster$stopServer()
 # cluster$stopWorkers(workerNum)
-# cluster$getWorkerNumber()
+# cluster$getWorkerNumbers()
 # cluster$status()
 
 startCluster <- function(cluster, ...){
@@ -283,7 +283,7 @@ setWorkerNumber <- function(cluster, workerNumber){
     invisible(NULL)
 }
 
-getWorkerNumber <- function(cluster){
+getWorkerNumbers <- function(cluster){
     initializeCloudProviderInternal(cluster)
 
     ## Check the latest status
@@ -369,7 +369,7 @@ reconnect <- function(cluster, ...){
                            cluster = cluster,
                            verbose = verbose)
     updateServerIp(cluster)
-    workerNumber <- cluster$getWorkerNumber()
+    workerNumber <- cluster$getWorkerNumbers()
     .setExpectedWorkerNumber(cluster, workerNumber$initializing + workerNumber$running)
     cluster$registerBackend(...)
 }

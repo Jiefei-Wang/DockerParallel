@@ -133,30 +133,6 @@
 
 
 ##################################
-##  A specific type of cloud provider
-##################################
-#' A
-#'
-#' The root class of the cloud provider
-#'
-#' @field serverHandle Character(1), the server handle that can be recognized by the
-#' cloud provider.
-#' @field workerHandles Character(n), a list object for internal use only.
-#' Please call `.getWorkerHandles(cluster)` to access the worker handles
-#' @field workerPerHandle An internal counter. Please call `.getWorkerHandles(cluster)`
-#' to access the worker handles
-#' @exportClass CloudProvider
-.ManagedCloudProvider <- setRefClass(
-    "ManagedCloudProvider",
-    fields = list(
-        serverHandle = "character",
-        workerHandles = "character",
-        workerPerHandle = "integer"
-    ),
-    contains = "CloudProvider"
-)
-
-##################################
 ##          ClusterMethodGetter
 ##################################
 #' An utility class

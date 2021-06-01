@@ -7,7 +7,7 @@
 generalDockerClusterTest(
   cloudProvider,
   workerContainer,
-  workerNumber = 3L,
+  workerNumber = 5L,
   testReconnect = TRUE
 )
 }
@@ -24,8 +24,8 @@ generalDockerClusterTest(
 No return value
 }
 \description{
-The general testthat function for testing the cluster. The function is
-generally called by the cloud provider to test the functions in the provider.
+The general testthat function for testing the cluster. The function should
+be called by the cloud provider to test the functions in the provider.
 if \code{testReconnect} is \code{TRUE},
 The provider must define \code{reconnectDockerCluster} for making the test function work.
 }

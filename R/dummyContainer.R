@@ -4,10 +4,23 @@
     contains = "DockerContainer"
 )
 
+#' A dummy container
+#'
+#' A dummy container. It is for purely testing purpose.
+#'
+#' @param image The image for the container
+#' @param backend The parallel backend for the container
+#' @param maxWorkerNum The maximum worker number
+#' @examples
+#' DummyWorkerContainer()
+#' @rdname DummyContainer
+#' @export
 DummyWorkerContainer <- function(image = "workerImage", backend = "testBackend", maxWorkerNum = 123L){
     .DummyContainer(image = image, backend = backend, maxWorkerNum = as.integer(maxWorkerNum))
 }
 
+#' @rdname DummyContainer
+#' @export
 DummyServerContainer <- function(image = "serverImage", backend = "testBackend"){
     .DummyContainer(image = image, backend = backend, maxWorkerNum = 1L)
 }
@@ -19,6 +32,8 @@ combineList <- function(x, newX){
     x
 }
 
+#' @describeIn configServerContainerEnv method for the dummy container
+#' @export
 setMethod("configServerContainerEnv", "DummyContainer",
           function(container, cluster, verbose = FALSE){
               serverPort <- .getServerPort(cluster)
@@ -36,6 +51,8 @@ setMethod("configServerContainerEnv", "DummyContainer",
               container
           })
 
+#' @describeIn configWorkerContainerEnv method for the dummy container
+#' @export
 setMethod("configWorkerContainerEnv", "DummyContainer",
           function(container, cluster, workerNumber, verbose = FALSE){
               container <- container$copy()
@@ -68,15 +85,19 @@ setMethod("configWorkerContainerEnv", "DummyContainer",
               container
           })
 
-
+#' @describeIn getServerContainer method for the dummy container
+#' @export
 setMethod("getServerContainer", "DummyContainer",function(workerContainer){
     DummyServerContainer()
 })
 
+#' @describeIn containerParallelBackend method for the dummy container
+#' @export
 setMethod("registerParallelBackend", "DummyContainer",
           function(container, cluster, verbose, ...){})
 
-
+#' @describeIn containerParallelBackend method for the dummy container
+#' @export
 setMethod("deregisterParallelBackend", "DummyContainer",
           function(container, cluster, verbose, ...){})
 
