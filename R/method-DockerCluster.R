@@ -195,8 +195,8 @@ startCluster <- function(cluster, ...){
 
     ## Check if the cluster exists on the cloud
     ## and ask user what to do
-    answer <- checkIfClusterExistAndAsk(cluster)
-    if(!answer)
+    continue <- checkIfClusterExistAndAsk(cluster)
+    if(!continue)
         return(invisible(NULL))
 
     ## Start the server
@@ -361,17 +361,7 @@ reconnect <- function(cluster, ...){
              .getJobQueueName(cluster),
              "> is not running!")
 
-    if(cluster$stopClusterOnExit){
-        verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")
-        cluster$stopClusterOnExit <- FALSE
-    }
-    reconnectDockerCluster(provider = provider,
-                           cluster = cluster,
-                           verbose = verbose)
-    updateServerIp(cluster)
-    workerNumber <- cluster$getWorkerNumbers()
-    .setExpectedWorkerNumber(cluster, workerNumber$initializing + workerNumber$running)
-    cluster$registerBackend(...)
+    reconnectClusterInternal(cluster = cluster, ...)
 }
 
 

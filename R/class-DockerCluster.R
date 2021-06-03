@@ -105,24 +105,29 @@ makeDockerCluster <- function(cloudProvider = NULL,
             stop("No default cloudProvider can be found")
         }
         cloudProvider <- packageSetting$cloudProvider$copy()
+    }else{
+        cloudProvider <- cloudProvider$copy()
     }
     if(is.null(workerContainer)){
         if(is.null(packageSetting$workerContainer)){
             stop("No default workerContainer can be found")
         }
         workerContainer <- packageSetting$workerContainer$copy()
+    }else{
+        workerContainer <- workerContainer$copy()
     }
-        serverHardware <- DockerHardware(cpu = serverCpu,
-                                         memory = serverMemory,
-                                         id = serverHardwareId)
-        workerHardware <- DockerHardware(cpu = workerCpu,
-                                         memory = workerMemory,
-                                         id = workerHardwareId)
-        cloudConfig <- CloudConfig(jobQueueName=jobQueueName,
-                                   expectedWorkerNumber = workerNumber,
-                                   serverHardware =  serverHardware,
-                                   workerHardware = workerHardware)
-        cloudRuntime <- CloudRuntime(serverFromOtherSource = FALSE)
+    serverContainer <- serverContainer$copy()
+    serverHardware <- DockerHardware(cpu = serverCpu,
+                                     memory = serverMemory,
+                                     id = serverHardwareId)
+    workerHardware <- DockerHardware(cpu = workerCpu,
+                                     memory = workerMemory,
+                                     id = workerHardwareId)
+    cloudConfig <- CloudConfig(jobQueueName=jobQueueName,
+                               expectedWorkerNumber = workerNumber,
+                               serverHardware =  serverHardware,
+                               workerHardware = workerHardware)
+    cloudRuntime <- CloudRuntime(serverFromOtherSource = FALSE)
 
     if(!is.null(privateServerData)){
         cloudConfig$serverWorkerSameLAN <- privateServerData$serverWorkerSameLAN

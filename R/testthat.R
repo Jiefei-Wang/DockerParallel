@@ -17,8 +17,9 @@ expectWorkerRunning <- function(cluster, expectNum){
 #'
 #' @param cloudProvider The CloudProvider
 #' @param workerContainer The workerContainer
-#' @param workerNumber The number of workers used in the unit test
-#' @param testReconnect Logical, whether to test the reconnect feature
+#' @param workerNumber Integer(1), The number of workers used in the unit test
+#' @param testReconnect Logical(1), whether to test the reconnect feature
+#' @param ... Additional parameters passed to `makeDockerCluster`
 #'
 #' @return No return value
 #' @export
@@ -26,7 +27,7 @@ generalDockerClusterTest <- function(cloudProvider,
                                      workerContainer,
                                      workerNumber = 5L,
                                      testReconnect = TRUE,
-                                     verbose = 0){
+                                     ...){
     workerPerContainer <- workerContainer$maxWorkerNum
     testthat::expect_error(
         cluster <- makeDockerCluster(cloudProvider = cloudProvider$copy(),
@@ -34,7 +35,7 @@ generalDockerClusterTest <- function(cloudProvider,
                                      workerNumber = 0L,
                                      workerCpu = 256,
                                      workerMemory = 512,
-                                     verbose = verbose)
+                                     ...)
         ,NA)
 
 
@@ -81,7 +82,7 @@ generalDockerClusterTest <- function(cloudProvider,
                                          workerNumber = 1,
                                          workerCpu = 256,
                                          workerMemory = 512,
-                                         verbose = verbose)
+                                         ...)
             ,NA)
         ## Start cluster
         testthat::expect_error(cluster$startCluster(),NA)
@@ -100,7 +101,7 @@ generalDockerClusterTest <- function(cloudProvider,
                                          workerNumber = 1,
                                          workerCpu = 256,
                                          workerMemory = 512,
-                                         verbose = verbose)
+                                         ...)
             ,NA)
         testthat::expect_false(cluster$clusterExists())
 
@@ -119,7 +120,7 @@ generalDockerClusterTest <- function(cloudProvider,
                                          workerNumber = 1,
                                          workerCpu = 256,
                                          workerMemory = 512,
-                                         verbose = verbose)
+                                         ...)
             ,NA)
         testthat::expect_true(cluster$clusterExists())
         testthat::expect_error(cluster$reconnect(),NA)

@@ -8,7 +8,8 @@ generalDockerClusterTest(
   cloudProvider,
   workerContainer,
   workerNumber = 5L,
-  testReconnect = TRUE
+  testReconnect = TRUE,
+  ...
 )
 }
 \arguments{
@@ -16,9 +17,11 @@ generalDockerClusterTest(
 
 \item{workerContainer}{The workerContainer}
 
-\item{workerNumber}{The number of workers used in the unit test}
+\item{workerNumber}{Integer(1), The number of workers used in the unit test}
 
-\item{testReconnect}{Logical, whether to test the reconnect feature}
+\item{testReconnect}{Logical(1), whether to test the reconnect feature}
+
+\item{...}{Additional parameters passed to \code{makeDockerCluster}}
 }
 \value{
 No return value

@@ -35,16 +35,13 @@ checkIfClusterExistAndAsk <- function(cluster){
         msg <- paste0(
             "The cluster with the job queue name <",
             jobName,
-            "> exists on the cloud, do you want to reuse the same cluster?"
+            "> exists on the cloud, do you want to reuse the same cluster?",
+            " Answering \"no\" will create a new cluster with the same job queue name"
         )
         answer <- menu(c("Yes", "No", "Cancel"), title=msg)
         if(answer == 1){
-            if(cluster$stopClusterOnExit){
-                verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")
-                cluster$stopClusterOnExit <- FALSE
-            }
-            reconnectDockerCluster(provider=provider, cluster=cluster, verbose=verbose)
-            return(TRUE)
+            reconnectClusterInternal(cluster = cluster)
+            return(FALSE)
         }
         if(answer == 2){
             return(TRUE)
@@ -56,6 +53,22 @@ checkIfClusterExistAndAsk <- function(cluster){
     TRUE
 }
 
+## Reconnect the cluster, the cluster must exist!
+reconnectClusterInternal <- function(cluster, ...){
+    verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
+    if(cluster$stopClusterOnExit){
+        verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")
+        cluster$stopClusterOnExit <- FALSE
+    }
+    reconnectDockerCluster(provider = provider,
+                           cluster = cluster,
+                           verbose = verbose)
+    updateServerIp(cluster)
+    workerNumber <- cluster$getWorkerNumbers()
+    .setExpectedWorkerNumber(cluster, workerNumber$initializing + workerNumber$running)
+    cluster$registerBackend(...)
+}
 
 
 updateWorkerNumber <- function(cluster){
