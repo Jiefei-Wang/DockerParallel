@@ -110,6 +110,12 @@ setMethod(f = "$<-",signature = "DockerCluster",
 #' @export
 setMethod(f = "show",signature = "DockerCluster",
           definition = function(object){
+              verbose <- object$verbose
+              ## Temporary disable the verbose message
+              if(verbose >= 2){
+                  object$verbose <- 0L
+                  on.exit(object$verbose <- verbose)
+              }
               isServerRunning <- object$isServerRunning()
 
               cat("Server status:     ", ifelse(isServerRunning ,"Running", "Stopped"), "\n")
@@ -366,9 +372,12 @@ reconnect <- function(cluster, ...){
 
 
 registerBackend <- function(cluster, ...){
+    if(!cluster$isServerRunning()){
+        stop("Cannot register the parallel backend: The server is not running!")
+    }
+
     verbose <- cluster$verbose
     verbosePrint(verbose, "Registering parallel backend, it might take a few minutes")
-    stopifnot(cluster$isServerRunning())
     settings <- .getClusterSettings(cluster)
     serverFromOtherSource <- .getServerFromOtherSource(cluster)
 

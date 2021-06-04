@@ -15,7 +15,12 @@ test_that("DockerCluster constructor", {
             workerContainer = container,
             verbose = verbose)
         ,NA)
+    })
+
+test_that("Register the backend when the cluster is not running", {
+    expect_error(cluster$registerBackend())
 })
+
 
 test_that("DockerCluster print", {
     expect_error(
