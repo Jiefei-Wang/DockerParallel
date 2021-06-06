@@ -6,6 +6,13 @@
 \usage{
 \S4method{getServerStatus}{DummyProvider}(provider, cluster, verbose)
 }
+\arguments{
+\item{provider}{S4 \code{CloudProvider} object. The service provider.}
+
+\item{cluster}{S4 \code{DockerCluster} object.}
+
+\item{verbose}{Integer. The verbose level, default 1.}
+}
 \value{
 No return value
 }

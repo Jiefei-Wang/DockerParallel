@@ -25,5 +25,5 @@ No return value, if error occurs, the function can throw an error.
 }
 \description{
 Run or stop the server. These functions will not be called if the server is
-not managed by the provider. There is no default method for this generic.
+not managed by the provider. There is no default method for these generics.
 }

@@ -1,6 +1,9 @@
                           Changes in version 1.0.3
 Changes:
     + The reference arguments passed to makeDockerCluster will be copied before using.
+    + Add `deep` parameter to `cleanupDockerCluster`
+    + add cleanup function to cluster
+
                           Changes in version 1.0.2
 New features:
     + Add "getDockerStaticData" and "setDockerStaticData"

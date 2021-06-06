@@ -25,7 +25,7 @@ setDockerWorkerNumber(
 \item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{
-The worker number on the cloud
+No return value
 }
 \description{
 Set the worker number on the cloud. The provider needs to scale the worker

@@ -10,7 +10,8 @@ clusterMethods <- c(
     "deregisterBackend",
     "update",
     "clusterExists",
-    "reconnect"
+    "reconnect",
+    "cleanup"
 )
 
 clusterObjects <- c("cloudProvider", "serverContainer", "workerContainer")
@@ -112,7 +113,7 @@ setMethod(f = "show",signature = "DockerCluster",
           definition = function(object){
               verbose <- object$verbose
               ## Temporary disable the verbose message
-              if(verbose >= 2){
+              if(verbose < 2){
                   object$verbose <- 0L
                   on.exit(object$verbose <- verbose)
               }
@@ -422,4 +423,20 @@ update <- function(cluster){
     status <- updateServerStatus(cluster)
     cluster$setWorkerNumber(.getExpectedWorkerNumber(cluster))
     cluster
+}
+
+cleanup <- function(cluster, deep = FALSE){
+    provider <- .getCloudProvider(cluster)
+    verbose <- .getVerbose(cluster)
+    if(cluster$isServerRunning()){
+        stop("The server is still running")
+    }
+    workerNumbers <- cluster$getWorkerNumbers()
+    if(workerNumbers$initializing + workerNumbers$running != 0){
+        stop("The workers are still running")
+    }
+    cleanupDockerCluster(provider = provider,
+                         cluster = cluster,
+                         deep = deep,
+                         verbose = verbose)
 }

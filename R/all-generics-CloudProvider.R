@@ -33,7 +33,7 @@ setGeneric("initializeCloudProvider", function(provider, cluster, verbose){
 #' Run or stop the server container
 #'
 #' Run or stop the server. These functions will not be called if the server is
-#' not managed by the provider. There is no default method for this generic.
+#' not managed by the provider. There is no default method for these generics.
 #'
 #' @inheritParams generics-commonParams
 #' @param container S4 `DockerContainer` Object. The server container.
@@ -59,7 +59,9 @@ setGeneric("stopDockerServer", function(provider, cluster, verbose){
 #' Get the server status, return a character value which must be in one of three values
 #' `"initializing"`, `"running"` or `"stopped"`. The default method always returns `"running"`
 #'
+#' @inheritParams generics-commonParams
 #' @returns Character(1)
+#' @export
 setGeneric("getServerStatus", function(provider, cluster, verbose){
     standardGeneric("getServerStatus")
 })
@@ -75,6 +77,7 @@ setGeneric("getServerStatus", function(provider, cluster, verbose){
 #' If the server is not provided by the cloud provider, this function will not be called.
 #' There is no default method for this generic. The return value should be a name list
 #' with four elements `publicIp`, `publicPort`, `privateIp` and `privatePort`.
+#' If the server does not have the public endpoint, public IP and port can be `NULL`.
 #'
 #' @inheritParams generics-commonParams
 #'
@@ -91,7 +94,7 @@ setGeneric("getDockerServerIp", function(provider, cluster, verbose){
 #' number up and down accordingly.
 #'
 #' @inheritParams generics-commonParams
-#' @return The worker number on the cloud
+#' @return No return value
 #' @export
 setGeneric("setDockerWorkerNumber", function(provider, cluster, container, hardware, workerNumber, verbose){
     standardGeneric("setDockerWorkerNumber")
@@ -152,9 +155,10 @@ setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
 #' The default method does nothing.
 #'
 #' @inheritParams generics-commonParams
+#' @param deep Logical(1), wheter all the associated resources should be removed
 #' @return No return value
 #' @export
-setGeneric("cleanupDockerCluster", function(provider, cluster, verbose){
+setGeneric("cleanupDockerCluster", function(provider, cluster, deep, verbose){
     standardGeneric("cleanupDockerCluster")
 })
 

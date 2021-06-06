@@ -27,4 +27,5 @@ available.
 If the server is not provided by the cloud provider, this function will not be called.
 There is no default method for this generic. The return value should be a name list
 with four elements \code{publicIp}, \code{publicPort}, \code{privateIp} and \code{privatePort}.
+If the server does not have the public endpoint, public IP and port can be \code{NULL}.
 }

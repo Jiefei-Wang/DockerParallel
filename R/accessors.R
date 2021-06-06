@@ -47,6 +47,20 @@
 
 #' @rdname accessors
 #' @export
+.getVerbose <- function(cluster){
+    settings <- .getClusterSettings(cluster)
+    settings$verbose
+}
+
+#' @rdname accessors
+#' @export
+.getStopClusterOnExit <- function(cluster){
+    settings <- .getClusterSettings(cluster)
+    settings$stopClusterOnExit
+}
+
+#' @rdname accessors
+#' @export
 .setCloudProvider <- function(cluster, value){
     cluster@cloudProvider <- value
 }
@@ -85,6 +99,21 @@
     }
     settings$cluster <- cluster
 }
+
+#' @rdname accessors
+#' @export
+.setVerbose <- function(cluster, value){
+    settings <- .getClusterSettings(cluster)
+    settings$verbose <- value
+}
+
+#' @rdname accessors
+#' @export
+.setStopClusterOnExit <- function(cluster, value){
+    settings <- .getClusterSettings(cluster)
+    settings$stopClusterOnExit <- value
+}
+
 
 ## CloudConfig
 #' @rdname accessors

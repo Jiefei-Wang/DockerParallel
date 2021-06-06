@@ -123,8 +123,7 @@ cluster <- makeDockerCluster(
   workerMemory = 2048
   )
 cluster
-#> Server status:      Stopped
-#> Initializing the ECS provider
+#> Server status:      Stopped 
 #> Worker Number:      1 / 0 / 0  (expected/running/initializing)
 ```
 where `workerCpu` defines the CPU unit used by the worker container, 1024 CPU unit corresponds to a single CPU core. `workerMemory` defines the worker memory and the unit is `MB`. You do not have to provider the server container as it will be implicitly generated from the worker container. 
@@ -140,8 +139,7 @@ cluster <- makeDockerCluster(
   workerMemory = 2048
   )
 cluster
-#> Server status:      Stopped
-#> Initializing the ECS provider
+#> Server status:      Stopped 
 #> Worker Number:      1 / 0 / 0  (expected/running/initializing)
 ```
 
@@ -174,7 +172,7 @@ foreach(i = 1:2)%dopar%{
 #>                                       sysname                                       release 
 #>                                       "Linux"               "4.14.225-168.357.amzn2.x86_64" 
 #>                                       version                                      nodename 
-#>         "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "841f0fe819374ae9b03b53fd5c854916-1898378499" 
+#>         "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "cc1f05e863944abfb74b99f2cca2130c-1898378499" 
 #>                                       machine                                         login 
 #>                                      "x86_64"                                     "unknown" 
 #>                                          user                                effective_user 
@@ -184,7 +182,7 @@ foreach(i = 1:2)%dopar%{
 #>                                       sysname                                       release 
 #>                                       "Linux"               "4.14.225-168.357.amzn2.x86_64" 
 #>                                       version                                      nodename 
-#>         "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "841f0fe819374ae9b03b53fd5c854916-1898378499" 
+#>         "#1 SMP Mon Mar 15 18:00:02 UTC 2021" "cc1f05e863944abfb74b99f2cca2130c-1898378499" 
 #>                                       machine                                         login 
 #>                                      "x86_64"                                     "unknown" 
 #>                                          user                                effective_user 
@@ -286,24 +284,19 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] DockerParallel_1.0.3     foreach_1.5.1            readr_1.4.0             
-#> [4] ECSFargateProvider_1.0.2 doRedisContainer_0.99.0  testthat_3.0.2          
+#> [1] foreach_1.5.1            DockerParallel_1.0.3     doRedisContainer_0.99.0 
+#> [4] ECSFargateProvider_1.0.2
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] pillar_1.6.1               compiler_4.1.0             RedisBaseContainer_1.0.0  
-#>  [4] base64enc_0.1-3            iterators_1.0.13           doRedis_2.0.1             
-#>  [7] tools_4.1.0                digest_0.6.27              pkgload_1.2.1             
-#> [10] evaluate_0.14              tibble_3.1.2               jsonlite_1.7.2            
-#> [13] lifecycle_1.0.0            pkgconfig_2.0.3            rlang_0.4.11              
-#> [16] cli_2.5.0                  curl_4.3.1                 parallel_4.1.0            
-#> [19] aws.iam_0.1.8              xfun_0.23                  stringr_1.4.0             
-#> [22] withr_2.4.2                httr_1.4.2                 knitr_1.33                
-#> [25] xml2_1.3.2                 vctrs_0.3.8                desc_1.3.0                
-#> [28] hms_1.1.0                  rprojroot_2.0.2            R6_2.5.0                  
-#> [31] redux_1.1.0                aws.ecx_1.0.4              fansi_0.5.0               
-#> [34] adagio_0.8.4               ManagedCloudProvider_1.0.0 magrittr_2.0.1            
-#> [37] codetools_0.2-18           htmltools_0.5.1.1          ellipsis_0.3.2            
-#> [40] lpSolve_5.6.15             aws.signature_0.6.0        utf8_1.2.1                
-#> [43] stringi_1.6.2              crayon_1.4.1               rjson_0.2.20
+#>  [1] magrittr_2.0.1             cluster_2.1.2              knitr_1.33                
+#>  [4] xml2_1.3.2                 aws.signature_0.6.0        rjson_0.2.20              
+#>  [7] R6_2.5.0                   aws.ecx_1.0.4              stringr_1.4.0             
+#> [10] httr_1.4.2                 tools_4.1.0                parallel_4.1.0            
+#> [13] lpSolve_5.6.15             xfun_0.23                  RedisBaseContainer_1.0.0  
+#> [16] doRedis_2.0.1              iterators_1.0.13           digest_0.6.27             
+#> [19] aws.iam_0.1.8              adagio_0.8.4               base64enc_0.1-3           
+#> [22] codetools_0.2-18           curl_4.3.1                 evaluate_0.14             
+#> [25] redux_1.1.0                stringi_1.6.2              compiler_4.1.0            
+#> [28] ManagedCloudProvider_1.0.0 jsonlite_1.7.2
 ```
 

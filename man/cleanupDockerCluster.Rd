@@ -6,7 +6,7 @@
 \alias{cleanupDockerCluster,ANY-method}
 \title{Cleanup the resources after the cluster has been stopped}
 \usage{
-cleanupDockerCluster(provider, cluster, verbose)
+cleanupDockerCluster(provider, cluster, deep, verbose)
 
 \S4method{cleanupDockerCluster}{ANY}(provider, cluster, verbose)
 }
@@ -14,6 +14,8 @@ cleanupDockerCluster(provider, cluster, verbose)
 \item{provider}{S4 \code{CloudProvider} object. The service provider.}
 
 \item{cluster}{S4 \code{DockerCluster} object.}
+
+\item{deep}{Logical(1), wheter all the associated resources should be removed}
 
 \item{verbose}{Integer. The verbose level, default 1.}
 }

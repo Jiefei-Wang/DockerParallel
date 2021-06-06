@@ -178,10 +178,17 @@ updateServerIp <- function(cluster){
             cluster = cluster,
             verbose = verbose
         )
-        stopifnot(!is.null(serverIp$privateIp))
-        stopifnot(!is.null(serverIp$privatePort))
-        stopifnot(!is.null(serverIp$publicIp))
-        stopifnot(!is.null(serverIp$publicPort))
+
+        stopifnot(length(serverIp$publicIp)<=1)
+        stopifnot(length(serverIp$publicPort)<=1)
+        stopifnot(length(serverIp$privateIp)<=1)
+        stopifnot(length(serverIp$privatePort)<=1)
+
+        ## Handle the null case
+        if(is.null(serverIp$publicIp)) serverIp$publicIp <- character(0)
+        if(is.null(serverIp$publicPort)) serverIp$publicPort <- integer(0)
+        if(is.null(serverIp$privateIp)) serverIp$privateIp <- character(0)
+        if(is.null(serverIp$privatePort)) serverIp$privatePort <- integer(0)
 
         .setServerPrivateIp(cluster, serverIp$privateIp)
         .setServerPrivatePort(cluster, serverIp$privatePort)

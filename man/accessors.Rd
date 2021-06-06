@@ -7,12 +7,16 @@
 \alias{.getWorkerContainer}
 \alias{.getCloudRuntime}
 \alias{.getClusterSettings}
+\alias{.getVerbose}
+\alias{.getStopClusterOnExit}
 \alias{.setCloudProvider}
 \alias{.setCloudConfig}
 \alias{.setServerContainer}
 \alias{.setWorkerContainer}
 \alias{.setCloudRuntime}
 \alias{.setClusterSettings}
+\alias{.setVerbose}
+\alias{.setStopClusterOnExit}
 \alias{.getJobQueueName}
 \alias{.getExpectedWorkerNumber}
 \alias{.getWorkerHardware}
@@ -57,6 +61,10 @@
 
 .getClusterSettings(cluster)
 
+.getVerbose(cluster)
+
+.getStopClusterOnExit(cluster)
+
 .setCloudProvider(cluster, value)
 
 .setCloudConfig(cluster, value)
@@ -68,6 +76,10 @@
 .setCloudRuntime(cluster, value)
 
 .setClusterSettings(cluster, value)
+
+.setVerbose(cluster, value)
+
+.setStopClusterOnExit(cluster, value)
 
 .getJobQueueName(cluster)
 
