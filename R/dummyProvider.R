@@ -26,6 +26,8 @@ resetDummyProvider <- function(){
 #'
 #' Create a Dummy provider for testing the container
 #'
+#' @param initialized,isServerRunning,cleanup logical(1), the flags
+#'
 #' @examples DummyProvider()
 #' @return A `DummyProvider` object
 #' @export

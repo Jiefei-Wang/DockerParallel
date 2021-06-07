@@ -144,7 +144,7 @@
 \arguments{
 \item{cluster}{A \code{DockerCluster} object}
 
-\item{value, handles}{The value you want to set/add/remove}
+\item{value}{The value you want to set/add/remove}
 }
 \value{
 No return value for the setter. The getter will get the object from the cluster.

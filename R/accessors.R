@@ -3,7 +3,7 @@
 #' Accessor functions for the developer.
 #'
 #' @param cluster A `DockerCluster` object
-#' @param value,handles The value you want to set/add/remove
+#' @param value The value you want to set/add/remove
 #'
 #'
 #' @returns

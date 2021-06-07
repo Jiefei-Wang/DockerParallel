@@ -16,8 +16,6 @@ getDockerWorkerNumbers(provider, cluster, verbose)
 \item{cluster}{S4 \code{DockerCluster} object.}
 
 \item{verbose}{Integer. The verbose level, default 1.}
-
-\item{status}{Character(1), the status of the container.}
 }
 \value{
 \verb{list(initializing = ?, running = ?)}.

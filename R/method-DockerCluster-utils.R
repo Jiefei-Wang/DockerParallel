@@ -1,6 +1,8 @@
 DockerCluster.finalizer<- function(e){
     if(e$stopClusterOnExit){
-        if(e$cluster$isServerRunning()||e$cluster$getWorkerNumbers()>0){
+        workerNumbers <- e$cluster$getWorkerNumbers()
+        liveWorkers <- workerNumbers$running + workerNumbers$initializing
+        if(e$cluster$isServerRunning()|| liveWorkers > 0){
             e$cluster$stopCluster(ignoreError = TRUE)
         }
     }
@@ -65,8 +67,8 @@ reconnectClusterInternal <- function(cluster, ...){
                            cluster = cluster,
                            verbose = verbose)
     updateServerIp(cluster)
-    workerNumber <- cluster$getWorkerNumbers()
-    .setExpectedWorkerNumber(cluster, workerNumber$initializing + workerNumber$running)
+    workerNumbers <- cluster$getWorkerNumbers()
+    .setExpectedWorkerNumber(cluster, workerNumbers$initializing + workerNumbers$running)
     cluster$registerBackend(...)
 }
 

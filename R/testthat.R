@@ -1,11 +1,11 @@
 expectWorkerNotRunning <- function(cluster){
     workerNumbers <- cluster$getWorkerNumbers()
-    expect_equal(workerNumbers$running, 0)
-    expect_equal(workerNumbers$initializing, 0)
+    testthat::expect_equal(workerNumbers$running, 0)
+    testthat::expect_equal(workerNumbers$initializing, 0)
 }
 expectWorkerRunning <- function(cluster, expectNum){
     workerNumbers <- cluster$getWorkerNumbers()
-    expect_equal(workerNumbers$running + workerNumbers$initializing, expectNum)
+    testthat::expect_equal(workerNumbers$running + workerNumbers$initializing, expectNum)
 }
 
 #' The general testthat function for testing the cluster

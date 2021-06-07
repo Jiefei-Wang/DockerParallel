@@ -6,6 +6,9 @@
 \usage{
 DummyProvider(initialized = FALSE, isServerRunning = FALSE, cleanup = FALSE)
 }
+\arguments{
+\item{initialized, isServerRunning, cleanup}{logical(1), the flags}
+}
 \value{
 A \code{DummyProvider} object
 }

@@ -22,6 +22,8 @@
 
 \item{hardware}{S4 \code{DockerHardware} Object.}
 
+\item{workerNumber}{Integer(1), the number of the workers.}
+
 \item{verbose}{Integer. The verbose level, default 1.}
 }
 \value{

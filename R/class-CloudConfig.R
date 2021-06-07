@@ -39,10 +39,10 @@ setMethod(f = "show",signature = "CloudConfig",
           }
 )
 
-#' @describeIn DockerStaticData The getDockerStaticData method for CloudConfig
+#' @describeIn DockerStaticData The method for CloudConfig
 #' @export
 setMethod("getDockerStaticData", "CloudConfig", getObjectData)
 
-#' @describeIn DockerStaticData The setDockerStaticData method for CloudConfig
+#' @describeIn DockerStaticData The method for CloudConfig
 #' @export
 setMethod("setDockerStaticData", "CloudConfig", setObjectData)

@@ -124,17 +124,19 @@ setMethod(f = "show",signature = "DockerCluster",
                   cat("Server public IP:  ", .getServerPublicIp(object), "\n")
                   cat("Server private IP: ", .getServerPrivateIp(object), "\n")
               }
-              workerNumber <- object$getWorkerNumbers()
+              workerNumbers <- object$getWorkerNumbers()
 
               cat("Worker Number:     ",
-                  workerNumber$expected, "/",
-                  workerNumber$running,"/",
-                  workerNumber$initializing,
+                  workerNumbers$expected, "/",
+                  workerNumbers$running,"/",
+                  workerNumbers$initializing,
                   " (expected/running/initializing)\n")
               invisible(NULL)
           })
 
 
+#' @describeIn DockerStaticData The method for DockerCluster
+#' @export
 setMethod("getDockerStaticData", "DockerCluster", function(x){
     cloudConfig <- .getCloudConfig(x)
     serverContainer <- .getServerContainer(x)
@@ -154,6 +156,8 @@ setMethod("getDockerStaticData", "DockerCluster", function(x){
     staticData
 })
 
+#' @describeIn DockerStaticData The method for DockerCluster
+#' @export
 setMethod("setDockerStaticData", "DockerCluster", function(x, staticData){
     cloudConfig <- .getCloudConfig(x)
     serverContainer <- .getServerContainer(x)

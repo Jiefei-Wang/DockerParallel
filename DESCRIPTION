@@ -13,7 +13,8 @@ Description: This is the core package that provides both the user API and develo
     the cloud provider and container.
 Imports:
   methods,
-  utils
+  utils,
+  jsonlite
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

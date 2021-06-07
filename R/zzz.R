@@ -1,5 +1,6 @@
 #' @import methods
 #' @import utils
+#' @importFrom jsonlite base64_enc
 NULL
 
 packageSetting<-new.env()

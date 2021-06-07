@@ -40,13 +40,6 @@ dockerCluster <- function(cloudProvider,
 #' @param serverHardwareId,workerHardwareId Character, the ID of the hardware, this argument
 #' might be ignored by some cloud providers.
 #' @param jobQueueName Character, the job queue name used by the cluster to send the job.
-#' @param cloudConfig A `CloudConfig` object. The object that stores the cloud information such
-#' as server password, port, network status. If this argument is provided, the arguments
-#' `workerNumber`, `serverCpu`,`workerCpu`,`serverMemory`,`workerMemory`,`serverHardwareId`,
-#' `workerHardwareId` and `jobQueueName` will be ignored.
-#' @param cloudRuntime A `CloudRuntime` object. The obect that stores the cloud runtime data such
-#' as server IP, handle and worker handles. There is no need to provide this object
-#' unless you want to use an existing cloud cluster.
 #' @param privateServerData A data object made from `CloudPrivateServer`. If this object
 #' is provided, the cluster server should be from another source and the cloud provider
 #' will not deploy the server container.

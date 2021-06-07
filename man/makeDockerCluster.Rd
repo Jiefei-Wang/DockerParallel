@@ -49,15 +49,6 @@ will not deploy the server container.}
 from the R session. The default value is \code{TRUE}.}
 
 \item{verbose}{Integer, the verbose level}
-
-\item{cloudConfig}{A \code{CloudConfig} object. The object that stores the cloud information such
-as server password, port, network status. If this argument is provided, the arguments
-\code{workerNumber}, \code{serverCpu},\code{workerCpu},\code{serverMemory},\code{workerMemory},\code{serverHardwareId},
-\code{workerHardwareId} and \code{jobQueueName} will be ignored.}
-
-\item{cloudRuntime}{A \code{CloudRuntime} object. The obect that stores the cloud runtime data such
-as server IP, handle and worker handles. There is no need to provide this object
-unless you want to use an existing cloud cluster.}
 }
 \value{
 A \code{DockerCluster} object

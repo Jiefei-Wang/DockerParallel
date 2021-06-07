@@ -94,6 +94,7 @@ setGeneric("getDockerServerIp", function(provider, cluster, verbose){
 #' number up and down accordingly.
 #'
 #' @inheritParams generics-commonParams
+#' @param workerNumber Integer(1), the number of the workers.
 #' @return No return value
 #' @export
 setGeneric("setDockerWorkerNumber", function(provider, cluster, container, hardware, workerNumber, verbose){
@@ -108,7 +109,6 @@ setGeneric("setDockerWorkerNumber", function(provider, cluster, container, hardw
 #' return `list(initializing = 0L, running = .getExpectedWorkerNumber(cluster))`
 #'
 #' @inheritParams generics-commonParams
-#' @param status Character(1), the status of the container.
 #' @return `list(initializing = ?, running = ?)`.
 #' @export
 setGeneric("getDockerWorkerNumbers", function(provider, cluster, verbose){
