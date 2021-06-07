@@ -1,40 +1,13 @@
-#' @describeIn initializeProvider The default cloud initialization method, do nothing.
+#' @describeIn initializeCloudProvider The default cloud initialization method, do nothing.
 #' @export
-setMethod("initializeProvider", "ANY", function(provider, cluster, verbose = 0L){
+setMethod("initializeCloudProvider", "ANY", function(provider, cluster, verbose = 0L){
 
 })
 
-#' @rdname instanceStatus
+#' @describeIn getDockerWorkerNumbers The default getDockerWorkerNumbers method. Return `c(0L, .getExpectedWorkerNumber(cluster))`
 #' @export
-setMethod("getDockerInstanceStatus", "ANY", function(provider, instanceHandles, verbose = 0L){
-    rep("running", length(instanceHandles))
-})
-
-#' @rdname instanceStatus
-#' @export
-setMethod("IsDockerInstanceInitializing", "ANY", function(provider, instanceHandles, verbose = 0L){
-    status <- getDockerInstanceStatus(provider=provider,
-                                instanceHandles=instanceHandles,
-                                verbose = verbose)
-    status == "initializing"
-})
-
-#' @rdname instanceStatus
-#' @export
-setMethod("IsDockerInstanceRunning", "ANY", function(provider, instanceHandles, verbose = 0L){
-    status <- getDockerInstanceStatus(provider=provider,
-                                instanceHandles=instanceHandles,
-                                verbose = verbose)
-    status == "running"
-})
-
-#' @rdname instanceStatus
-#' @export
-setMethod("IsDockerInstanceStopped", "ANY", function(provider, instanceHandles, verbose = 0L){
-    status <- getDockerInstanceStatus(provider=provider,
-                                instanceHandles=instanceHandles,
-                                verbose = verbose)
-    status == "stopped"
+setMethod("getDockerWorkerNumbers", "ANY", function(provider, cluster, verbose = 0L){
+    list(initializing = 0L, running = .getExpectedWorkerNumber(cluster))
 })
 
 
@@ -44,34 +17,27 @@ setMethod("dockerClusterExists", "ANY",function(provider, cluster, verbose){
     FALSE
 })
 
-
 #' @describeIn reconnectDockerCluster The default method, do nothing.
 #' @export
-setMethod("reconnectDockerCluster", "ANY",function(provider, cluster, verbose){
+setMethod("reconnectDockerCluster", "ANY", function(provider, cluster, verbose){
     message("No reconnect method has been defined in the provider")
+    invisible(NULL)
 })
-
-
-
-
-
-#' @rdname containerParallelBackend
+#' @describeIn cleanupDockerCluster The default method, do nothing.
 #' @export
-setMethod("deregisterParallelBackend", "ANY", function(container, cluster, verbose = 0L){
-    verbosePrint(verbose, "deregistering foreach backend")
-    foreach::registerDoSEQ()
+setMethod("cleanupDockerCluster", "ANY", function(provider, cluster, verbose){
+    invisible(NULL)
 })
 
-
-
-#' @describeIn getServerContainer The default method, return `NULL` value
+##########################################################
+#' @describeIn getServerContainer The default method throws an error
 #' @export
 setMethod("getServerContainer", "ANY",function(workerContainer){
     stop("No server container getter is defined for this container")
 })
 
 
-
+##########################################################
 #' @rdname exported-apis
 #' @export
 setMethod("getExportedNames", "ANY", function(x){
@@ -83,3 +49,9 @@ setMethod("getExportedNames", "ANY", function(x){
 setMethod("getExportedObject", "ANY", function(x, name){
     stop("Unable to find the exported object.")
 })
+
+
+
+
+
+

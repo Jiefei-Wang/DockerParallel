@@ -1,6 +1,23 @@
+                          Changes in version 1.0.3
+Changes:
+    + The reference arguments passed to makeDockerCluster will be copied before using.
+    + Add `deep` parameter to `cleanupDockerCluster`
+    + add cleanup function to cluster
+
+                          Changes in version 1.0.2
+New features:
+    + Add "getDockerStaticData" and "setDockerStaticData"
+Changes:
+    + Cluster will not try to manage the worker and server handle
+    + instance handles must be character now
+    + Remove `addWorkers` and `removeWorkers` from the cluster. The worker number should be adjusted by `setWorkerNumber`
+    + rename `initializeProvider` to `initializeCloudProvider`
+    + The server container cannot be NULL
+
                           Changes in version 1.0.1
 + Change the arguments in clusterPreset to make its meaning more clear.
 + Add jobQueueName argument to makeDockerCluster
++ Add `setDockerWorkerNumber` to support kubernetes provider
 
                           Changes in version 1.0.0
 First public release.

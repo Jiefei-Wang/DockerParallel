@@ -1,139 +1,47 @@
-resetRuntimeServer <- function(cloudRuntime){
-    cloudRuntime$serverPublicIp <- NULL
-    cloudRuntime$serverPrivateIp <- NULL
-    cloudRuntime$serverHandle <- NULL
-}
-removeRuntimeWorkers <- function(cloudRuntime, index){
-    if(length(index)!=0){
-        cloudRuntime$workerHandles <- cloudRuntime$workerHandles[-index]
-        cloudRuntime$workerPerHandle <- cloudRuntime$workerPerHandle[-index]
-    }
-}
-
-removeDiedServer <- function(cluster){
-    verbose <- cluster$verbose
-    provider <- cluster@cloudProvider
-    cloudRuntime <- cluster@cloudRuntime
-    if(!is.null(cloudRuntime$serverHandle)){
-        stoppedServer <-
-            IsDockerInstanceStopped(provider, list(cloudRuntime$serverHandle), verbose=verbose)
-        if(stoppedServer){
-            resetRuntimeServer(cloudRuntime)
+DockerCluster.finalizer<- function(e){
+    if(e$stopClusterOnExit){
+        if(e$cluster$isServerRunning()||e$cluster$getWorkerNumbers()>0){
+            e$cluster$stopCluster(ignoreError = TRUE)
         }
     }
 }
 
-removeDiedWorkers <- function(cluster){
-    verbose <- cluster$verbose
-    provider <- cluster@cloudProvider
-    cloudRuntime <- cluster@cloudRuntime
-    if(length(cloudRuntime$workerHandles)!=0){
-        stoppedWorkers <- IsDockerInstanceStopped(provider, cloudRuntime$workerHandles, verbose=verbose)
-        if(any(stoppedWorkers)){
-            removeRuntimeWorkers(cloudRuntime, which(stoppedWorkers))
-        }
+initializeCloudProviderInternal <- function(cluster){
+    settings <- .getClusterSettings(cluster)
+    if(!settings$cloudProviderInitialized){
+        verbose <- cluster$verbose
+        provider <- .getCloudProvider(cluster)
+        initializeCloudProvider(provider = provider, cluster=cluster, verbose = verbose)
+        settings$cloudProviderInitialized <- TRUE
     }
 }
 
 
-addWorkersInternal <- function(cluster, workerNumber){
-    verbose <- cluster$verbose
-    provider <- .getCloudProvider(cluster)
-
-    if(isServerRunning(cluster)){
-        ## By default, we have 1 worker per container
-        workerContainer <- configWorkerContainerEnv(
-            container = .getWorkerContainer(cluster),
-            cluster = cluster,
-            workerNumber = 1,
-            verbose = verbose
-        )
-        instanceHandles <- runDockerWorkers(provider,
-                                            cluster = cluster,
-                                            container = workerContainer,
-                                            hardware = .getWorkerHardware(cluster),
-                                            workerNumber = workerNumber,
-                                            verbose = verbose)
-        .addWorkerHandles(cluster, instanceHandles)
-    }
-    invisible(NULL)
-}
-
-myknapsack <- function (workerPerHandle, killedWorkerNum)
-{
-    idx <- which(workerPerHandle<=killedWorkerNum)
-    if(length(idx)==0){
-        return(list(capacity=0, indices = c()))
-    }
-    KnapsackSolution <-
-        adagio::knapsack(workerPerHandle[idx],
-                         workerPerHandle[idx],
-                         killedWorkerNum)
-    KnapsackSolution$indices <- idx[KnapsackSolution$indices]
-    KnapsackSolution
-}
-
-
-removeWorkersInternal <- function(cluster, workerNumber){
-    provider <- .getCloudProvider(cluster)
-    cloudRuntime <- .getCloudRuntime(cluster)
-
-    verbose <- cluster$verbose
-
-    ## Find which instances will be killed while satisfying
-    ## that the killed workers is less than or equal to workerNumber
-    KnapsackSolution <-
-        myknapsack(cloudRuntime$workerPerHandle,
-                   workerNumber)
-    killedWorkerNumber <- KnapsackSolution$capacity
-    killedInstanceIndex <- KnapsackSolution$indices
-    if(killedWorkerNumber < workerNumber){
-        if(killedWorkerNumber==0){
-            message("No worker can be killed as all instances have more than ",
-                    workerNumber,
-                    " workers")
-        }else{
-            message("Only ", killedWorkerNumber,
-                    " workers will be killed as multiple workers share the same instance")
-        }
-    }
-    if(killedWorkerNumber!=0){
-        success <- killDockerInstances(provider,
-                                       instanceHandles = cloudRuntime$workerHandles[killedInstanceIndex],
-                                       verbose = verbose)
-        if(any(!success)){
-            warning("Fail to kill some worker instances")
-        }
-        removeRuntimeWorkers(cloudRuntime, killedInstanceIndex[success])
-    }
-    invisible(NULL)
-}
 
 ## Check if the cluster exists on the cloud
 ## and ask the user if reuse the same cluster
 ## return `TRUE` to indicate the caller should proceed
 ## `FALSE` means the caller should directly return
 checkIfClusterExistAndAsk <- function(cluster){
-    provider <- .getCloudProvider(cluster)
     verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
     verbosePrint(verbose>0, "Checking if the cluster exist")
 
-    exist <- dockerClusterExists(provider=provider, cluster=cluster, verbose=verbose)
+    exist <- dockerClusterExists(provider = provider,
+                                 cluster = cluster,
+                                 verbose = verbose)
     if(exist){
         jobName <- .getJobQueueName(cluster)
         msg <- paste0(
             "The cluster with the job queue name <",
             jobName,
-            "> exists on the cloud, do you want to reuse the same cluster?"
+            "> exists on the cloud, do you want to reuse the same cluster?",
+            " Answering \"no\" will create a new cluster with the same job queue name"
         )
         answer <- menu(c("Yes", "No", "Cancel"), title=msg)
         if(answer == 1){
-            if(cluster$stopClusterOnExit){
-                verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")
-                cluster$stopClusterOnExit <- FALSE
-            }
-            reconnectDockerCluster(provider=provider, cluster=cluster, verbose=verbose)
-            return(TRUE)
+            reconnectClusterInternal(cluster = cluster)
+            return(FALSE)
         }
         if(answer == 2){
             return(TRUE)
@@ -144,13 +52,49 @@ checkIfClusterExistAndAsk <- function(cluster){
     }
     TRUE
 }
-DockerCluster.finalizer<- function(e){
-    if(e$stopClusterOnExit){
-        if(e$cluster$isServerRunning()||e$cluster$getWorkerNumber()>0){
-            e$cluster$stopCluster()
-        }
+
+## Reconnect the cluster, the cluster must exist!
+reconnectClusterInternal <- function(cluster, ...){
+    verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
+    if(cluster$stopClusterOnExit){
+        verbosePrint(verbose>0, "<stopClusterOnExit> will be set to FALSE")
+        cluster$stopClusterOnExit <- FALSE
     }
+    reconnectDockerCluster(provider = provider,
+                           cluster = cluster,
+                           verbose = verbose)
+    updateServerIp(cluster)
+    workerNumber <- cluster$getWorkerNumbers()
+    .setExpectedWorkerNumber(cluster, workerNumber$initializing + workerNumber$running)
+    cluster$registerBackend(...)
 }
+
+
+updateWorkerNumber <- function(cluster){
+    verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
+    workerNumbers <-
+        tryCatch(
+            getDockerWorkerNumbers(
+                provider = provider,
+                cluster = cluster,
+                verbose = verbose),
+            error = function(e) warning(e$message))
+    if(length(workerNumbers)!=2){
+        stop("The worker numbers returned by <getDockerWorkerNumbers> must be of length 2")
+    }
+    if(!is.list(workerNumbers)){
+        stop("The worker numbers returned by <getDockerWorkerNumbers> must be a list")
+    }
+    if(!setequal(names(workerNumbers), c("initializing", "running"))){
+        stop("The name of the worker numbers returned by getDockerWorkerNumbers must be 'initializing' and 'running'")
+    }
+    .setInitializingWorkerNumber(cluster, workerNumbers$initializing)
+    .setRunningWorkerNumber(cluster, workerNumbers$running)
+}
+
+
 
 ## Change the formals of the function so
 ## it can implicitly use the variable `cluster`
@@ -165,8 +109,8 @@ createTempFunction <- function(func, cluster){
 }
 
 configNATStatus <- function(cluster){
-    cloudRuntime <- cluster@cloudRuntime
-    cloudConfig <- cluster@cloudConfig
+    cloudConfig <- .getCloudConfig(cluster)
+    cloudRuntime <- .getCloudRuntime(cluster)
 
     publicIpNULL <- is.null(cloudRuntime$serverPublicIp)
     privateIpNULL <- is.null(cloudRuntime$serverPrivateIp)
@@ -182,4 +126,96 @@ configNATStatus <- function(cluster){
         cloudConfig$serverWorkerSameNAT <- TRUE
     }
     cluster
+}
+
+existsProviderMethod <- function(provider, name){
+    existsMethod(name, class(provider)[1])
+}
+
+resetServerRuntime <- function(cloudRuntime){
+    cloudRuntime$serverPublicIp <- character(0)
+    cloudRuntime$serverPrivateIp <- character(0)
+    cloudRuntime$serverPublicPort <- integer(0)
+    cloudRuntime$serverPrivatePort <- integer(0)
+}
+
+handleError <- function(expr, errorToWarning = FALSE){
+    if(errorToWarning){
+        tryCatch(expr, error = function(e) warning(e$message))
+    }else{
+        expr
+    }
+}
+
+updateServerStatus <- function(cluster){
+    verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
+    cloudRuntime <- .getCloudRuntime(cluster)
+    serverFromOtherSource <- .getServerFromOtherSource(cluster)
+    if(!serverFromOtherSource){
+        status <- getServerStatus(provider = provider,
+                                  cluster = cluster,
+                                  verbose = verbose)
+        if(status == "stopped"){
+            resetServerRuntime(cloudRuntime)
+        }
+        if(status == "running"){
+            updateServerIp(cluster)
+        }
+        status
+    }else{
+        "running"
+    }
+}
+
+updateServerIp <- function(cluster){
+    verbose <- cluster$verbose
+    provider <- .getCloudProvider(cluster)
+    serverFromOtherSource <- .getServerFromOtherSource(cluster)
+    if(!serverFromOtherSource){
+        serverIp <- getDockerServerIp(
+            provider = provider,
+            cluster = cluster,
+            verbose = verbose
+        )
+
+        stopifnot(length(serverIp$publicIp)<=1)
+        stopifnot(length(serverIp$publicPort)<=1)
+        stopifnot(length(serverIp$privateIp)<=1)
+        stopifnot(length(serverIp$privatePort)<=1)
+
+        ## Handle the null case
+        if(is.null(serverIp$publicIp)) serverIp$publicIp <- character(0)
+        if(is.null(serverIp$publicPort)) serverIp$publicPort <- integer(0)
+        if(is.null(serverIp$privateIp)) serverIp$privateIp <- character(0)
+        if(is.null(serverIp$privatePort)) serverIp$privatePort <- integer(0)
+
+        .setServerPrivateIp(cluster, serverIp$privateIp)
+        .setServerPrivatePort(cluster, serverIp$privatePort)
+        .setServerPublicIp(cluster, serverIp$publicIp)
+        .setServerPublicPort(cluster, serverIp$publicPort)
+    }
+}
+
+
+
+waitServerRunning <- function(cluster){
+    provider <- .getCloudProvider(cluster)
+    verbose <- cluster$verbose
+    while(TRUE){
+        serverStatus <- getServerStatus(
+            provider = provider,
+            cluster = cluster,
+            verbose = verbose)
+        if(serverStatus == "initializing"){
+            verbosePrint(verbose > 1, "The server is still initializing, check again after 1 second")
+        }
+        if(serverStatus == "running"){
+            return(TRUE)
+        }
+        if(serverStatus == "stopped"){
+            return(FALSE)
+        }
+        Sys.sleep(1)
+    }
 }

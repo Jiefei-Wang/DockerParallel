@@ -1,51 +1,3 @@
-#' Wait the instances until they have the running status
-#'
-#' Wait the instances until they have the running status
-#'
-#' @inheritParams getDockerInstanceStatus
-#' @param progressBar Logical, whether to show a progress bar while waiting
-#' @param checkInterval Numeric, the time interval in seconds between two status checks.
-#' @param maxWaitTime Numeric, the maximum wait time in seconds. There will be no error
-#' if the wait time exceeds the maximum wait time.
-#'
-#' @returns
-#' a logical vector indicating if the instances are running
-#'
-#' @export
-waitInstanceUntilRunning<-function(provider, instanceHandles, progressBar = FALSE,
-                                   checkInterval = 1, maxWaitTime = 60*5){
-    on.exit(
-        {
-            if(progressBar){
-                close(pb)
-            }
-        }
-    )
-    if(progressBar){
-        pb <- txtProgressBar(min=0,max = length(instanceHandles), style=3)
-    }
-    startTime <- Sys.time()
-    while(TRUE){
-        instanceStatus <- getDockerInstanceStatus(provider=provider,
-                                                  instanceHandles = instanceHandles,
-                                                  verbose = FALSE)
-        if(all(instanceStatus=="running")){
-            return(TRUE)
-        }
-        if(any(instanceStatus=="stopped")){
-            return(FALSE)
-        }
-        if(progressBar){
-            setTxtProgressBar(pb, sum(instanceStatus=="running"))
-        }
-        if(difftime(Sys.time(), startTime, units = "secs")>maxWaitTime){
-            break
-        }
-        Sys.sleep(checkInterval)
-    }
-    instanceStatus=="running"
-}
-
 #' Set the default cloud provider and container
 #'
 #' Set the default cloud provider and container. You must install the provider and container
@@ -107,7 +59,36 @@ clusterPreset<- function(
     invisible(NULL)
 }
 
-
-
-
+#' Define the data object for a cloud private server
+#'
+#' Define the data object for a cloud private server. The data object
+#' can be passed to `makeDockerCluster` and let the cluster
+#' use the private server instead of the server from the cloud provider.
+#'
+#' @param publicIp Character(0) or Character(1), the public Ip of the server
+#' @param publicPort Integer(0) or Integer(1), the public port of the server
+#' @param privateIp Character(0) or Character(1), the private Ip of the server
+#' @param privatePort Integer(0) or Integer(1), the private port of the server
+#' @param password Character(1), the password for the server
+#' @param serverWorkerSameLAN Logical(1), whether the server and works are in the same LAN
+#' @param serverClientSameLAN Logical(1), whether the server and client are in the same LAN
+#' @examples
+#' CloudPrivateServer(publicIp = "192.168.1.1", publicPort = 1234)
+#' @export
+CloudPrivateServer <- function(publicIp = character(0),
+                               publicPort = integer(0),
+                               privateIp = character(0),
+                               privatePort = integer(0),
+                               password = "",
+                               serverWorkerSameLAN = FALSE,
+                               serverClientSameLAN = FALSE
+                               ){
+    list(publicIp = publicIp,
+         publicPort = publicPort,
+         privateIp = privateIp,
+         privatePort = privatePort,
+         password = password,
+         serverWorkerSameLAN = serverWorkerSameLAN,
+         serverClientSameLAN = serverClientSameLAN)
+}
 

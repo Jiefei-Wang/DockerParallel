@@ -17,8 +17,7 @@ which starts with the prefix \code{.get} or \code{.set}(e.g. \code{.getJobQueueN
 
 \item{\code{cloudConfig}}{CloudConfig}
 
-\item{\code{serverContainer}}{The container definition for the server.
-If the value is NULL, the server must be provided from the other source.}
+\item{\code{serverContainer}}{The container definition for the server.}
 
 \item{\code{workerContainer}}{The container definition for the worker}
 

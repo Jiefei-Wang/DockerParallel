@@ -11,13 +11,15 @@ The root class of the container
 \section{Fields}{
 
 \describe{
-\item{\code{name}}{Character, the optional name of a container}
+\item{\code{name}}{Character(1) or character(0), the optional name of a container.}
 
-\item{\code{maxWorkerNum}}{Integer, the maximum worker number in a container}
+\item{\code{backend}}{Character(1), the backend used by the parallel package}
 
-\item{\code{environment}}{List, the environment variables in the container}
+\item{\code{maxWorkerNum}}{Integer(1), the maximum worker number in a container.}
 
-\item{\code{image}}{Character, the container image}
+\item{\code{environment}}{List, the environment variables in the container.}
+
+\item{\code{image}}{Character(1), the container image.}
 }}
 
 

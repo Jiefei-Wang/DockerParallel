@@ -5,11 +5,6 @@
 #' @param cluster A `DockerCluster` object
 #' @param value,handles The value you want to set/add/remove
 #'
-#' @section worker handles:
-#' When multiple workers share the same container, the developer can call
-#' `.addWorkerHandles` and pass a list of duplicated handles to inform the cluster the
-#' sharing exists. To remove such container handle from the list, you need to call
-#' `.removeWorkerHandles` with the duplicated handles.
 #'
 #' @returns
 #' No return value for the setter. The getter will get the object from the cluster.
@@ -44,6 +39,81 @@
     cluster@cloudRuntime
 }
 
+#' @rdname accessors
+#' @export
+.getClusterSettings <- function(cluster){
+    cluster@settings
+}
+
+#' @rdname accessors
+#' @export
+.getVerbose <- function(cluster){
+    settings <- .getClusterSettings(cluster)
+    settings$verbose
+}
+
+#' @rdname accessors
+#' @export
+.getStopClusterOnExit <- function(cluster){
+    settings <- .getClusterSettings(cluster)
+    settings$stopClusterOnExit
+}
+
+#' @rdname accessors
+#' @export
+.setCloudProvider <- function(cluster, value){
+    cluster@cloudProvider <- value
+}
+
+#' @rdname accessors
+#' @export
+.setCloudConfig <- function(cluster, value){
+    cluster@cloudConfig <- value
+}
+
+#' @rdname accessors
+#' @export
+.setServerContainer <- function(cluster, value){
+    cluster@serverContainer <- value
+}
+
+#' @rdname accessors
+#' @export
+.setWorkerContainer <- function(cluster, value){
+    cluster@workerContainer <- value
+}
+
+#' @rdname accessors
+#' @export
+.setCloudRuntime <- function(cluster, value){
+    cluster@cloudRuntime <- value
+}
+
+#' @rdname accessors
+#' @export
+.setClusterSettings <- function(cluster, value){
+    settings <-  cluster@settings
+    rm(list = names(settings), envir = settings)
+    for(i in names(value)){
+        settings[[i]] <- value[[i]]
+    }
+    settings$cluster <- cluster
+}
+
+#' @rdname accessors
+#' @export
+.setVerbose <- function(cluster, value){
+    settings <- .getClusterSettings(cluster)
+    settings$verbose <- value
+}
+
+#' @rdname accessors
+#' @export
+.setStopClusterOnExit <- function(cluster, value){
+    settings <- .getClusterSettings(cluster)
+    settings$stopClusterOnExit <- value
+}
+
 
 ## CloudConfig
 #' @rdname accessors
@@ -53,8 +123,8 @@
 }
 #' @rdname accessors
 #' @export
-.getWorkerNumber <- function(cluster){
-    .getCloudConfig(cluster)$workerNumber
+.getExpectedWorkerNumber <- function(cluster){
+    .getCloudConfig(cluster)$expectedWorkerNumber
 }
 #' @rdname accessors
 #' @export
@@ -95,9 +165,9 @@
 }
 #' @rdname accessors
 #' @export
-.setWorkerNumber <- function(cluster, value){
+.setExpectedWorkerNumber <- function(cluster, value){
     config <- .getCloudConfig(cluster)
-    config$workerNumber <- as.integer(value)
+    config$expectedWorkerNumber <- as.integer(value)
 }
 #' @rdname accessors
 #' @export
@@ -136,75 +206,26 @@
     config$serverPort <- as.integer(value)
 }
 
+
 ## CloudRuntime
 #' @rdname accessors
 #' @export
-.getWorkerHandles <- function(cluster){
-    runtime <- .getCloudRuntime(cluster)
-    workerHandles <- runtime$workerHandles
-    workerPerHandle <- runtime$workerPerHandle
-    x <- lapply(seq_along(workerHandles),
-                     function(i)rep(workerHandles[i],workerPerHandle[i])
-    )
-    result <- list()
-    for(i in x){
-        result <- c(result, i)
-    }
-    result
+.getServerFromOtherSource <- function(cluster){
+    .getCloudRuntime(cluster)$serverFromOtherSource
 }
 
-#' @rdname accessors
-#' @export
-.addWorkerHandles <- function(cluster, handles){
-    runtime <- .getCloudRuntime(cluster)
-    workerHandles <- runtime$workerHandles
-    workerPerHandle <- runtime$workerPerHandle
-    for(i in handles){
-        idx <- which(vapply(workerHandles, function(x) identical(x, i), logical(1)))
-        if(length(idx)!=0){
-            workerPerHandle[idx] <- workerPerHandle[idx] + 1L
-        }else{
-            workerHandles <- c(workerHandles, i)
-            workerPerHandle <- c(workerPerHandle, 1L)
-        }
-    }
-    runtime$workerHandles <- workerHandles
-    runtime$workerPerHandle <- workerPerHandle
-    invisible(NULL)
-}
-
-#' @rdname accessors
-#' @export
-.removeWorkerHandles <- function(cluster, handles){
-    runtime <- .getCloudRuntime(cluster)
-    workerHandles <- runtime$workerHandles
-    workerPerHandle <- runtime$workerPerHandle
-    for(i in handles){
-        idx <- which(vapply(workerHandles, function(x) identical(x, i), logical(1)))
-        if(length(idx)!=0){
-            workerPerHandle[idx] <- workerPerHandle[idx] - 1L
-            if(workerPerHandle[idx]==0){
-                workerHandles <- workerHandles[-idx]
-                workerPerHandle <- workerPerHandle[-idx]
-            }
-        }
-    }
-    runtime$workerHandles <- workerHandles
-    runtime$workerPerHandle <- workerPerHandle
-    invisible(NULL)
-}
-
-
-#' @rdname accessors
-#' @export
-.getServerHandle <- function(cluster){
-    .getCloudRuntime(cluster)$serverHandle
-}
 #' @rdname accessors
 #' @export
 .getServerPrivateIp <- function(cluster){
     .getCloudRuntime(cluster)$serverPrivateIp
 }
+
+#' @rdname accessors
+#' @export
+.getServerPrivatePort <- function(cluster){
+    .getCloudRuntime(cluster)$serverPrivatePort
+}
+
 #' @rdname accessors
 #' @export
 .getServerPublicIp <- function(cluster){
@@ -213,10 +234,22 @@
 
 #' @rdname accessors
 #' @export
-.setServerHandle <- function(cluster, value){
-    runtime <- .getCloudRuntime(cluster)
-    runtime$serverHandle <- value
+.getServerPublicPort <- function(cluster){
+    .getCloudRuntime(cluster)$serverPublicPort
 }
+
+#' @rdname accessors
+#' @export
+.getInitializingWorkerNumber <- function(cluster){
+    .getCloudRuntime(cluster)$initializingWorkerNumber
+}
+
+#' @rdname accessors
+#' @export
+.getRunningWorkerNumber <- function(cluster){
+    .getCloudRuntime(cluster)$runningWorkerNumber
+}
+
 #' @rdname accessors
 #' @export
 .setServerPrivateIp <- function(cluster, value){
@@ -229,4 +262,34 @@
     runtime <- .getCloudRuntime(cluster)
     runtime$serverPublicIp <- value
 }
+#' @rdname accessors
+#' @export
+.setServerPrivatePort <- function(cluster, value){
+    runtime <- .getCloudRuntime(cluster)
+    runtime$serverPrivatePort <- as.integer(value)
+}
+#' @rdname accessors
+#' @export
+.setServerPublicPort <- function(cluster, value){
+    runtime <- .getCloudRuntime(cluster)
+    runtime$serverPublicPort <- as.integer(value)
+}
+#' @rdname accessors
+#' @export
+.setInitializingWorkerNumber <- function(cluster, value){
+    runtime <- .getCloudRuntime(cluster)
+    runtime$initializingWorkerNumber <- as.integer(value)
+}
+#' @rdname accessors
+#' @export
+.setRunningWorkerNumber <- function(cluster, value){
+    runtime <- .getCloudRuntime(cluster)
+    runtime$runningWorkerNumber <- as.integer(value)
+}
 
+#' @rdname accessors
+#' @export
+.setServerFromOtherSource <- function(cluster, value){
+    runtime <- .getCloudRuntime(cluster)
+    runtime$serverFromOtherSource <- value
+}

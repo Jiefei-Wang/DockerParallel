@@ -1,13 +1,13 @@
 CloudConfig <- function(jobQueueName = "DockerParallelQueue",
-                        workerNumber = 1L,
+                        expectedWorkerNumber = 1L,
                         serverHardware = DockerHardware(),
                         workerHardware = DockerHardware(),
-                        serverPort = 6379L,
+                        serverPort = 8888L,
                         serverPassword = generateRandomPassword(),
                         serverWorkerSameLAN = TRUE,
                         serverClientSameLAN = FALSE){
     .CloudConfig$new(jobQueueName = jobQueueName,
-                     workerNumber = as.integer(workerNumber),
+                     expectedWorkerNumber = as.integer(expectedWorkerNumber),
                      serverHardware = serverHardware,
                      workerHardware = workerHardware,
                      serverPort = as.integer(serverPort),
@@ -16,19 +16,33 @@ CloudConfig <- function(jobQueueName = "DockerParallelQueue",
                      serverClientSameLAN=serverClientSameLAN)
 }
 
-
-.CloudConfig$methods(
-    show = function(){
-        serverPasswordTmp <- ifelse(is.null(.self$serverPassword), "FALSE", "TRUE")
-
-        cat("Job queue name:  ", .self$jobQueueName, "\n")
-        cat("Worker number:   ", .self$workerNumber, "\n")
-        cat("Worker CPU:      ", .self$workerHardware@cpu, " unit\n")
-        cat("Worker memory:   ", .self$workerHardware@memory, " MB\n")
-        cat("server CPU:      ", .self$serverHardware@cpu, " unit\n")
-        cat("server memory:   ", .self$serverHardware@memory, " MB\n")
-        cat("Server port:     ", .self$serverPort, "\n")
-        cat("Server password: ", serverPasswordTmp, "\n")
-        invisible(NULL)
-    }
+#' Print the CloudConfig
+#'
+#' Print the CloudConfig
+#'
+#' @param object The CloudConfig object
+#' @return No return value
+#' @export
+setMethod(f = "show",signature = "CloudConfig",
+          definition = function(object){
+              serverPasswordTmp <- ifelse(is.null(object$serverPassword), "FALSE", "TRUE")
+              cat("A reference CloudConfig object\n")
+              cat("Job queue name:  ", object$jobQueueName, "\n")
+              cat("Worker number:   ", object$expectedWorkerNumber, "\n")
+              cat("Worker CPU:      ", object$workerHardware@cpu, " unit\n")
+              cat("Worker memory:   ", object$workerHardware@memory, " MB\n")
+              cat("server CPU:      ", object$serverHardware@cpu, " unit\n")
+              cat("server memory:   ", object$serverHardware@memory, " MB\n")
+              cat("Server port:     ", object$serverPort, "\n")
+              cat("Server password: ", serverPasswordTmp, "\n")
+              invisible(NULL)
+          }
 )
+
+#' @describeIn DockerStaticData The getDockerStaticData method for CloudConfig
+#' @export
+setMethod("getDockerStaticData", "CloudConfig", getObjectData)
+
+#' @describeIn DockerStaticData The setDockerStaticData method for CloudConfig
+#' @export
+setMethod("setDockerStaticData", "CloudConfig", setObjectData)

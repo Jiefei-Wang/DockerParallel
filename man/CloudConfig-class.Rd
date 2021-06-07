@@ -14,25 +14,25 @@ which starts with the prefix \code{.get}(e.g. \code{.getJobQueueName(cluster)}).
 \section{Fields}{
 
 \describe{
-\item{\code{jobQueueName}}{Character, the name of the job queue}
+\item{\code{jobQueueName}}{Character(1), the name of the job queue.}
 
-\item{\code{workerNumber}}{Integer, the required number of workers that should be
-run on the cloud}
+\item{\code{expectedWorkerNumber}}{Integer(1), the expected number of workers that should be
+run on the cloud.}
 
-\item{\code{serverHardware}}{DockerHardware, the server hardware}
+\item{\code{serverHardware}}{DockerHardware, the server hardware.}
 
-\item{\code{workerHardware}}{DockerHardware, the worker hardware}
+\item{\code{workerHardware}}{DockerHardware, the worker hardware.}
 
-\item{\code{serverPort}}{Integer or NULL, the port that will be used by the worker
-to connect with the server}
+\item{\code{serverPort}}{Integer(1) or integer(0), the port that will be used by the worker
+to connect with the server.}
 
-\item{\code{serverPassword}}{Character or NULL, the server password}
+\item{\code{serverPassword}}{Character(1) or character(0), the server password.}
 
-\item{\code{serverWorkerSameLAN}}{Logical, whether the server and workers are behind
-the same router}
+\item{\code{serverWorkerSameLAN}}{Logical(1), whether the server and workers are behind
+the same router.}
 
-\item{\code{serverClientSameLAN}}{Logical, whether the server and client are behind
-the same router}
+\item{\code{serverClientSameLAN}}{Logical(1), whether the server and client are behind
+the same router.}
 }}
 
 
