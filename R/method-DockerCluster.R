@@ -315,13 +315,15 @@ stopCluster <- function(cluster, ignoreError = FALSE){
     provider <- .getCloudProvider(cluster)
     settings <- .getClusterSettings(cluster)
     handleError(deregisterBackend(cluster), errorToWarning = ignoreError)
-    ## We use this trick to preserve the expected worker number
-    expectedWorkerNumber <- .getExpectedWorkerNumber(cluster)
-    handleError(setWorkerNumber(cluster, 0), errorToWarning = ignoreError)
-    .setExpectedWorkerNumber(cluster, expectedWorkerNumber)
-
-    handleError(stopServer(cluster), errorToWarning = ignoreError)
+    ## The workers and server are only adjustable when the cloud has been initialized
     if(settings$cloudProviderInitialized){
+        ## We use this trick to preserve the expected worker number
+        expectedWorkerNumber <- .getExpectedWorkerNumber(cluster)
+        handleError(setWorkerNumber(cluster, 0), errorToWarning = ignoreError)
+        .setExpectedWorkerNumber(cluster, expectedWorkerNumber)
+
+        handleError(stopServer(cluster), errorToWarning = ignoreError)
+
         handleError(
             cleanupDockerCluster(provider = provider,
                                  cluster = cluster,
@@ -432,12 +434,15 @@ update <- function(cluster){
 cleanup <- function(cluster, deep = FALSE){
     provider <- .getCloudProvider(cluster)
     verbose <- .getVerbose(cluster)
-    if(cluster$isServerRunning()){
-        stop("The server is still running")
-    }
-    workerNumbers <- cluster$getWorkerNumbers()
-    if(workerNumbers$initializing + workerNumbers$running != 0){
-        stop("The workers are still running")
+    settings <- .getClusterSettings(cluster)
+    if(settings$cloudProviderInitialized){
+        if(cluster$isServerRunning()){
+            stop("The server is still running")
+        }
+        workerNumbers <- cluster$getWorkerNumbers()
+        if(workerNumbers$initializing + workerNumbers$running != 0){
+            stop("The workers are still running")
+        }
     }
     cleanupDockerCluster(provider = provider,
                          cluster = cluster,

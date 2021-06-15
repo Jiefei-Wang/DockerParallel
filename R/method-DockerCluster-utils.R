@@ -1,9 +1,12 @@
 DockerCluster.finalizer<- function(e){
     if(e$stopClusterOnExit){
-        workerNumbers <- e$cluster$getWorkerNumbers()
-        liveWorkers <- workerNumbers$running + workerNumbers$initializing
-        if(e$cluster$isServerRunning()|| liveWorkers > 0){
-            e$cluster$stopCluster(ignoreError = TRUE)
+        settings <- .getClusterSettings(e$cluster)
+        if(settings$cloudProviderInitialized){
+            workerNumbers <- e$cluster$getWorkerNumbers()
+            liveWorkers <- workerNumbers$running + workerNumbers$initializing
+            if(e$cluster$isServerRunning()|| liveWorkers > 0){
+                e$cluster$stopCluster(ignoreError = TRUE)
+            }
         }
     }
 }
