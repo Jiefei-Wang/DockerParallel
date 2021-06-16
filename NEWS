@@ -1,3 +1,8 @@
+                          Changes in version 1.0.4
+Changes:
+    + All generics have signature now
+    + Add a cleanup function to `stopCluster`
+
                           Changes in version 1.0.3
 Changes:
     + The reference arguments passed to makeDockerCluster will be copied before using.

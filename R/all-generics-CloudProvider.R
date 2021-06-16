@@ -28,7 +28,7 @@
 #' @export
 setGeneric("initializeCloudProvider", function(provider, cluster, verbose){
     standardGeneric("initializeCloudProvider")
-})
+}, signature = "provider")
 
 #' Run or stop the server container
 #'
@@ -46,13 +46,13 @@ setGeneric("initializeCloudProvider", function(provider, cluster, verbose){
 #' @export
 setGeneric("runDockerServer", function(provider, cluster, container, hardware, verbose){
     standardGeneric("runDockerServer")
-})
+}, signature = "provider")
 
 #' @rdname DockerServerManagement
 #' @export
 setGeneric("stopDockerServer", function(provider, cluster, verbose){
     standardGeneric("stopDockerServer")
-})
+}, signature = "provider")
 
 #' Get the server status
 #'
@@ -64,7 +64,7 @@ setGeneric("stopDockerServer", function(provider, cluster, verbose){
 #' @export
 setGeneric("getServerStatus", function(provider, cluster, verbose){
     standardGeneric("getServerStatus")
-})
+}, signature = "provider")
 
 #' Get the server IP and port
 #'
@@ -86,7 +86,7 @@ setGeneric("getServerStatus", function(provider, cluster, verbose){
 #' @export
 setGeneric("getDockerServerIp", function(provider, cluster, verbose){
     standardGeneric("getDockerServerIp")
-})
+}, signature = "provider")
 
 #' Set the worker number on the cloud. There is no default method for this generic.
 #'
@@ -99,7 +99,7 @@ setGeneric("getDockerServerIp", function(provider, cluster, verbose){
 #' @export
 setGeneric("setDockerWorkerNumber", function(provider, cluster, container, hardware, workerNumber, verbose){
     standardGeneric("setDockerWorkerNumber")
-})
+}, signature = "provider")
 
 #' Get the worker number on the cloud
 #'
@@ -113,7 +113,7 @@ setGeneric("setDockerWorkerNumber", function(provider, cluster, container, hardw
 #' @export
 setGeneric("getDockerWorkerNumbers", function(provider, cluster, verbose){
     standardGeneric("getDockerWorkerNumbers")
-})
+}, signature = "provider")
 
 
 
@@ -128,23 +128,24 @@ setGeneric("getDockerWorkerNumbers", function(provider, cluster, verbose){
 #' @export
 setGeneric("dockerClusterExists", function(provider, cluster, verbose){
     standardGeneric("dockerClusterExists")
-})
+}, signature = "provider")
 
 
 #' Reconnect the cluster
 #'
 #' Reconnect the cluster if the cluster has been running. It is provider's
 #' responsibility to recover every information in the cluster, especially the the
-#' slots in `cloudConfg` and `cloudRuntime`. The developer should call setters with the
-#' prefix `.set` to set the values in the cluster.
-#' The default method does nothing.
+#' slots in `cloudConfg` and `cloudRuntime`. See details.
+#'
+#' @details
+#' There are two ways to set the slots in `cloudConfg` and `cloudRuntime`
 #'
 #' @inheritParams generics-commonParams
 #' @return No return value
 #' @export
 setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
     standardGeneric("reconnectDockerCluster")
-})
+}, signature = "provider")
 
 #' Cleanup the resources after the cluster has been stopped
 #'
@@ -160,7 +161,7 @@ setGeneric("reconnectDockerCluster", function(provider, cluster, verbose){
 #' @export
 setGeneric("cleanupDockerCluster", function(provider, cluster, deep, verbose){
     standardGeneric("cleanupDockerCluster")
-})
+}, signature = "provider")
 
 
 

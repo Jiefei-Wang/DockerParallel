@@ -309,7 +309,7 @@ getWorkerNumbers <- function(cluster){
          expected = expected)
 }
 
-stopCluster <- function(cluster, ignoreError = FALSE){
+stopCluster <- function(cluster, ignoreError = FALSE, cleanup = FALSE){
     verbose <- cluster$verbose
     verbosePrint(verbose, "Stopping cluster")
     provider <- .getCloudProvider(cluster)
@@ -325,9 +325,11 @@ stopCluster <- function(cluster, ignoreError = FALSE){
         handleError(stopServer(cluster), errorToWarning = ignoreError)
 
         handleError(
-            cleanupDockerCluster(provider = provider,
-                                 cluster = cluster,
-                                 verbose = verbose),
+            if(cleanup){
+                cleanupDockerCluster(provider = provider,
+                                     cluster = cluster,
+                                     verbose = verbose)
+            },
             errorToWarning = ignoreError)
     }
     invisible(NULL)

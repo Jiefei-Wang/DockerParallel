@@ -17,7 +17,7 @@
 #' @export
 setGeneric("configServerContainerEnv", function(container, cluster, verbose){
     standardGeneric("configServerContainerEnv")
-})
+}, signature = "container")
 
 #' Configurate the worker container environment
 #'
@@ -39,7 +39,7 @@ setGeneric("configServerContainerEnv", function(container, cluster, verbose){
 #' @export
 setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber, verbose){
     standardGeneric("configWorkerContainerEnv")
-})
+}, signature = "container")
 
 #' Register/deregister the parallel backend
 #'
@@ -58,13 +58,13 @@ setGeneric("configWorkerContainerEnv", function(container, cluster, workerNumber
 #' @export
 setGeneric("registerParallelBackend", function(container, cluster, verbose, ...){
     standardGeneric("registerParallelBackend")
-})
+}, signature = "container")
 
 #' @rdname containerParallelBackend
 #' @export
 setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ...){
     standardGeneric("deregisterParallelBackend")
-})
+}, signature = "container")
 
 #' Get the server container from the worker container
 #'
@@ -78,4 +78,4 @@ setGeneric("deregisterParallelBackend", function(container, cluster, verbose, ..
 #' @export
 setGeneric("getServerContainer", function(workerContainer){
     standardGeneric("getServerContainer")
-})
+}, signature = "workerContainer")

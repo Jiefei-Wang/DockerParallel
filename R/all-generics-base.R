@@ -40,14 +40,14 @@ NULL
 #' @export
 setGeneric("getExportedNames", function(x){
     standardGeneric("getExportedNames")
-})
+}, signature = "x")
 
 #' @param name The name of the exported object
 #' @rdname exported-apis
 #' @export
 setGeneric("getExportedObject", function(x, name){
     standardGeneric("getExportedObject")
-})
+}, signature = "x")
 
 #' get/set docker cluster static data
 #'
@@ -69,12 +69,12 @@ setGeneric("getExportedObject", function(x, name){
 #' @export
 setGeneric("getDockerStaticData", function(x){
     standardGeneric("getDockerStaticData")
-})
+}, signature = "x")
 #' @rdname DockerStaticData
 #' @export
 setGeneric("setDockerStaticData", function(x, staticData){
     standardGeneric("setDockerStaticData")
-})
+}, signature = "x")
 
 
 
