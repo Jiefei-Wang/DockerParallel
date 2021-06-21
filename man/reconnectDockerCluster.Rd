@@ -4,7 +4,7 @@
 \name{reconnectDockerCluster}
 \alias{reconnectDockerCluster}
 \alias{reconnectDockerCluster,ANY-method}
-\title{Reconnect the cluster}
+\title{Reconnect to the cluster}
 \usage{
 reconnectDockerCluster(provider, cluster, verbose)
 
@@ -21,11 +21,20 @@ reconnectDockerCluster(provider, cluster, verbose)
 No return value
 }
 \description{
-Reconnect the cluster if the cluster has been running. It is provider's
-responsibility to recover every information in the cluster, especially the the
-slots in \code{cloudConfg} and \code{cloudRuntime}. The developer should call setters with the
-prefix \code{.set} to set the values in the cluster.
-The default method does nothing.
+Reconnect to the cluster with the same job queue name. It is provider's
+responsibility to recover the data in the cluster, see details. The default
+method will do nothing.
+}
+\details{
+This function is designed for reconnecting to the same cluster on the cloud
+from a new \code{DockerCluster} object. Since the new object does not have the data
+used by the old \code{DockerCluster} object, it is provider's responsibility to
+obtain them from the cloud(Mostly from the server container).
+
+The data for a \code{DockerCluster} object can be extracted by \code{getDockerStaticData()}
+and set by \code{setDockerStaticData()}. It is recommended can extract and store the data in
+the server container during the deployment process and recover the cluster data from the
+server container when this function is called.
 }
 \section{Functions}{
 \itemize{

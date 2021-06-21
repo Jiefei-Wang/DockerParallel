@@ -1,4 +1,4 @@
 ^DockerParallel\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
-vignette.Rmd
+^inst/vignette.Rmd$

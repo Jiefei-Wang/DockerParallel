@@ -2,6 +2,8 @@
 Changes:
     + All generics have signature now
     + Add a cleanup function to `stopCluster`
+    + Add the missing vignette
+    + The server status has been changed to `connected` and `not connected`
 
                           Changes in version 1.0.3
 Changes:
