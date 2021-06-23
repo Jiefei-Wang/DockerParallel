@@ -65,7 +65,7 @@ For understanding the structure of `DockerParallel`, imagine that if someone tel
 
 In the rest of the vignette we will introduce them step by step.
 
-# The structure of ECS
+# The parallel framework using ECS as an example
 Amazon provides Elastic Compute Service(ECS) to take over the management of the physical server. By using ECS, the user only needs to prepare the container image and ECS will find the best server to run the container. ECS provides both the traditional server and fargate as the host machine of the container. For the traditional server, the user is able to select a set of hardware that can run the container. For the fargate launch type, it does not refer to any particular server. The choice of the server is determined by Amazon and is opaque to the user. The user only need to specify the CPU and memory that a container needs. Therefore, it greatly simplifies the deployment of the container. 
 
 In this vignette, We use the foreach parallel framework and doRedis backend. We deploy the container using the ECS fargate launch type. Below is the diagram of how `DockerParallel` works with ECS and foreach doRedis container
